@@ -1,0 +1,8 @@
+_site/
+_freeze/
+.quarto/
+*.bak.*
+__pycache__/
+.ipynb_checkpoints/
+node_modules/
+.DS_Store
