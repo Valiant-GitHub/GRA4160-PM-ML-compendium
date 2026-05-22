@@ -3,6 +3,218 @@ title: "K-Means Clustering"
 body-classes: fam-unsup
 ---
 
+[**Unsupervised**]{.fam-badge} · the workhorse for *finding groups* when you have no labels — partition the data into $K$ clusters by minimizing within-cluster spread. Siblings: [PCA](pca.qmd) (its natural partner — reduce dimensions/denoise *then* cluster, the exam pipeline), hierarchical clustering (groups without pre-setting $K$), and the supervised classifiers ([LDA](lda.qmd), [logistic](logistic.qmd), [trees](decision_trees.qmd)) you should use instead the moment you actually have labels.
+
+## 1. Essence
+
+K-means partitions $n$ observations into a pre-chosen number $K$ of clusters so that points inside a cluster are as similar as possible and points in different clusters as dissimilar as possible (Lecture 6, slide 13/19). "Similar" means *close in Euclidean distance*, and the quantity it actually minimizes is the **within-cluster sum of squares** (WCSS): the total squared distance from every point to the centroid of its assigned cluster. Each cluster is summarized by one point — its **centroid** $\mu_i$, the mean of the points assigned to it — and that centroid is precisely the location that minimizes squared distance to the cluster's members (Lecture 6, slide 13/19). The output is a hard assignment: every point belongs to exactly one cluster, with no soft/probabilistic membership.
+
+The algorithm alternates two cheap steps until the assignments stop changing: **assign** each point to its nearest centroid, then **update** each centroid to the mean of its newly assigned points (Lloyd's algorithm). This always lowers WCSS and converges, but only to a *local* optimum — so the result depends on where the centroids started (Lecture 6, slide 15/19). Two standard guards address that fragility: **k-means++** spreads the initial centroids out cleverly instead of picking them at random, and running the whole thing multiple times from different seeds (`n_init`) and keeping the lowest-WCSS solution. Both are on by default in scikit-learn.
+
+The two design decisions that make or break a K-means analysis are *choosing $K$* and *trusting the assumptions*. $K$ is not learned — you supply it — so the course teaches two tools to choose it: the **Elbow method** (plot WCSS against $K$ and look for the kink where extra clusters stop paying off) and **Silhouette analysis** (a score in $[-1,1]$ measuring how much better each point fits its own cluster than the next-nearest one). And K-means *assumes spherical, roughly equal-sized clusters* and is **sensitive to outliers** (a single far-flung point can drag a centroid toward it), because it is built on squared Euclidean distance (Lecture 6, slides 15/17). Compared with [PCA](pca.qmd) — the other unsupervised method in this course — PCA *re-describes* the data along variance-maximizing axes (continuous, no groups), whereas K-means *carves* it into discrete groups; they combine beautifully, PCA first to denoise and shrink dimensions, K-means second to cluster (Lecture 6, slide 18/19).
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for K-means when…**
+
+- You have **no labels** and want to discover **groups / segments** — market or customer segmentation, document grouping, image-color quantization (Lecture 6, slide 16/19). The exam's customer-segmentation task on `WholesaleCustomers` is exactly this (see [§7](#sec-km-exam)).
+- You expect clusters that are **roughly round and similar in size**, and your features are **continuous** and on comparable scales (or you [scale](pca.qmd) them first).
+- You want something **fast and scalable** — K-means is linear in $n$ per iteration and handles large datasets where pairwise-distance methods choke.
+- You can pair it with [**PCA**](pca.qmd): reduce to a few components to **denoise and visualize**, then cluster — the course's recommended combination (Lecture 6, slide 18/19).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **You actually have labels.** Clustering ignores them; if the goal is to predict a known class, use a supervised model — [LDA](lda.qmd), [logistic regression](logistic.qmd), [decision trees](decision_trees.qmd). (The Iris example in [§4](#sec-km-iris) is a cautionary tale: the "best" $K$ by silhouette is **2**, not the **3** true species.)
+- **Clusters are non-spherical, elongated, or very different in size / density** → K-means' equal-variance, round-blob assumption fails (Lecture 6, slide 17/19); reach for density- or shape-aware methods.
+- **You don't want to commit to $K$ up front** → **hierarchical clustering** builds a dendrogram you can cut at any level, no pre-set $K$ required.
+- **Outliers dominate** → squared distance lets one stray point hijack a centroid (Lecture 6, slides 15/17); detect/trim outliers first, or use a robust alternative.
+- **Features are wildly different in scale** → the largest-unit feature dominates the Euclidean distance; **standardize first** (this is *the* most common K-means mistake, and the reason the exam pipeline scales before clustering — see [§3](#sec-km-code)).
+:::
+
+## 3. Code idiom {#sec-km-code}
+
+The canonical course idiom is scikit-learn's `KMeans`; the course does **not** build it from scratch — WCSS and the silhouette are introduced as formulas, and the clustering itself is always `sklearn.cluster.KMeans` *(notebook `11_K_means.ipynb`, cells 2, 8, 10)*.
+
+**Fit and read the labels** *(notebook `11_K_means.ipynb`, cell 2)*:
+
+```python
+from sklearn.cluster import KMeans
+
+# n_init = number of random restarts (best by WCSS is kept) — guards against bad init
+kmeans = KMeans(n_clusters=3, random_state=0, n_init=10).fit(X)
+kmeans.labels_            # hard cluster assignment (0..K-1) for each point
+kmeans.cluster_centers_   # the K centroids μ_i
+kmeans.inertia_           # the final WCSS (sum of squared point-to-centroid distances)
+```
+
+Every hyperparameter that matters: **`n_clusters`** is $K$, the number of clusters (no default worth relying on — you must choose it, see below); **`init`** defaults to `'k-means++'` (smart spread-out initialization — leave it); **`n_init`** is how many restarts to run (the notebook uses `10`); **`max_iter`** caps Lloyd iterations (default `300`); **`random_state`** fixes the seed for reproducibility. The one attribute you will reuse constantly is **`.inertia_`** — that *is* the WCSS, and it is what the elbow method plots.
+
+**Choosing $K$ — elbow (WCSS) + silhouette, in one loop** *(notebook `11_K_means.ipynb`, cell 8, verbatim)*:
+
+```python
+from sklearn.metrics import silhouette_score
+
+wcss = []
+silhouette_scores = []
+for k in range(2, 10):
+    kmeans = KMeans(n_clusters=k, init='k-means++', max_iter=300, n_init=10, random_state=0)
+    kmeans.fit(X)
+    wcss.append(kmeans.inertia_)                              # elbow curve
+    silhouette_scores.append(silhouette_score(X, kmeans.labels_))  # quality curve
+```
+
+WCSS (`inertia_`) always falls as $K$ grows, so you look for the **elbow** — the kink where it stops falling fast. The silhouette, by contrast, has a genuine **maximum**: the $K$ that scores highest is the silhouette's pick. They do not always agree with each other, nor with any "true" number of groups — which is the whole lesson of [§4](#sec-km-iris).
+
+::: {.callout-pitfall}
+**Standardize before you cluster (unless features already share a scale).** K-means uses raw Euclidean distance, so a feature measured in thousands (annual spend) will dominate one measured in single digits. The lecture stresses normalization as preprocessing (Lecture 6, slide 13/19 prose); the notebook *skips* it on Iris only because petal length and width are already both in centimetres on a similar range *(notebook `11_K_means.ipynb`, cell 1 advises normalization; cell 2 does not scale — petal features are pre-comparable)*. On any real multi-unit dataset (the exam's `WholesaleCustomers`), fit a `StandardScaler` first — ideally inside the same scale → [PCA](pca.qmd) → K-means pipeline ([§4](#sec-km-wholesale)).
+:::
+
+## 4. Worked examples
+
+### Example 1 — Iris elbow + silhouette, and why "best $K$" ≠ "3 species" {#sec-km-iris}
+
+The course clusters Iris on just **two features — petal length and petal width** *(notebook `11_K_means.ipynb`, cell 2)*, deliberately ignoring the `Species` label (clustering is unsupervised). Running the elbow/silhouette loop from [§3](#sec-km-code) over $K = 2 \ldots 9$ gives *(computed via the course `.venv`, `random_state=0`, reproducing `11_K_means.ipynb` cell 8 on the petal features)*:
+
+| $K$ | WCSS (`inertia_`) | Silhouette |
+|---|---|---|
+| **2** | **86.39** | **0.765** |
+| 3 | 31.37 | 0.661 |
+| 4 | 19.48 | 0.611 |
+| 5 | 13.92 | 0.588 |
+| 6 | 11.04 | 0.578 |
+| 7 | 9.21 | 0.579 |
+| 8 | 7.68 | 0.590 |
+| 9 | 6.54 | 0.590 |
+
+The silhouette is **highest at $K=2$ (0.765)**, so the notebook's *next* cell selects two clusters — and here is the catch worth quoting. The cell's comment says one thing and the code does another:
+
+```python
+# Apply k-means clustering with 3 clusters (one for each species of iris)
+kmeans = KMeans(n_clusters=2, random_state=0, n_init=10).fit(X)   # ← actually K=2
+```
+
+The comment is stale (copied from the earlier cell-2 that used `n_clusters=3`); the **actual call is `n_clusters=2`** *(notebook `11_K_means.ipynb`, cell 10; see [disagreements NB-4])*. This mismatch is a *gift* of a teaching point, not a bug to paper over: **the silhouette-optimal $K=2$ is not the 3 true Iris species.** On petal features, *setosa* sits in a tight, well-separated blob while *versicolor* and *virginica* overlap heavily — so two clusters (setosa vs. the-rest) score as "cleaner" than three. To see how the two choices compare against the (known, but withheld) species labels, score each clustering with the Adjusted Rand Index *(computed via `.venv`)*:
+
+| Clustering | Silhouette | ARI vs. 3 species |
+|---|---|---|
+| $K=2$ (silhouette's pick) | **0.765** | 0.558 |
+| $K=3$ (the true count) | 0.661 | **0.886** |
+
+$K=3$ recovers the species almost perfectly (ARI 0.886 — only **6 of 150** flowers land in the "wrong" cluster, all on the *versicolor*/*virginica* border), yet scores a *lower* silhouette than $K=2$ (computed). **Lesson:** the silhouette measures *geometric separation*, not *correctness*. With no labels you would have shipped $K=2$; the moment you have labels you would not be clustering at all. This is the single most important caveat about choosing $K$ (see the [big-picture callout in §6](#sec-km-diag)).
+
+### Example 2 — clustering *with* a ground truth: seeds {#sec-km-seeds}
+
+The local **`seeds.csv`** (140 grain samples, 7 geometric features, with a `type` variety label) lets us check clustering against a known answer — the "clustering with ground truth" case (`Data/seeds.csv`; [DATA-2]). Crucially, *this* copy contains **two** wheat varieties (70 each), not the three of the full UCI set — so unlike Iris, the true count is 2. After `StandardScaler` (these features span very different units — area ~15, asymmetry ~2 — so scaling is mandatory), the elbow/silhouette loop gives *(computed via `.venv`, `random_state=0`)*:
+
+```python
+from sklearn.preprocessing import StandardScaler
+X = StandardScaler().fit_transform(seeds.drop(columns=["type"]))   # 140 × 7, scaled
+# same elbow/silhouette loop as §3 → silhouette peaks at K=2 (0.440)
+```
+
+The silhouette peaks at **$K=2$ (0.440)**, falling to 0.299 at $K=3$ — and here the silhouette's pick *agrees* with the ground truth. The $K=2$ clustering matches the two varieties well: **ARI 0.758**, with only **9 of 140** grains misassigned (computed). This is the happy mirror image of Iris: when the natural geometric grouping *is* the labelled grouping, silhouette and ground truth coincide. The contrast between the two examples — Iris (silhouette disagrees with labels) and seeds (silhouette agrees) — is exactly why you cannot treat the silhouette-optimal $K$ as automatically "the right answer."
+
+### Example 3 — the exam pipeline: scale → PCA → K-means on Wholesale customers {#sec-km-wholesale}
+
+The Spring-2025 exam's clustering task (Assignment 2) is customer segmentation on **`WholesaleCustomers.csv`** — 440 clients, 6 annual-spend categories (`Fresh`, `Milk`, `Grocery`, `Frozen`, `Detergents_Paper`, `Delicassen`) *(`Lecture slides/Past exams/.../WholesaleCustomers.csv`)*. The exam pipeline is **standardize → [PCA](pca.qmd) → K-means with elbow + silhouette to choose $K$** — PCA both denoises and lets you visualize the clusters in 2-D:
+
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+X = StandardScaler().fit_transform(wholesale[spend_cols])   # 6 spend features, scaled
+Xp = PCA(n_components=2, random_state=0).fit_transform(X)    # project to PC1, PC2
+# elbow/silhouette loop on Xp → choose K
+```
+
+On the scaled data, PCA needs **4 components for ≥90 % of the variance**, while the first two alone capture **72.5 %** — enough for a 2-D segmentation view (computed; cf. the [PCA](pca.qmd) page and Asgmt 2's "90 % variance" sub-task). Clustering on the PC1–PC2 projection, the silhouette is highest at **$K=2$ (0.636)**, with $K=3$ a close second (0.627) and a clear elbow in WCSS around $K=3$–$4$ *(WCSS: 1227.9, 891.0, 612.8, 427.2, … for $K=2 \ldots 5$; computed via `.venv`)*. The honest read: $K=2$ separates the two dominant buyer types (the `Channel`/`Region` columns, withheld from clustering, broadly correspond to Horeca vs. Retail), while $K=3$ is defensible from the elbow — a textbook case where **elbow and silhouette nudge you toward different $K$ and you justify the choice rather than read it off mechanically** ([§7](#sec-km-exam)).
+
+## 5. Visualization {#sec-km-viz}
+
+The figure that earns its place is the **elbow + silhouette pair** from Example 1 — it makes the entire $K$-selection decision visible at once. WCSS (left axis logic) only ever *falls*, so you hunt for the kink; the silhouette has a real *peak*. Plotting both on Iris's petal features shows the tension at the heart of [§4](#sec-km-iris): the silhouette's maximum sits at $K=2$, while the WCSS elbow and the true 3-species structure both point at $K=3$. The data below are the exact `inertia_` and `silhouette_score` values computed above, embedded inline.
+
+```{ojs}
+//| echo: false
+//| label: fig-km-elbow-silhouette
+//| fig-cap: "Iris (petal length & width) — elbow (WCSS) and silhouette curves over K = 2…9, computed via the course .venv (random_state=0), reproducing notebook 11 cell 8. Left: WCSS always falls, with the visible 'elbow' near K=3 (the true species count). Right: the silhouette PEAKS at K=2 (0.765, marked) — its single highest point. The two criteria disagree, and neither equals the labelled truth of 3 species: the core lesson that 'optimal K' is a judgement, not a readout."
+famUnsup = (getComputedStyle(document.documentElement).getPropertyValue('--family-unsup').trim() || "#F18F01")
+kmIris = [
+  {k: 2, wcss: 86.39, sil: 0.765},
+  {k: 3, wcss: 31.37, sil: 0.661},
+  {k: 4, wcss: 19.48, sil: 0.611},
+  {k: 5, wcss: 13.92, sil: 0.588},
+  {k: 6, wcss: 11.04, sil: 0.578},
+  {k: 7, wcss: 9.21,  sil: 0.579},
+  {k: 8, wcss: 7.68,  sil: 0.590},
+  {k: 9, wcss: 6.54,  sil: 0.590}
+]
+silBest = kmIris.reduce((a, b) => b.sil > a.sil ? b : a)
+elbowPlot = Plot.plot({
+  height: 280, marginLeft: 55, grid: true,
+  title: "Elbow: WCSS vs K  (look for the kink)",
+  x: {label: "Number of clusters K", domain: [2, 9], ticks: 8},
+  y: {label: "WCSS (inertia_)"},
+  marks: [
+    Plot.line(kmIris, {x: "k", y: "wcss", stroke: famUnsup, strokeWidth: 2.5, curve: "linear"}),
+    Plot.dot(kmIris, {x: "k", y: "wcss", fill: famUnsup, r: 4}),
+    Plot.ruleX([3], {stroke: "#999", strokeDasharray: "3,3"}),
+    Plot.text([{k: 3, wcss: 60}], {x: "k", y: "wcss", text: ["elbow ≈ 3"], dx: 28, fontSize: 11, fill: "#666"})
+  ]
+})
+silPlot = Plot.plot({
+  height: 280, marginLeft: 55, grid: true,
+  title: "Silhouette vs K  (look for the peak)",
+  x: {label: "Number of clusters K", domain: [2, 9], ticks: 8},
+  y: {label: "Mean silhouette score", domain: [0.55, 0.8]},
+  marks: [
+    Plot.line(kmIris, {x: "k", y: "sil", stroke: "#2e8b57", strokeWidth: 2.5, curve: "linear"}),
+    Plot.dot(kmIris, {x: "k", y: "sil", fill: "#2e8b57", r: 4}),
+    Plot.dot([silBest], {x: "k", y: "sil", r: 8, stroke: famUnsup, strokeWidth: 2.5, fill: "none"}),
+    Plot.text([silBest], {x: "k", y: "sil", text: ["peak: K=2"], dy: -16, fontSize: 11, fill: famUnsup, fontWeight: "bold"})
+  ]
+})
+html`<div style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:center">${elbowPlot}${silPlot}</div>`
+```
+
+## 6. Diagnostics & interpretation {#sec-km-diag}
+
+What to report and inspect to judge a K-means clustering:
+
+- **The elbow curve (WCSS vs $K$)** — `inertia_` for each $K$; pick the kink where the marginal drop flattens. It is a *guide*, not a rule: the elbow is often ambiguous (Wholesale's sits between 3 and 4).
+- **The silhouette curve (and per-cluster silhouettes)** — the $K$ with the highest mean silhouette is the silhouette's pick; values near 1 mean tight, well-separated clusters, near 0 mean overlap, negative mean misassigned points. Inspect the *per-cluster* silhouette widths, not just the mean — one good cluster can mask one bad one.
+- **Centroids and cluster sizes** — read `cluster_centers_` back in the original feature units to *name* the segments ("high-grocery, low-fresh" buyers); check that sizes aren't wildly imbalanced (a tiny cluster may just be outliers).
+- **Stability across restarts and seeds** — because K-means finds only a *local* optimum, refit with several `random_state` values; assignments that flip a lot signal an ill-posed $K$ or non-spherical structure.
+- **Against any held-out labels (if they exist)** — score with the Adjusted Rand Index, as in Examples [1](#sec-km-iris)–[2](#sec-km-seeds). But remember: if you *have* labels, clustering was the wrong tool.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**Elbow vs. silhouette vs. ground truth — the three can all disagree, and that's the point.** The **elbow** asks "where do extra clusters stop reducing spread?" (a within-cluster compactness question); the **silhouette** asks "how cleanly separated are the clusters?" (a between-vs-within question); the **ground truth**, when it exists, asks "do the clusters match the real categories?" On Iris these split three ways — silhouette says 2, elbow leans 3, truth is 3 — whereas on seeds all three agree on 2. There is **no $K$-selection criterion that is always right**, because clustering is an *unsupervised* judgement about structure, not a prediction with an answer key. And all of this presumes K-means' core assumption — **roughly spherical, equal-size clusters**: when clusters are elongated, nested, or differ in density, *every* $K$-selection rule misleads, and the fix is a different algorithm, not a different $K$ (Lecture 6, slide 17/19). Pair with [PCA](pca.qmd) to denoise first, but heed the lecture's caution — *don't reduce dimensions too much* (slide 18/19).
+:::
+
+## 7. Past-exam lens {#sec-km-exam}
+
+::: {.callout-exam}
+**How K-means shows up — this is core.** In the **Spring-2025 take-home (Assignment 2)**, K-means is the clustering half of an unsupervised pipeline on **`WholesaleCustomers.csv`**: **standardize the spend features → [PCA](pca.qmd)** (including the "how many components for 90 % of variance" sub-task — the answer is **4**; computed) **→ K-means, choosing $K$ with the elbow method and silhouette analysis** ([§4](#sec-km-wholesale)). Expect to (i) write the `KMeans(...).fit` and `silhouette_score` idiom from [§3](#sec-km-code) — *with a `StandardScaler` first*; (ii) run the elbow/silhouette loop over a range of $K$ and **plot both**; (iii) **choose and justify $K$** — the graded skill is the *reasoning* when elbow and silhouette disagree (Wholesale: silhouette 2, elbow ~3), not a mechanical readout; and (iv) **interpret the segments** by reading the centroids back in spend units. The classic trap: forgetting to scale, so `Fresh`/`Grocery` (thousands) swamp the distance and the clusters become meaningless. The Iris caveat from [§4](#sec-km-iris) is the conceptual point examiners love — *optimal $K$ need not equal the number of true classes*.
+:::
+
+## 8. Math {#sec-km-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the **WCSS objective**: partition the data into clusters $\{S_1,\dots,S_K\}$ to
+$$\min_{S_1,\dots,S_K}\;\sum_{i=1}^{K}\sum_{x\in S_i}\lVert x-\mu_i\rVert^2,$$
+where $\mu_i=\tfrac{1}{|S_i|}\sum_{x\in S_i}x$ is the **centroid** (mean) of cluster $S_i$ — the point minimizing squared distance to the cluster's members (Lecture 6, slides 13–14/19; this is exactly scikit-learn's `inertia_`). Plus **Lloyd's algorithm** — alternate (a) *assign* each point to its nearest centroid, (b) *update* each centroid to the mean of its assigned points — which monotonically decreases WCSS until assignments stabilize, and **k-means++** initialization (seed centroids spread out with probability ∝ squared distance to the nearest existing centroid) with multiple restarts (`n_init`) to dodge bad local optima. See the [math appendix](../appendix/math_appendix.qmd).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — why Lloyd's algorithm converges only to a **local** optimum (each step is coordinate descent on the WCSS surface; the global problem is **NP-hard** for general $K$ and dimension), motivating k-means++ and restarts. The **ISL pairwise-form equivalence**: ISL §12.4.1 writes within-cluster variation as $W(C_k)=\tfrac{1}{|C_k|}\sum_{i,i'\in C_k}\sum_j (x_{ij}-x_{i'j})^2$, which equals the slide's centroid/squared-distance form **up to a factor of $2|C_k|$** — same minimizer, different bookkeeping ([disagreements R9-4]; the slide/centroid form is primary because it matches `inertia_`). The link to the [bias–variance](bias_variance.qmd) view of model complexity (larger $K$ = lower bias / WCSS but risk of fitting noise), the spherical-equal-variance assumption as an implicit isotropic-Gaussian model, and the connection to PCA-then-cluster. Anchored to ESL §14.3. See the [math appendix](../appendix/math_appendix.qmd).
+:::
 :::

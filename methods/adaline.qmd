@@ -3,6 +3,190 @@ title: "Adaline"
 body-classes: fam-linear
 ---
 
+[**Linear family**]{.fam-badge} · the bridge from linear models to neural networks. Adaline is a single linear neuron trained by gradient descent — algebraically a cousin of [OLS](ols.qmd) (linear activation, squared-error loss), structurally the template for [Logistic Regression](logistic.qmd) (same update rule) and the smallest possible [neural net](nn_basics.qmd). Siblings: the perceptron (step activation), [Logistic Regression](logistic.qmd) (sigmoid + cross-entropy), [OLS](ols.qmd) (closed-form least squares).
+
+## 1. Essence
+
+**ADA**ptive **LI**near **NE**uron is a single linear neuron for binary classification. It computes a **net input** $z = w^\top x + b$ — a weighted sum of the features plus a bias — and then, crucially, applies an **identity (linear) activation**: the activation output *is* the net input. This is the one design choice that defines Adaline and separates it from its neighbors: the perceptron squashes $z$ through a hard step, [logistic regression](logistic.qmd) squashes it through a sigmoid, but Adaline leaves $z$ untouched during learning (Lecture 8, slides 15–17).
+
+Training minimizes a **mean squared error** loss measured *on the continuous net inputs*, $L(w,b) = \tfrac{1}{2n}\sum_i (y^{(i)} - z^{(i)})^2$, by **batch gradient descent**: every epoch computes the average gradient over the whole dataset and nudges the weights downhill (Lecture 8, slides 19–20). A hard threshold ($z \ge 0.5 \Rightarrow 1$) is applied **only at the very end, to turn the real-valued output into a class label** — never during the weight updates. The professor emphasizes this in all caps: "the threshold function is only used to make the final prediction" (Lecture 8, slide 18).
+
+That combination — linear activation + squared error — makes Adaline essentially [OLS](ols.qmd) run as an online learner on 0/1 labels: it regresses the labels on the features, then thresholds. But its real importance is pedagogical. Swap the MSE for cross-entropy and the identity activation for a sigmoid and you get [logistic regression](logistic.qmd) *with the gradient-descent update completely unchanged* (Lecture 8, slides 27–28; see [§8](#sec-adaline-math) and disagreement [R9-11]). Stack several of these neurons with non-linear activations and you get a [neural network](nn_basics.qmd). Adaline is the hinge those two doors swing on.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for Adaline when…**
+
+- You are **learning how gradient descent trains a classifier** from the ground up — Adaline is the cleanest from-scratch example: net input, loss, gradient, update, repeat. This is its job in GRA 4160.
+- You want to **see the link between regression and classification**: the linear activation makes the connection to [OLS](ols.qmd) explicit, and the identical update rule makes the connection to [logistic regression](logistic.qmd) explicit.
+- You need a **minimal worked example of batch GD** before tackling [backprop](../appendix/math_appendix.qmd#sec-gd) and [neural nets](nn_basics.qmd).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **You actually need a probabilistic classifier in practice** → [**Logistic Regression**](logistic.qmd). Adaline's MSE-on-net-input loss is a poor fit for 0/1 targets: squared error penalizes confident-correct predictions (a point with $y=1$ and $z=3$ still contributes loss), whereas cross-entropy does not. Logistic regression keeps Adaline's update mechanics but uses the right loss + a sigmoid that outputs calibrated probabilities.
+- **You want updates only when you make mistakes** → the **perceptron**, which uses a step activation and updates on misclassifications only. Adaline instead updates on the continuous error every epoch, which gives a smoother, differentiable objective.
+- **The relationship is non-linear** → a single linear neuron can only draw a straight decision boundary. Stack neurons with non-linear activations → [**neural networks**](nn_basics.qmd).
+- **You just want the least-squares fit** → [**OLS**](ols.qmd) gives it in closed form, $\hat\beta = (X^\top X)^{-1}X^\top y$, with no learning rate to tune (see [§8](#sec-adaline-math)).
+:::
+
+## 3. Code idiom
+
+There is no `scikit-learn` "Adaline" — the course's whole point is to build it from scratch in numpy so the gradient-descent loop is not a black box. The canonical idiom is the `AdalineGD` class.
+
+**From scratch — the `AdalineGD` class** *(notebook `14_Adaline.ipynb`, cell 10)*. Note the three pieces that define Adaline: `net_input` ($z = Xw + b$), an **identity** `activation`, and a `predict` that thresholds at 0.5 *only for the final label*:
+
+```python
+class AdalineGD:
+    def __init__(self, eta=0.01, n_iter=50, random_state=1):
+        self.eta = eta              # learning rate η
+        self.n_iter = n_iter        # epochs of full-batch GD
+        self.random_state = random_state
+
+    def fit(self, X, y):
+        rgen = np.random.RandomState(self.random_state)
+        self.w_ = rgen.normal(loc=0.0, scale=0.01, size=X.shape[1])  # small random init
+        self.b_ = 0.0
+        self.losses_, self.missed_ = [], []
+        for i in range(self.n_iter):
+            net_input = self.net_input(X)
+            output = self.activation(net_input)     # identity: output == net_input
+            errors = (y - output)
+            self.missed_.append(np.sum(np.abs(y - self.predict(X))))
+            for j in range(self.w_.shape[0]):       # per-feature average gradient
+                self.w_[j] += self.eta * (X[:, j] * errors).mean()
+            self.b_ += self.eta * errors.mean()
+            self.losses_.append((errors ** 2).mean())   # MSE per epoch
+        return self
+
+    def net_input(self, X):
+        return np.dot(X, self.w_) + self.b_         # z = Xw + b
+
+    def activation(self, X):
+        return X                                    # linear / identity activation
+
+    def predict(self, X):
+        return np.where(self.activation(self.net_input(X)) >= 0.5, 1, 0)  # threshold ONLY here
+```
+
+The hyperparameters you tune are the **learning rate** `eta` ($\eta$) and the number of epochs `n_iter`; weights are initialized from `normal(0, 0.01)` and the bias from `0.0`. Labels are encoded **0/1** *(cell 5)*, so the threshold is `0.5` (the more common Adaline texts use $\pm 1$ and threshold at 0).
+
+::: {.callout-pitfall}
+**Idiom notes worth knowing.**
+
+- The loss tracked is `(errors ** 2).mean()`, i.e. $\tfrac{1}{n}\sum(y-z)^2$ — the **mean** squared error, with no $\tfrac12$. The lecture's written loss carries a $\tfrac{1}{2n}$ prefactor (slide 19); the $\tfrac12$ only rescales the gradient and is absorbed into $\eta$, so the notebook drops it (disagreement [R9-12] flavor; see [§8](#sec-adaline-math)).
+- The per-feature update loop `self.w_[j] += self.eta * (X[:, j] * errors).mean()` is the **average** gradient (divides by $n$ via `.mean()`). It is mathematically equivalent to the vectorized `self.w_ += self.eta * X.T @ errors / n`. Note that notebook 15's `LogisticRegressionGD` writes the same step as `X.T.dot(errors) / X.shape[0]` — the structure is identical, exactly as the lecture claims ([R9-11]).
+:::
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+The course standardizes the learning rate as $\eta$.[^eta] Footnote aside, recognize this loop for what it is: a forward pass (`net_input` → `activation`), an error, a gradient, an update. That is the same skeleton as [backprop](../appendix/math_appendix.qmd#sec-gd) in a [neural net](nn_basics.qmd) — Adaline is the one-neuron base case.
+:::
+
+[^eta]: Lecture 8 uses **two symbols for the same learning rate**: $\eta$ in the Adaline / logistic-regression sections (slides 19, 20, 28) and $\alpha$ in the generic backprop section (slides 12–13). This site standardizes on $\eta$ throughout, per `phase0/notation_table.md` (item 4).
+
+## 4. Worked examples
+
+All three examples use the course's setup *(notebook `14_Adaline.ipynb`)*: the **Iris** dataset, first 100 rows (50 **Iris-setosa** encoded 0, 50 **Iris-versicolor** encoded 1), with two features — **sepal length** (col 0) and **petal length** (col 2). The notebook ships **no stored numeric outputs** (no cells were executed in the saved file), so every number below was **computed** by re-running the notebook's exact `AdalineGD` class and settings via the project venv on `load_iris()` (deterministic, `random_state=1`).
+
+### Example 1 — the learning rate makes or breaks convergence {#sec-adaline-eta}
+
+The notebook trains three unscaled runs that vary only $\eta$ *(cells 12, 18)*. The behavior is a textbook illustration of the learning-rate trade-off:
+
+```python
+ada_mid  = AdalineGD(n_iter=15,   eta=0.01).fit(X, y)   # "just right"
+ada_big  = AdalineGD(n_iter=15,   eta=0.1 ).fit(X, y)   # too large → diverges
+ada_tiny = AdalineGD(n_iter=1000, eta=0.0001).fit(X, y) # too small → crawls
+```
+
+- **$\eta = 0.01$ (Goldilocks):** MSE falls smoothly **0.4348 → 0.1348** over 15 epochs, and the classifier reaches **zero misclassifications by epoch 6** (computed). This is the convergent regime.
+- **$\eta = 0.1$ (too large):** the gradient steps **overshoot the minimum and the loss explodes** — MSE goes 0.4348 → 2.52 → 22.2 → 205 → … → **≈ 9.2 × 10¹²** by epoch 15 (computed), with **all 50 points misclassified throughout**. The updates oscillate to ever-larger weights instead of settling.
+- **$\eta = 0.0001$ (too small):** stable but glacial — after **1000** epochs MSE only reaches **0.1464** (computed), barely better than the $\eta=0.01$ run achieved in 15. It does eventually reach zero misclassifications, but pays 1000 epochs for it.
+
+The lesson the notebook's markdown states explicitly: "if the learning rate is too large, the algorithm might not converge, and if it's too small, the algorithm will converge slowly" *(cell 11)*. The viz in [§5](#sec-adaline-viz) plots the divergent vs convergent loss curves side by side.
+
+### Example 2 — standardizing the features smooths convergence {#sec-adaline-std}
+
+Sepal length (~4.3–7.0 cm) and petal length (~1.0–5.1 cm) live on different scales, which distorts the loss surface and forces a tiny learning rate. The notebook standardizes each feature to mean 0, sd 1 *(cells 22–24)* and then runs the **same $\eta = 0.1$ that diverged on the raw data**:
+
+```python
+X_std = np.copy(X)
+X_std[:, 0] = (X[:, 0] - X[:, 0].mean()) / X[:, 0].std()
+X_std[:, 1] = (X[:, 1] - X[:, 1].mean()) / X[:, 1].std()
+ada_std = AdalineGD(n_iter=15, eta=0.1).fit(X_std, y)
+```
+
+On standardized features, $\eta = 0.1$ — which blew up on the raw data — now **converges smoothly**: MSE falls **0.4942 → 0.0505** over 15 epochs (computed), the **lowest loss of any run on this page**, with a clean monotone decrease. Two honest caveats, both computed:
+
+- It reaches the lowest *MSE*, but within 15 epochs it still has **4 misclassifications** (down from 50); it reaches **zero misclassifications at epoch 45** if you let it run. So "converges better" means *smoother and lower-loss*, not *zero errors fastest* — the unscaled $\eta=0.01$ run hit zero misclass first (epoch 6) because its decision boundary crossed the data sooner, even though its MSE stayed higher.
+- The win is that standardization let a **single large, fast learning rate work at all** — no per-feature tuning, no divergence. This is exactly why feature scaling is standard practice before gradient descent (notebook conclusion, *cell 27*).
+
+::: {.callout-bigpicture}
+Adaline → logistic → NN: change Adaline's loss to cross-entropy and its activation to a sigmoid and you get [**logistic regression**](logistic.qmd) — *with the gradient-descent update rule unchanged* (Lecture 8, slides 27–28; [R9-11]). Wire several such neurons together with non-linear activations and the same forward-pass / loss / gradient / update loop becomes [**backprop in a neural network**](nn_basics.qmd). Everything you see in this page's training loop scales up to deep learning.
+:::
+
+## 5. Visualization {#sec-adaline-viz}
+
+The one figure that earns its place for Adaline is the **MSE-vs-epoch curve for two learning rates** — it makes the central lesson of [§4](#sec-adaline-eta) visible: with a well-chosen $\eta$ the loss glides into a minimum, while with $\eta$ too large the very same algorithm diverges. Prose can say "it diverges"; only the picture shows the loss curving *upward* off the chart.
+
+```{ojs}
+//| echo: false
+//| label: fig-adaline-loss
+//| fig-cap: "Adaline MSE vs epoch on unscaled Iris (setosa vs versicolor, 2 features), for two learning rates. With η = 0.01 (solid) the mean squared error descends smoothly toward a minimum; with η = 0.1 (dashed) the same gradient-descent updates overshoot and the loss explodes — plotted on a log scale so both fit. Values computed by re-running the notebook's AdalineGD class (random_state = 1)."
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+// MSE per epoch, computed via the venv from nb14's exact AdalineGD on load_iris (random_state=1).
+lossConverge = [0.4348, 0.2661, 0.2041, 0.1799, 0.1692, 0.1632, 0.1590, 0.1555, 0.1522, 0.1491, 0.1461, 0.1432, 0.1403, 0.1375, 0.1348]
+lossDiverge  = [0.4348, 2.5199, 22.207, 205.5205, 1910.4251, 17765.2884, 165192.4, 1536426.0, 14289530.0, 132894900.0, 1235995000.0, 11494780000.0, 106903400000.0, 994158600000.0, 9240517204349.062]
+adalineLoss = lossConverge.map((v,i) => ({epoch: i+1, mse: v, run: "η = 0.01 (converges)"}))
+  .concat(lossDiverge.map((v,i) => ({epoch: i+1, mse: v, run: "η = 0.1 (diverges)"})))
+Plot.plot({
+  height: 320, marginLeft: 64, grid: true,
+  x: {label: "Epoch", domain: [1, 15]},
+  y: {label: "Mean squared error (log scale)", type: "log"},
+  color: {legend: true, domain: ["η = 0.01 (converges)", "η = 0.1 (diverges)"], range: [famLinear, "#c0392b"]},
+  marks: [
+    Plot.line(adalineLoss.filter(d => d.run === "η = 0.01 (converges)"), {x: "epoch", y: "mse", stroke: famLinear, strokeWidth: 2.5}),
+    Plot.line(adalineLoss.filter(d => d.run === "η = 0.1 (diverges)"), {x: "epoch", y: "mse", stroke: "#c0392b", strokeWidth: 2.5, strokeDasharray: "4,3"}),
+    Plot.dot(adalineLoss, {x: "epoch", y: "mse", fill: "run", r: 3}),
+    Plot.ruleY([1], {stroke: "#ddd"})
+  ]
+})
+```
+
+The decision-region plots the notebook also draws *(cells 16, 20, 26)* show the same story spatially: the converged models split setosa from versicolor with a clean straight line, while the divergent run does not.
+
+## 6. Diagnostics & interpretation
+
+What to watch when training an Adaline (the notebook tracks both signals every epoch — `losses_` and `missed_`):
+
+- **Loss curve (`losses_`, MSE per epoch).** It should decrease **monotonically and smoothly**. A curve that rises, oscillates, or explodes (the $\eta=0.1$ run in [§4](#sec-adaline-eta)) means the learning rate is too large — *decrease $\eta$ or standardize the features*. A curve that is still falling steeply at the last epoch means you stopped too early or $\eta$ is too small.
+- **Misclassification count (`missed_`, via the 0.5 threshold).** This can hit zero **while the MSE is still well above zero** — the standardized run reaches a perfect-ish boundary long before the net inputs sit exactly at 0/1, because squared error keeps penalizing confident-correct points. The two metrics measure different things; report both.
+- **Feature scaling.** Wildly different feature ranges are the usual cause of divergence or crawling convergence. Standardize (mean 0, sd 1) before training, as in [§4](#sec-adaline-std).
+- **Learning rate.** The single most important knob. Diagnose it *from the loss curve*, not in isolation.
+
+::: {.callout-bigpicture}
+Comparative diagnostic vs siblings: Adaline's MSE on net inputs is the "wrong" loss for probabilities — it keeps penalizing already-correct confident points. [**Logistic regression**](logistic.qmd)'s cross-entropy fixes exactly this and yields a calibrated probability, all while reusing Adaline's identical gradient step ([R9-11]). If you find yourself wishing Adaline's output were a probability, that wish *is* logistic regression.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How Adaline shows up: it does not, directly.** Adaline was **not examined in Spring-2025** — there is no exam task that fits, trains, or asks you to derive Adaline (per `phase0/disagreements.md`, R8). Its exam relevance is entirely as **scaffolding** for things that *are* examinable: gradient descent, [logistic regression](logistic.qmd), and [neural networks](nn_basics.qmd). The closest formal link is the lecture's **optional home exercise** (Lecture 8, slide 27): show that the gradient-descent update for [logistic regression](logistic.qmd) (cross-entropy + sigmoid) is *identical* to Adaline's (MSE + linear activation) — both reduce to $\partial L/\partial w_j = -\tfrac{1}{n}\sum_i (y^{(i)} - \text{activation}^{(i)})\,x_j^{(i)}$ ([R9-11]; derivation deferred to [§8](#sec-adaline-math)). If you understand Adaline's training loop, you understand the mechanics every neural-net question rests on.
+:::
+
+## 8. Math {#sec-adaline-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the **net input** $z^{(i)} = w^\top x^{(i)} + b$ with **identity activation**; the **MSE loss on net inputs** $L(w,b) = \tfrac{1}{2n}\sum_{i=1}^{n}(y^{(i)} - z^{(i)})^2$ (Lecture 8, slide 19); the **batch-GD gradients** $\partial L/\partial w_j = -\tfrac{1}{n}\sum_i (y^{(i)} - z^{(i)})\,x_j^{(i)}$ and $\partial L/\partial b = -\tfrac{1}{n}\sum_i (y^{(i)} - z^{(i)})$ (slide 20); and the **update** $w \leftarrow w - \eta\,\nabla_w L$, $b \leftarrow b - \eta\,\nabla_b L$. Note the $\tfrac{1}{2n}$ vs the notebook's $\tfrac{1}{n}$ MSE: the $\tfrac12$ only rescales $\eta$ ([R9-12] flavor). See the [GD math appendix](../appendix/math_appendix.qmd#sec-gd).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — (i) **relation to [OLS](ols.qmd):** Adaline minimizes the same squared-error objective on the labels as least squares, so the GD fixed point is the OLS solution $\hat\beta = (X^\top X)^{-1}X^\top y$ — Adaline is OLS-on-0/1-labels solved iteratively instead of in closed form. (ii) **Convergence and the learning-rate condition:** for the quadratic MSE surface, batch GD converges iff $0 < \eta < 2/\lambda_{\max}(X^\top X / n)$; outside it the iterates diverge (the $\eta=0.1$ explosion in [§4](#sec-adaline-eta)), and feature standardization lowers $\lambda_{\max}$, widening the stable range ([§4](#sec-adaline-std)). (iii) **The Adaline → logistic equivalence [R9-11]:** substituting cross-entropy for MSE and $\sigma(z)$ for the identity activation leaves the GD update $\partial L/\partial w_j = -\tfrac{1}{n}\sum_i (y^{(i)} - \text{activation}^{(i)})\,x_j^{(i)}$ formally unchanged (Lecture 8, slides 27–28; the slide's optional home exercise). Anchored to ESL §4 (linear classifiers) and §11 (neural networks / single-unit case).
+:::
 :::

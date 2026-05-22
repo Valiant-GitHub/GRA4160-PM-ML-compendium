@@ -3,6 +3,193 @@ title: "Linear Discriminant Analysis (LDA)"
 body-classes: fam-linear
 ---
 
+[**Linear family**]{.fam-badge} · the supervised cousin of [PCA](pca.qmd): one model that does *both* classification and dimensionality reduction by projecting onto the directions that pull the classes apart. Siblings: [Logistic Regression](logistic.qmd) (also a linear classifier, but no dimensionality reduction and fewer distributional assumptions), QDA (one covariance *per* class), [PCA](pca.qmd) (unsupervised — variance, not class separation), [kNN](knn.qmd) (non-parametric alternative).
+
+## 1. Essence
+
+Linear Discriminant Analysis takes labelled data and finds the direction(s) along which the classes are most cleanly separated, then either reports a class for each point (classifier) or hands back the low-dimensional projection (dimensionality reduction). The guiding idea is a single trade-off, the **Fisher criterion**: choose the projection that makes the class *means* sit far apart (large **between-class** variance) while each class stays *tight* around its own mean (small **within-class** variance) (Lecture 3, slide 8/20; notebook `04_Linear_discriminant_analysis.ipynb`, cell 2). Because that projection is a linear combination of the features, the resulting decision boundary is a straight line (or hyperplane), and a $C$-class problem yields at most $C-1$ useful discriminant directions — which is why two classes collapse to a single axis.
+
+It is a **parametric, generative** model: it assumes each class is drawn from a Gaussian and — crucially — that all classes **share one covariance matrix** (Lecture 3, slide 10/20). Under those assumptions LDA is the Bayes-optimal linear classifier; it trains in essentially one pass (estimate the class means, the pooled covariance, and the priors), needs little data, and gives an interpretable boundary. The shared-covariance assumption is exactly what makes the boundary *linear* — relax it (one covariance per class) and you get the quadratic boundary of QDA instead.
+
+LDA wears two hats at once, which is its distinctive feature. As a **classifier** it competes with [logistic regression](logistic.qmd): both are linear, but LDA commits to the Gaussian/shared-covariance story while logistic regression models the log-odds directly and makes fewer distributional assumptions (Lecture 3, slide 11/20). As a **dimensionality reducer** it competes with [PCA](pca.qmd): PCA keeps the directions of greatest *total* variance ignoring labels, whereas LDA — being supervised — keeps the directions of greatest *class separation* (Lecture 3, slide 7/20).
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for LDA when…**
+
+- The target is a **class** and you have **two or more reasonably well-separated classes** whose spreads (covariances) look **similar** (Lecture 3, slide 7/20).
+- You want an **interpretable linear boundary** *and/or* a **supervised low-dimensional view** of the data — LDA gives you both from one fit. On Iris it compresses 4 features to 2 discriminants that visibly separate the three species (see §4).
+- You want a **fast, low-variance baseline classifier** that needs little data — the model is just class means, a pooled covariance, and priors.
+- You plan to **feed a downstream classifier** a cheaper representation: LDA is "frequently used as a preprocessing step before applying classifiers like logistic regression" (notebook `04_…`, cell 4).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **The classes have clearly different covariances (different shapes/orientations)** → the shared-covariance assumption is wrong and the linear boundary underfits. Use **QDA**, which estimates a separate covariance per class and gives a quadratic boundary (Lecture 3, slide 10/20).
+- **You want minimal distributional assumptions for a linear classifier** → [**Logistic Regression**](logistic.qmd) models the log-odds directly without assuming Gaussian features; it is often the safer default when normality is doubtful (Lecture 3, slide 11/20).
+- **You want dimensionality reduction but have no labels (or care about variance, not separation)** → [**PCA**](pca.qmd) is the unsupervised counterpart; LDA cannot run without `y` (it is supervised — "it requires the class labels to be passed … in the `fit` method", notebook `04_…`, cell 14).
+- **The boundary is clearly non-linear** → [**kNN**](knn.qmd) or [**Decision Trees / Random Forests**](random_forests.qmd) drop the linear-form assumption (more flexible, less interpretable, hungrier for data).
+:::
+
+## 3. Code idiom
+
+The canonical course idiom is `scikit-learn`'s `LinearDiscriminantAnalysis`; the course also builds LDA from scratch via the eigendecomposition of $S_W^{-1}S_B$ so the Fisher criterion is not a black box.
+
+**Canonical (sklearn)** — *(notebook `04_Linear_discriminant_analysis.ipynb`, cell 8)*
+
+```python
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+# n_components: number of discriminant axes to keep after transform; must be ≤ #classes − 1
+lda = LinearDiscriminantAnalysis(n_components=1)   # 2-class toy data → at most 1 discriminant
+lda.fit(X_train, y_train)                          # supervised: labels are REQUIRED
+X_transformed = lda.transform(X_train)             # project onto the discriminant axis (dim reduction)
+lda.predict(X_test)                                # class labels (classification)
+lda.score(X_test, y_test)                          # mean accuracy
+```
+
+For multi-class dimensionality reduction the only change is `n_components` *(notebook `04_…`, cell 15)* — and `fit_transform` does fit-then-project in one call:
+
+```python
+lda = LinearDiscriminantAnalysis(n_components=2)   # 3-class Iris → up to 2 discriminants (LD1, LD2)
+X_train_lda = lda.fit_transform(X_train2, y_train2)  # fit on train, return its projection
+X_test_lda  = lda.transform(X_test2)                 # project test with the SAME learned axes
+```
+
+The hyperparameters worth knowing (Lecture 3, slide 11/20): `solver` ∈ {`svd` (**default**, no covariance inversion, good for many features), `lsqr`, `eigen`}; `shrinkage` (regularizes the covariance estimate, only with `lsqr`/`eigen`); and `n_components` (the projection dimension, capped at #classes − 1). In notebook `04_…` everything except `n_components` is left at its `default`. Useful attributes: `coef_`, `means_`, `explained_variance_ratio_`. **Tip stressed in lecture:** scale/standardize features first (Lecture 3, slide 11/20; Lecture 4, slide 4/11).
+
+**From scratch — eigendecomposition of $S_W^{-1}S_B$** *(notebook `04_…`, cell 18; this is the Tier-1 variation that fills the gap cell 4 leaves: "we will not dive into all the mathematical details")*. The heart of the class is: build the within- and between-class scatter, then take the eigenvectors of $\Sigma^{-1}S_B$:
+
+```python
+# within-class scatter S_W (sum of per-class outer products), then pooled covariance
+S_W = np.zeros((n_features, n_features))
+for c in self.classes_:
+    X_c = X[y == c]; mean_c = self.means_[c].reshape(-1, 1)
+    for x in X_c:
+        x = x.reshape(-1, 1)
+        S_W += (x - mean_c) @ (x - mean_c).T
+self.cov_ = S_W / (n_samples - len(self.classes_))   # unbiased pooled cov, "consistent with sklearn"
+
+# between-class scatter S_B = Σ_c N_c (μ_c − μ)(μ_c − μ)ᵀ
+S_B = np.zeros((n_features, n_features))
+for c in self.classes_:
+    mean_diff = self.means_[c].reshape(-1, 1) - self.overall_mean_
+    S_B += self.class_count_[c] * (mean_diff @ mean_diff.T)
+
+# generalized eigenproblem: discriminant axes = top eigenvectors of inv(Σ) @ S_B
+A = np.linalg.inv(self.cov_) @ S_B
+eigvals, eigvecs = np.linalg.eig(A)
+idx = np.argsort(np.real(eigvals))[::-1]      # sort eigenvalues descending
+self.W_ = np.real(eigvecs)[:, idx][:, :self.n_components]   # keep top n_components
+```
+
+::: {.callout-pitfall}
+**Idiom variation worth knowing.** The from-scratch `predict` does **not** project-then-threshold; it applies the Gaussian/Bayes discriminant rule directly, $\delta_c(x) = x^\top\Sigma^{-1}\mu_c - \tfrac12\mu_c^\top\Sigma^{-1}\mu_c + \log\pi_c$, and takes the `argmax` over classes *(notebook `04_…`, cell 18)*. This is the same maximum-a-posteriori rule sklearn uses, which is why the two implementations agree to the digit on the toy set (see §4). If you ever quote the from-scratch test accuracy, recompute it — the notebook does not store that number (`phase0/disagreements.md` [NB-10]); the value below was computed in the venv.
+:::
+
+## 4. Worked examples
+
+### Example 1 — toy 2-class set: classifier accuracy, sklearn vs from-scratch {#sec-lda-toy}
+
+The course generates a 2-feature, 2-class toy set and fits LDA as a classifier *(notebook `04_…`, cell 6)*:
+
+```python
+X, y = make_classification(n_samples=200, n_features=2, n_redundant=0, n_informative=2,
+                           n_clusters_per_class=1, class_sep=0.75, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+LinearDiscriminantAnalysis(n_components=1).fit(X_train, y_train).score(X_test, y_test)
+```
+
+The stored notebook output is a **test accuracy of 0.7424** *(notebook `04_…`, cell 13, stored output `0.7424242424242424`)*. The modest score is the point, not a bug: `class_sep=0.75` makes the two Gaussians overlap substantially, so even the Bayes-optimal linear boundary cannot do much better — a vivid reminder that accuracy is bounded by how separable the classes actually are, not by the model's effort.
+
+The from-scratch `LDAFromScratch(n_components=1)` *(cell 18–19)*, fit on the same split, reaches the **identical test accuracy of 0.7424** (train accuracy 0.7910 for both) — computed in the venv (`./.venv/Scripts/python.exe`, `random_state=42`), resolving the [VERIFY] flag in `phase0/disagreements.md` [NB-10]. The agreement is by design: both use the pooled (unbiased) covariance $S_W/(n-C)$ and the same Bayes discriminant rule, so they are *the same classifier*, just coded twice. The single non-trivial eigenvalue of $\Sigma^{-1}S_B$ is ≈ 77.4 (the second is numerically zero — there is only $C-1 = 1$ discriminant for two classes), computed in the venv.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+This is the natural place to line LDA up against [**logistic regression**](logistic.qmd): on a 2-class problem both draw a straight boundary, but LDA *assumes* the two clouds are Gaussian with a shared covariance whereas logistic regression just fits the log-odds. When that assumption roughly holds (as here, by construction), they land in the same neighbourhood; when it fails badly, logistic regression usually degrades more gracefully. See the [2D classification showdown](../cross_method/showdowns.qmd).
+:::
+
+### Example 2 — Iris: LDA as supervised dimensionality reduction {#sec-lda-iris}
+
+On Iris (150 samples, 4 features, 3 species) LDA wears its *other* hat — squashing 4 features to 2 discriminants for visualization *(notebook `04_…`, cell 15)*:
+
+```python
+iris = load_iris(); X2, y2 = iris.data, iris.target
+X_train2, X_test2, y_train2, y_test2 = train_test_split(X2, y2, test_size=0.2, random_state=10)
+lda = LinearDiscriminantAnalysis(n_components=2)     # 3 classes → up to 2 discriminants
+X_train_lda = lda.fit_transform(X_train2, y_train2)  # LD1, LD2 for the training set
+X_test_lda  = lda.transform(X_test2)
+```
+
+The first discriminant carries almost everything: `explained_variance_ratio_ ≈ [0.992, 0.008]` — **LD1 alone accounts for ~99.2 % of the between-class separation** (computed in the venv, `random_state=10`). In the LD1–LD2 scatter the three species fall into cleanly separated bands, with *setosa* far from the other two. As a classifier on this split the same model scores **0.975 train / 1.00 test** accuracy (computed in the venv) — but with only 30 test points the perfect test score is small-sample luck, not a claim that Iris is trivially separable; report it as "high" rather than overreading the exact 1.00.
+
+::: {.callout-bigpicture}
+Contrast with [**PCA**](pca.qmd) on the *same* Iris data: PCA would pick the 2 directions of largest total variance **ignoring the species labels**, which need not be the directions that separate species. LDA's 99.2 %-on-LD1 result is precisely what supervision buys you — it spends its budget on *class* separation, not raw spread. This is the canonical "supervised vs unsupervised dimensionality reduction" comparison.
+:::
+
+## 5. Visualization
+
+The figure below makes the Fisher criterion tangible: it takes the real 1D projection of the toy training data onto LDA's single discriminant axis *(notebook `04_…`, cell 9)* and shows the two classes as stacked dots along that axis.
+
+```{ojs}
+//| echo: false
+//| label: fig-lda-projection
+//| fig-cap: "LDA's discriminant axis for the toy 2-class set (134 training points, projected via sklearn n_components=1, random_state=42). Each dot is one sample's value along the single discriminant direction; the two colours are the two classes; the dashed line marks where their projected means sit midway. LDA chose this axis to push the two coloured clouds as far apart as possible while keeping each tight — yet they still overlap in the middle, which is exactly why test accuracy is only 0.74: the classes are not linearly separable, and no straight boundary can fix that."
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+ldaProj = [{"v":-0.213,"c":0},{"v":0.482,"c":1},{"v":-1.188,"c":0},{"v":-1.462,"c":0},{"v":-1.031,"c":0},{"v":-0.257,"c":0},{"v":-0.679,"c":0},{"v":0.814,"c":0},{"v":-1.583,"c":1},{"v":-1.07,"c":0},{"v":1.346,"c":1},{"v":-1.754,"c":0},{"v":-0.631,"c":1},{"v":0.747,"c":1},{"v":1.563,"c":1},{"v":1.495,"c":1},{"v":0.457,"c":0},{"v":-0.011,"c":0},{"v":0.674,"c":1},{"v":0.443,"c":0},{"v":0.431,"c":0},{"v":-1.11,"c":0},{"v":-0.327,"c":1},{"v":-1.85,"c":0},{"v":0.623,"c":1},{"v":-0.289,"c":0},{"v":-2.728,"c":0},{"v":2.952,"c":1},{"v":-0.074,"c":0},{"v":2.248,"c":1},{"v":-0.549,"c":0},{"v":-0.184,"c":1},{"v":2.287,"c":1},{"v":-0.277,"c":1},{"v":0.695,"c":1},{"v":-0.432,"c":0},{"v":-0.026,"c":1},{"v":-0.067,"c":0},{"v":2.235,"c":0},{"v":-0.297,"c":1},{"v":-2.315,"c":0},{"v":2.854,"c":1},{"v":0.481,"c":1},{"v":-0.152,"c":0},{"v":-1.083,"c":0},{"v":-0.99,"c":1},{"v":0.297,"c":1},{"v":1.764,"c":1},{"v":-1.42,"c":0},{"v":-0.739,"c":0},{"v":-2.204,"c":0},{"v":-0.087,"c":0},{"v":0.694,"c":1},{"v":-1.261,"c":0},{"v":-1.619,"c":0},{"v":1.602,"c":1},{"v":-1.277,"c":1},{"v":-0.373,"c":1},{"v":-0.715,"c":1},{"v":0.321,"c":0},{"v":1.66,"c":1},{"v":0.781,"c":1},{"v":-0.507,"c":0},{"v":0.448,"c":0},{"v":1.395,"c":1},{"v":0.917,"c":0},{"v":0.474,"c":1},{"v":1.502,"c":1},{"v":0.882,"c":1},{"v":-1.665,"c":0},{"v":2.276,"c":1},{"v":-0.114,"c":0},{"v":0.46,"c":1},{"v":0.332,"c":1},{"v":1.153,"c":1},{"v":-0.112,"c":1},{"v":0.639,"c":1},{"v":-0.972,"c":0},{"v":-0.003,"c":1},{"v":1.495,"c":1},{"v":0.495,"c":0},{"v":1.577,"c":1},{"v":2.076,"c":1},{"v":1.962,"c":1},{"v":0.659,"c":0},{"v":-0.106,"c":1},{"v":-0.888,"c":0},{"v":-0.886,"c":0},{"v":-2.894,"c":0},{"v":2.423,"c":1},{"v":1.868,"c":1},{"v":1.564,"c":1},{"v":-1.097,"c":0},{"v":0.126,"c":1},{"v":1.566,"c":1},{"v":0.625,"c":1},{"v":0.227,"c":1},{"v":0.264,"c":1},{"v":-1.169,"c":0},{"v":0.294,"c":1},{"v":1.718,"c":1},{"v":0.839,"c":1},{"v":-0.886,"c":0},{"v":0.228,"c":1},{"v":1.256,"c":1},{"v":-0.569,"c":0},{"v":-1.804,"c":0},{"v":-1.352,"c":0},{"v":-2.545,"c":0},{"v":-1.279,"c":0},{"v":-0.242,"c":0},{"v":-0.644,"c":0},{"v":-1.341,"c":0},{"v":-0.339,"c":0},{"v":0.446,"c":1},{"v":-1.823,"c":0},{"v":1.729,"c":1},{"v":-1.863,"c":0},{"v":0.169,"c":1},{"v":-0.798,"c":0},{"v":-2.662,"c":0},{"v":0.915,"c":1},{"v":-1.556,"c":0},{"v":-0.641,"c":1},{"v":-1.097,"c":1},{"v":0.367,"c":0},{"v":1.266,"c":1},{"v":-0.933,"c":0},{"v":-0.728,"c":0},{"v":-0.389,"c":0},{"v":1.615,"c":1},{"v":-0.991,"c":1},{"v":-0.073,"c":1},{"v":-0.895,"c":0}]
+ldaMidpoint = {
+  const m0 = d3.mean(ldaProj.filter(d=>d.c===0), d=>d.v);
+  const m1 = d3.mean(ldaProj.filter(d=>d.c===1), d=>d.v);
+  return (m0 + m1) / 2;
+}
+Plot.plot({
+  height: 260, marginLeft: 50, grid: true,
+  x: {label: "projection onto LDA discriminant axis (LD1)"},
+  y: {label: "class", domain: [-0.6, 1.6], ticks: [0, 1], tickFormat: d => "class " + d},
+  color: {legend: false},
+  marks: [
+    Plot.ruleX([ldaMidpoint], {stroke: "#888", strokeDasharray: "4,3"}),
+    Plot.tickX(ldaProj.filter(d=>d.c===0), {x: "v", y: () => 0, stroke: "#E8A33D", strokeOpacity: 0.55}),
+    Plot.tickX(ldaProj.filter(d=>d.c===1), {x: "v", y: () => 1, stroke: famLinear, strokeOpacity: 0.55}),
+    Plot.dot(ldaProj, {x: "v", y: "c", fill: d => d.c === 1 ? famLinear : "#E8A33D", fillOpacity: 0.7, r: 4})
+  ]
+})
+```
+
+Static prose can assert "LDA maximizes between-class over within-class variance"; only the picture shows the consequence — two clouds that LDA has pried apart as far as a single linear axis allows, with a stubborn overlap in the middle that caps accuracy at 0.74.
+
+## 6. Diagnostics & interpretation
+
+What to report and look at to decide whether an LDA model is working:
+
+- **Accuracy / confusion matrix** — LDA is a classifier first; report test accuracy (toy: 0.74) and, for multi-class, the confusion matrix to see *which* classes get confused (Lecture 4, slide 4/11 explicitly recommends confusion matrices).
+- **`explained_variance_ratio_`** — for the dimensionality-reduction hat, this tells you how much class separation each discriminant captures (Iris: LD1 ≈ 99.2 %). A first discriminant near 1.0 means a 1D view loses almost nothing.
+- **Check the shared-covariance assumption** — if the classes visibly have different shapes/orientations, the linear boundary is mis-specified; that is the cue to move to **QDA**. Mild non-normality is usually tolerable ("robust to mild normality violations", Lecture 4, slide 4/11).
+- **Did you standardize?** — scaling is stressed twice in lecture (L3 slide 11, L4 slide 4); on raw features with very different units the pooled covariance can be dominated by one feature.
+
+::: {.callout-bigpicture}
+Comparative diagnostic vs siblings: LDA gives you a *generative* story (class means + a shared covariance + priors), so you can read off how it would *generate* each class — where [logistic regression](logistic.qmd) gives only a *discriminative* boundary (the log-odds), and [PCA](pca.qmd) gives variance-ranked axes with no notion of class at all. Choose the model whose output answers your question: "which class, and why" (LDA), "what are the odds" (logistic), or "what varies most" (PCA).
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How LDA shows up.** LDA was **not examined in the Spring-2025 take-home** (`phase0/concept_inventory.md`; per rule R8 this absence is stated explicitly rather than glossed over) — the four assignments covered regression with regularization (Hitters), unsupervised PCA/K-means (WholesaleCustomers), trees/ensembles (WDBC), and a classifier comparison. LDA's most natural exam framing, *inferred* from how Lecture 3 teaches it, is comparative: (i) as a **2-class linear classifier set against [logistic regression](logistic.qmd)** — fit both, compare accuracy/boundaries, and discuss *which assumptions each makes* (LDA's Gaussian/shared-covariance vs logistic's distribution-free log-odds, Lecture 3 slide 11/20 gives the explicit comparison table); or (ii) as **supervised dimensionality reduction set against [PCA](pca.qmd)** — show that LDA's axes maximize *class* separation (Iris LD1 ≈ 99 %) while PCA's maximize total variance. If LDA appears, the marks would rest on *justifying the assumptions and the choice*, exactly as the regularization task rewards justifying shrinkage.
+:::
+
+## 8. Math {#sec-lda-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the Fisher criterion $w = \arg\max_w \dfrac{w^\top S_B\, w}{w^\top S_W\, w}$ with the between-/within-class scatter matrices $S_B = \sum_{i=1}^{C} N_i (\mu_i-\mu)(\mu_i-\mu)^\top$ and $S_W = \sum_{i=1}^{C}\sum_{x\in C_i}(x-\mu_i)(x-\mu_i)^\top$ (notebook `04_Linear_discriminant_analysis.ipynb`, cell 2; Lecture 3, slide 8/20); the generalized eigenproblem $S_W^{-1}S_B\, w = \lambda w$ whose top eigenvectors are the discriminant axes (cell 3; slide 9/20); and the two-class closed form $w \propto S_W^{-1}(m_1-m_2)$ (Lecture 3, slide 9/20), with the interpretation of each term. *Local notation note* (per `phase0/notation_table.md`): here $\lambda$ denotes an **LDA eigenvalue** (not a regularization strength), $m_i$ / $\mu_i$ the class mean, $N_i$ the class size, and $w$ the **discriminant direction** (not a generic weight vector). See the [math appendix](../appendix/math_appendix.qmd#sec-linalg).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — the Gaussian/Bayes-optimal derivation: assume each class is $\mathcal{N}(\mu_i, \Sigma)$ with a **shared** covariance $\Sigma$, apply Bayes' theorem $P(C_i\mid x)\propto \pi_i\, f_i(x)$, and show the log-posterior reduces to the linear discriminant $\delta_i(x) = x^\top\Sigma^{-1}\mu_i - \tfrac12\mu_i^\top\Sigma^{-1}\mu_i + \log\pi_i$ — exactly the rule the from-scratch `predict` implements (notebook `04_…`, cell 18). Show that the shared-$\Sigma$ assumption is what cancels the quadratic term and yields a *linear* boundary (relaxing it gives QDA), and connect the Fisher-criterion view to the Bayes view. Anchored to ESL §4.3 (the Fisher criterion and $w\propto S_W^{-1}(m_1-m_2)$ match ESL §4.3 — `phase0/disagreements.md`, agree; no flags).
+:::
 :::

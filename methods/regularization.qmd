@@ -3,6 +3,249 @@ title: "Regularization — Ridge, Lasso, Elastic Net"
 body-classes: fam-linear
 ---
 
+[**Linear family**]{.fam-badge} · [OLS](ols.qmd) with a penalty on coefficient size — the fix you reach for when predictors are many, correlated, or rival the sample size. Three siblings, one idea: Ridge (L2) shrinks, Lasso (L1) shrinks *and* selects, Elastic Net mixes the two. They sit between plain [OLS](ols.qmd) (the $\lambda=0$ limit) and dimensionality reduction by [PCA](pca.qmd); their tuning is pure [cross-validation](cv_info_criteria.qmd) and their pay-off is read through the [bias–variance](bias_variance.qmd) lens.
+
+## 1. Essence
+
+Regularized regression is ordinary least squares with one extra clause in the objective: alongside "make the residuals small," it also says "keep the coefficients small." You add a **penalty term** to the least-squares cost, scaled by a strength $\lambda$, that grows with the size of the coefficients — so the fit now balances fidelity to the data against coefficient magnitude (Lecture 3, slide 13/20). Turning $\lambda$ up trades a little **bias** for a large drop in **variance**: the coefficients stop chasing the noise in the training sample, and the model generalizes better. At $\lambda = 0$ you are back to [OLS](ols.qmd); as $\lambda \to \infty$ every coefficient is crushed toward zero (Lecture 3, slide 19/20).
+
+The three family members differ only in *how* they measure coefficient size. **Ridge** penalizes the sum of squared coefficients (the L2 norm); it shrinks everything smoothly toward zero but essentially never *to* zero, and it is the natural cure for **multicollinearity** because it shares a coefficient out across correlated predictors instead of letting them blow up against each other (Lecture 3, slide 14/20). **Lasso** penalizes the sum of absolute coefficients (the L1 norm); its geometry has corners, so the optimum often lands exactly on an axis — driving some coefficients to *exactly zero* and thereby performing automatic **feature selection** (Lecture 3, slide 15/20). **Elastic Net** uses a weighted blend of both, governed by a mixing ratio $\alpha$, to get Lasso-style sparsity while keeping Ridge-style stability when predictors are correlated (Lecture 3, slide 17/20).
+
+Like OLS, all three are **parametric** linear models — fast, interpretable, one weight per predictor — but where OLS has no hyperparameters worth tuning, regularization lives or dies by the choice of $\lambda$ (and, for Elastic Net, $\alpha$). That choice is made by [cross-validation](cv_info_criteria.qmd), and getting it right is the whole skill (Lecture 3, slide 19/20).
+
+## 2. When to use / when *not* to use {#sec-reg-when}
+
+::: {.callout-intuition}
+**Reach for regularization when…**
+
+- **Predictors are many, correlated, or rival the sample size** ($p \gtrsim n$, or strong multicollinearity). This is exactly where plain [OLS](ols.qmd) overfits — the Hitters baseline in [§4](#sec-reg-hitters) shows the symptom (train $R^2$ well above test $R^2$).
+- **You want to *select* features automatically** → **Lasso** (or Elastic Net) zeros out the irrelevant ones, giving a sparse, more interpretable model. The synthetic example in [§4](#sec-reg-synth) shows Lasso recovering true-zero coefficients that OLS leaves as small non-zero noise.
+- **Many small, genuinely-present effects, none worth discarding** → **Ridge** keeps them all but shrinks them together, the right move under multicollinearity (Lecture 3, slide 14/20).
+- **You have correlated predictors *and* want sparsity** → **Elastic Net**: Lasso alone tends to arbitrarily pick one of a correlated group and drop the rest; Elastic Net keeps the group together (notebook `05_Regularised_regressions (1).ipynb`, cell 13).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **$p \ll n$, predictors uncorrelated, you want unbiased inference** → plain [**OLS**](ols.qmd) is the $\lambda=0$ limit and is BLUE under Gauss–Markov; a penalty would only add bias for no variance gain.
+- **The relationship is clearly non-linear** → a penalty cannot fix a wrong functional form; use [**Decision Trees / Random Forests**](random_forests.qmd) or another flexible learner.
+- **You want to compress correlated predictors into a few uncorrelated directions** rather than zero some out → [**PCA**](pca.qmd) is the dimensionality-reduction alternative (and can be combined with regression).
+- **Choosing among Ridge / Lasso / Elastic Net:** Lasso *struggles with correlated predictors* — it picks one and zeros its neighbors, so the choice is unstable; Ridge keeps all of them; Elastic Net balances. See the [big-picture callout in §6](#sec-reg-diag).
+:::
+
+::: {.callout-pitfall}
+**The single most common regularization bug — `alpha` is not $\alpha$.** In the course's math (Lecture 3) and most textbooks, **$\lambda$** is the penalty *strength* and **$\alpha \in [0,1]$** is the Elastic-Net L1/L2 *mixing ratio*. In **scikit-learn the argument named `alpha` is the penalty strength $\lambda$** — not the mixing ratio — and the mixing ratio is the separate argument **`l1_ratio`**. The course notebook states this explicitly: *"in scikit-learn the parameter `alpha` is the same as we here call $\lambda$. What we call $\alpha$ is called `l1_ratio` in scikit-learn"* (notebook `05_Regularised_regressions (1).ipynb`, cell 13). Mixing these up silently changes which model you fit. See [disagreements R9-13] and the [notation table](../appendix/notation_table.qmd) item 3.
+:::
+
+::: {.callout-pitfall}
+**Standardize *before* you penalize.** A penalty on coefficient size is meaningful only if the coefficients are on a comparable scale — otherwise a predictor measured in small units gets an artificially large coefficient and is penalized harder for no good reason. Always fit a [`StandardScaler`](cv_info_criteria.qmd) (or center+scale) *inside the cross-validation pipeline* so the scaling is learned on training folds only. Lecture 3 stresses this twice (slides 19–20). The penalty does **not** apply to the intercept $\beta_0$.
+:::
+
+## 3. Code idiom {#sec-reg-code}
+
+The canonical course idiom is `scikit-learn`'s `Ridge`, `Lasso`, and `ElasticNet`, all from `sklearn.linear_model`. They share OLS's `.fit` / `.coef_` / `.predict` API; the one new thing is the penalty argument `alpha` ($=\lambda$).
+
+**The three estimators** — *(notebook `05_Regularised_regressions (1).ipynb`, cells 10, 12, 14)*:
+
+```python
+from sklearn.linear_model import Ridge, Lasso, ElasticNet
+
+ridge = Ridge(alpha=0.8)                       # alpha = λ (penalty strength); L2
+ridge.fit(X_train, y_train); ridge.coef_
+
+lasso = Lasso(alpha=0.1)                        # alpha = λ; L1 → can zero coefficients
+lasso.fit(X_train, y_train); lasso.coef_
+
+en = ElasticNet(alpha=0.1, l1_ratio=0.5)       # alpha = λ; l1_ratio = α (mix). 0.5 = even L1/L2 split
+en.fit(X_train, y_train); en.coef_
+```
+
+Every hyperparameter, annotated: `alpha` is the penalty strength $\lambda$ (default `1.0`; larger ⇒ more shrinkage); `l1_ratio` is the Elastic-Net mixing ratio (the math's $\alpha$; `0.0` ⇒ pure Ridge, `1.0` ⇒ pure Lasso, `0.5` ⇒ even split). The `0.8` / `0.1` / `0.1` values are the course's *teaching* settings on the synthetic data — in practice you tune `alpha` by cross-validation (see below).
+
+**The Lasso path with LARS** *(notebook `05_Regularised_regressions (1).ipynb`, cell 19)* — Least Angle Regression computes the *entire* sequence of Lasso solutions as $\lambda$ varies, in one pass, so you can see the order in which features enter:
+
+```python
+from sklearn.linear_model import lars_path
+
+_, _, coefs = lars_path(X_train, y_train, method="lasso", verbose=True)
+xx = np.sum(np.abs(coefs.T), axis=1); xx /= xx[-1]   # normalized L1 norm on the x-axis
+plt.plot(xx, coefs.T, lw=2)                           # each line = one coefficient's trajectory
+```
+
+**Tuning `alpha` by cross-validation, with scaling baked in** *(notebook `08_Information_criteria_and_cross_validation (1).ipynb`, cells 6, 11, 12)*. The `*CV` estimators search a grid of `alpha` internally; wrapping them in a `make_pipeline` with `StandardScaler` guarantees the standardize-before-penalty rule and leaks no test information:
+
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LassoCV, LassoLarsCV, LassoLarsIC
+
+# Cross-validated alpha (coordinate descent), 10 folds:
+model = make_pipeline(StandardScaler(), LassoCV(cv=10)).fit(X, y)
+model[-1].alpha_          # the selected λ;  .mse_path_, .alphas_ for the CV curve
+
+# Cross-validated alpha (LARS solver), 20 folds — note .cv_alphas_ (not .alphas_):
+make_pipeline(StandardScaler(), LassoLarsCV(cv=20)).fit(X, y)
+
+# Pick alpha by information criterion instead of CV (no hold-out needed):
+ic = make_pipeline(StandardScaler(), LassoLarsIC(criterion="aic")).fit(X, y)
+ic.set_params(lassolarsic__criterion="bic").fit(X, y)   # switch a pipeline step's param
+```
+
+::: {.callout-pitfall}
+**Two small API traps from notebook 08.** (i) `LassoCV` exposes its grid as `.alphas_`, but `LassoLarsCV` exposes it as `.cv_alphas_` — a genuine attribute-name difference, not a typo. (ii) The notebook itself uses `cv=10` for `LassoCV` but `cv=20` for `LassoLarsCV` (cells 11–12), a small code/prose inconsistency — pick one fold count for a fair comparison. *(notebook `08_...`, [VERIFY] cv=20 intended for LARS — see notebook 08 extract.)*
+:::
+
+## 4. Worked examples
+
+### Example 1 — Lasso recovers the zeros that OLS only shrinks (synthetic) {#sec-reg-synth}
+
+The course builds a **sparse** data-generating process where the truth is known, so you can check which method recovers it *(notebook `05_Regularised_regressions (1).ipynb`, cell 3)*. The true coefficient vector is `[5.5, 1.75, 1, 0, -2, 0, 0.6, 0, -9.6, 0]` — features 3, 5, 7, 9 (0-indexed) have **exactly zero** true effect:
+
+```python
+np.random.seed(15)
+X = np.random.rand(100, 10)                     # 100×10, Uniform(0,1)
+y = (5.5*X[:,0] + 1.75*X[:,1] + 1*X[:,2] - 2*X[:,4]
+     + 0.6*X[:,6] - 9.6*X[:,8] + 5.0*np.random.randn(100))   # noise std 5
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=15)
+```
+
+Fitting all four models on this fixed draw, the coefficients tell the story *(notebook cells 6, 10, 12, 14)*. OLS leaves the four true-zero features as small but **non-zero** noise (e.g. `-2.247`, `-4.097`, `0.898`, `-0.195` at indices 3, 5, 7, 9); Ridge shrinks every coefficient a little but still leaves all ten non-zero. **Lasso (`alpha=0.1`) drives three coefficients to exactly `0.`** (indices 6, 7, 9), and **Elastic Net** zeros indices 6 and 9 — both performing the feature selection OLS and Ridge cannot. (Note: neither perfectly recovers the true zero-set {3,5,7,9} — features here are *unscaled* and the noise is large; this is itself the lesson that selection is imperfect under noise, and the cue to standardize.)
+
+On the held-out test set the regularized models all beat OLS *(notebook cell 16, stored outputs)*:
+
+| Model | Test MSE *(stored, nb05 cell 16)* |
+|---|---|
+| Linear (OLS) | 20.7316 |
+| Ridge (`alpha=0.8`) | 19.9094 |
+| Lasso (`alpha=0.1`) | 19.7805 |
+| Elastic Net (`alpha=0.1, l1_ratio=0.5`) | **19.7715** |
+
+OLS $20.73$ > Ridge $19.91$ > Lasso $19.78$ > Elastic Net $19.77$: a small but consistent improvement, with Elastic Net lowest here. The LARS path (cell 20, stored) confirms the ordering: feature 8 (true coefficient $-9.6$, the strongest effect) enters first, feature 0 (true $5.5$) second — strongest effects enter earliest, as the [§5 visualization](#sec-reg-viz) shows.
+
+### Example 2 — Ridge and Lasso close the Hitters train–test gap {#sec-reg-hitters}
+
+This continues the [OLS page's Hitters baseline](ols.qmd#sec-ols-hitters) — the Spring-2025 take-home (Assignment 1) regression task on `Hitters.csv` (263 players after dropping missing salaries, 16 numeric predictors, 75/25 split, `random_state=1`). OLS there fit **train $R^2 = 0.55$ but test $R^2 = 0.36$** — a wide gap signalling variance from partly-redundant career-total predictors. We now add Ridge and Lasso with cross-validated `alpha` inside a scaling pipeline:
+
+```python
+from sklearn.linear_model import RidgeCV, LassoCV
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+ridge = make_pipeline(StandardScaler(), RidgeCV(alphas=np.logspace(-3, 3, 100))).fit(Xtr, ytr)
+lasso = make_pipeline(StandardScaler(), LassoCV(cv=10, max_iter=100000, random_state=1)).fit(Xtr, ytr)
+```
+
+Results *(computed via the course `.venv`; OLS row reproduces the [OLS page](ols.qmd#sec-ols-hitters))*:
+
+| Model | Selected `alpha` (=λ) | Train $R^2$ | Test $R^2$ | Test RMSE |
+|---|---|---|---|---|
+| OLS | — | 0.55 | 0.36 | \$377k |
+| Ridge (CV) | 2.48 | 0.54 | **0.39** | \$370k |
+| Lasso (CV) | 2.15 | 0.54 | 0.38 | \$373k |
+
+Both shrink the **train** $R^2$ slightly (0.55 → 0.54) while **raising test** $R^2$ (0.36 → 0.38–0.39) and lowering test RMSE — the train–test gap narrows from 0.19 to about 0.15. That is the bias–variance trade-off made concrete: a touch more bias, a useful cut in variance, better generalization (computed). Lasso additionally **zeros 2 of the 16 coefficients** (`CAtBat`, `CRBI`) — two correlated career totals it judges redundant given the others, exactly the feature-selection behaviour OLS lacks (computed). See the [regression showdown](../cross_method/showdowns.qmd) for OLS vs Ridge vs Lasso vs Tree vs RF on this same dataset.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+This is *why* the exam pairs OLS with regularization: the gain is modest in $R^2$ but the *reasoning* — diagnose variance, shrink, re-check the gap, interpret the surviving coefficients — is the graded skill.
+:::
+
+### Example 3 — choosing `alpha` by AIC/BIC and by cross-validation (diabetes) {#sec-reg-alpha}
+
+To show how $\lambda$ is *selected* (not guessed), notebook 08 takes the sklearn **diabetes** dataset (442 samples, 10 real features) and deliberately appends **8 random noise features** — a clean test of whether selection drops the junk *(notebook `08_...`, cells 2–3)*:
+
+```python
+X, y = load_diabetes(return_X_y=True, as_frame=True); X = X/X.std()
+rng = np.random.RandomState(10)
+X_random = pd.DataFrame(rng.randn(X.shape[0], 8), columns=[f"random_{i:02d}" for i in range(8)])
+X = pd.concat([X, X_random], axis=1)            # 10 real + 8 noise = 18 features
+```
+
+Two selection routes, both inside `make_pipeline(StandardScaler(), ...)`:
+
+- **Information criteria** *(cell 6)*: `LassoLarsIC(criterion="aic")`, then `set_params(lassolarsic__criterion="bic")`. AIC ($=2k - 2\ln L$) and BIC ($=k\ln n - 2\ln L$) each pick the `alpha` minimizing the criterion; BIC's heavier penalty ($\ln n$ per parameter) prefers a sparser model. Read off `alpha_aic = ...[-1].alpha_` and the features sent to zero via `np.where(coefs == 0)[0]`. *(Exact selected `alpha` and which noise features survive: [VERIFY] — re-run the notebook; stored numeric outputs were not captured in the extract.)*
+- **Cross-validation** *(cells 11–12)*: `LassoCV(cv=10)` (coordinate descent) and `LassoLarsCV(cv=20)` (LARS). Each averages the MSE over folds for every `alpha` and picks the minimizing `lasso.alpha_`; the CV curve (`mse_path_` per fold, mean in black, vertical line at the chosen `alpha`) is the canonical diagnostic. The information-criterion route is cheaper (no hold-out) but leans on the asymptotic AIC/BIC approximations; CV is more robust but costs $V$ refits. See [CV & Information Criteria](cv_info_criteria.qmd) for the full treatment.
+
+## 5. Visualization {#sec-reg-viz}
+
+The one figure that earns its place is the **regularization (Lasso/LARS) path**: each coefficient's value as the penalty relaxes from full strength (left, everything zero) to none (right, the OLS solution). It makes the family's defining behaviour visible — coefficients enter *one at a time*, the strongest effects first, and Lasso holds the weak ones at exactly zero until late. The data below is the course's own stored LARS path on the synthetic sparse DGP *(notebook `05_Regularised_regressions (1).ipynb`, cell 20)*, transcribed verbatim.
+
+```{ojs}
+//| echo: false
+//| label: fig-reg-path
+//| fig-cap: "Lasso/LARS regularization path on the synthetic sparse DGP (nb05, cell 20, stored coefficients). x-axis: normalized L1 norm Σ|β|/max Σ|β| — left = strong penalty (all coefficients zero), right = no penalty (full OLS fit). Each line is one coefficient's trajectory. Feature 8 (true coef −9.6) enters first and feature 0 (true 5.5) second — strongest effects enter earliest; the four true-zero features (3,5,7,9) stay near zero longest. This is exactly what Lasso's L1 corner geometry produces."
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+larsCoefs = [
+  [0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,  0.000000, 0.000000],
+  [0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, -3.092265, 0.000000],
+  [0.174416, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, -3.275173, 0.000000],
+  [1.181394, 0.000000, 0.000000, 0.000000, 0.000000, -0.559653, 0.000000, 0.000000, -3.840422, 0.000000],
+  [2.553196, 0.000000, 1.463054, 0.000000, 0.000000, -1.903741, 0.000000, 0.000000, -5.370857, 0.000000],
+  [2.975713, 0.000000, 1.860554, -0.260872, 0.000000, -2.172456, 0.000000, 0.000000, -5.689768, 0.000000],
+  [3.318728, 0.000000, 2.183332, -0.395880, -0.176759, -2.334114, 0.000000, 0.000000, -5.913308, 0.000000],
+  [3.975818, 0.650795, 2.665311, -0.681418, -0.651251, -2.803097, 0.000000, 0.000000, -6.480425, 0.000000],
+  [4.304610, 1.010091, 2.831657, -0.865436, -1.052757, -3.071430, 0.000000, 0.472077, -6.907407, 0.000000],
+  [4.747332, 1.513213, 2.760231, -1.427747, -1.596931, -3.406949, 0.759838, 1.048090, -7.575558, 0.000000],
+  [5.005053, 1.752460, 2.673898, -1.778166, -1.955299, -3.627604, 1.191412, 1.387944, -8.024196, 0.250065]
+]
+pathData = {
+  const rows = larsCoefs.map(step => step.reduce((s,c)=>s+Math.abs(c), 0));
+  const xmax = rows[rows.length-1];
+  const out = [];
+  larsCoefs.forEach((step, i) => {
+    const xx = rows[i] / xmax;
+    step.forEach((c, j) => out.push({xx, coef: c, feature: "β" + j, fidx: j}));
+  });
+  return out;
+}
+Plot.plot({
+  height: 360, marginLeft: 55, marginRight: 70, grid: true,
+  x: {label: "Σ|β| / max Σ|β|  (penalty relaxes →)", domain: [0, 1]},
+  y: {label: "Coefficient value"},
+  color: {legend: true, scheme: "tableau10"},
+  marks: [
+    Plot.ruleY([0], {stroke: "#999"}),
+    Plot.line(pathData, {x: "xx", y: "coef", z: "feature", stroke: "feature", strokeWidth: 2, curve: "linear"}),
+    Plot.dot(pathData, {x: "xx", y: "coef", z: "feature", fill: "feature", r: 2}),
+    Plot.text(pathData.filter(d => d.xx === 1), {x: "xx", y: "coef", text: "feature", dx: 14, fontSize: 10, fill: "feature"})
+  ]
+})
+```
+
+## 6. Diagnostics & interpretation {#sec-reg-diag}
+
+What to report and inspect to judge a regularized model:
+
+- **Train vs test $R^2$/MSE** — the headline. Regularization should *narrow* the train–test gap relative to OLS even if train error rises slightly (Hitters: gap 0.19 → ~0.15). A gap that stays wide means $\lambda$ is too small; train error that collapses toward test with both near-useless means $\lambda$ is too large (underfitting).
+- **The CV curve of error vs `alpha`** — plot `mse_path_` per fold with the mean and a line at the selected `alpha` (notebook 08, cells 11–12). The minimum is your $\lambda$; consider the **1-SE rule** (the largest $\lambda$ within one standard error of the minimum) for a simpler model (Lecture 3, slide 19/20).
+- **The coefficient path / which features survive** — for Lasso/Elastic Net, list the zeroed coefficients (`np.where(coef_ == 0)[0]`, notebook 08 cell 6). The surviving set *is* the selected model; interpret it, but remember selection is unstable under correlation.
+- **Coefficient magnitudes only after scaling** — penalized coefficients are comparable across predictors *only* because you standardized; never read raw-scale penalized coefficients as effect sizes without that caveat.
+
+::: {.callout-bigpicture}
+**Ridge vs Lasso vs Elastic Net — the choice in one breath.** **Ridge** shrinks all coefficients, keeps every predictor, and is the multicollinearity specialist — but it never simplifies the model. **Lasso** zeros coefficients (built-in feature selection) but, faced with a *group of correlated predictors, arbitrarily keeps one and drops the rest* — unstable selection. **Elastic Net** blends them: enough L1 to get sparsity, enough L2 to keep correlated groups together. Decision rule from Lecture 3: many small effects / collinearity ⇒ Ridge; need a sparse interpretable model ⇒ Lasso; correlated predictors *and* want sparsity ⇒ Elastic Net. Versus the [PCA](pca.qmd) alternative, regularization keeps the original (interpretable) feature axes; PCA replaces them with uncorrelated components.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How regularization shows up — this is core.** In the **Spring-2025 take-home (Assignment 1, on `Hitters.csv`)**, regularization is the heart of the regression task: fit [OLS](ols.qmd) as the baseline, then **Ridge and Lasso with cross-validated `alpha`**, and **interpret the change in coefficients and the bias–variance trade-off** (`phase0/exam_spring2025_notebook.md`). Expect to (i) write the `Ridge`/`Lasso` idiom from [§3](#sec-reg-code) — *with `StandardScaler` in a pipeline*; (ii) **tune `alpha` by cross-validation** (`LassoCV`/`RidgeCV` or `GridSearchCV`) and justify the value, possibly with the 1-SE rule; (iii) report and interpret in/out-of-sample $R^2$/MSE, connecting the **narrowed train–test gap to reduced variance**; and (iv) read off which coefficients Lasso zeros and explain the feature selection. The grade rests on the *justification* — why shrinkage helps here — at least as much as the code. The classic slip to avoid: confusing sklearn's `alpha` ($=\lambda$) with the Elastic-Net mixing $\alpha$ (`l1_ratio`) — see the [pitfall in §2](#sec-reg-when).
+:::
+
+## 8. Math {#sec-reg-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the three penalized objectives, all with the course's $\tfrac{1}{2n}$ prefactor and an *un-penalized* intercept $\beta_0$ (Lecture 3, slides 14/15/17; notebook `05_...` cells 9/11/13):
+$$J^{\text{ridge}}(\beta)=\tfrac{1}{2n}\sum_i\Big(y_i-\beta_0-\sum_j\beta_j x_{ij}\Big)^2+\lambda_r\sum_j\beta_j^2,$$
+$$J^{\text{lasso}}(\beta)=\tfrac{1}{2n}\sum_i\Big(y_i-\beta_0-\sum_j\beta_j x_{ij}\Big)^2+\lambda_\ell\sum_j|\beta_j|,$$
+$$J^{\text{EN}}(\beta)=\tfrac{1}{2n}\sum_i\Big(y_i-\beta_0-\sum_j\beta_j x_{ij}\Big)^2+\lambda_e\Big[(1-\alpha)\sum_j\beta_j^2+\alpha\sum_j|\beta_j|\Big],$$
+with $\alpha=0\Rightarrow$ Ridge, $\alpha=1\Rightarrow$ Lasso. Plus $\lambda$-selection by cross-validation over a grid (1-SE rule), and the limits $\lambda=0\Rightarrow$ [OLS](ols.qmd), $\lambda\to\infty\Rightarrow\beta\to 0$. The $\tfrac{1}{2n}$ prefactor and explicit $\beta_0$ are the slide/sklearn convention; ESL §3.4 drops the $\tfrac{1}{2n}$ and centers the data so $\beta_0$ vanishes — equivalent up to a rescaling of $\lambda$ ([disagreements R9-12]). Scikit-learn's exact `ElasticNet` objective, `(1/2n)‖y−Xβ‖² + λ·l1_ratio·‖β‖₁ + ½λ(1−l1_ratio)·‖β‖₂²`, differs slightly in form from the slide's parameterization ([disagreements NB-8]). See the [math appendix](../appendix/math_appendix.qmd#sec-kkt).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — the **constrained-vs-penalized equivalence** (each penalized problem $=\min\,\text{RSS}$ subject to $\|\beta\|_q\le t$, the Lagrange-dual view) and the **KKT conditions** that produce Lasso's exact zeros — the sub-gradient at $\beta_j=0$ — explaining the L1-diamond's corner solutions vs the L2-circle's smooth shrinkage (Lecture 3 geometry, slide 16/20). The Bayesian **MAP** reading: Ridge $=$ Gaussian (normal) prior on $\beta$, Lasso $=$ Laplace (double-exponential) prior. Ridge's closed form $\hat\beta_{\text{ridge}}=(X^\top X+\lambda I)^{-1}X^\top y$ (why the $+\lambda I$ stabilizes a near-singular $X^\top X$ — the multicollinearity cure). Anchored to ESL §3.4. See the [math appendix](../appendix/math_appendix.qmd#sec-kkt).
+:::
 :::

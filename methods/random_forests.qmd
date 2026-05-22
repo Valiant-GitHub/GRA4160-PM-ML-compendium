@@ -3,6 +3,186 @@ title: "Random Forests"
 body-classes: fam-tree
 ---
 
+[**Tree family**]{.fam-badge} · many decision trees, deliberately made to disagree, then voted together — the variance-killer you reach for when a single [Decision Tree](decision_trees.qmd) overfits. Random Forest = **bagging** (each tree on a bootstrap sample) **+ feature randomness** (each split sees only a random subset of predictors). Siblings: a single [Decision Tree](decision_trees.qmd) (the high-variance learner RF tames), plain bagging and **gradient boosting** ([Ensembles](ensembles.qmd) — bagging-reduces-variance vs boosting-reduces-bias), and Extra Trees (one extra dose of randomness). Read its variance story through the [bias–variance](bias_variance.qmd) lens.
+
+## 1. Essence
+
+A random forest is an **ensemble** of decision trees whose predictions are pooled — majority vote for classification, average for regression. The point is not that any one tree is good; it is that *many* trees, each fitted to a slightly different view of the data, make *uncorrelated* mistakes that cancel when you average them. A single [decision tree](decision_trees.qmd) is notoriously **high-variance**: shift a few training rows and the splits — and therefore the predictions — can change wildly. Pooling many trees reduces that variance, and the more *independent* the trees, the more it falls (Lecture 7, slide 18/21).
+
+Getting independence is the whole trick, and it comes in two layers. The first is **bagging** (bootstrap aggregating): each tree is trained on a *bootstrap sample* — `n` rows drawn **with replacement** from the training set, so each tree sees a different ~63% of the unique rows (Lecture 7, slides 6–7/21; the 0.632 limit, [disagreements R9-6]). But bagged trees alone stay **highly correlated**: if one feature is strongly predictive, nearly every tree splits on it first, so the trees look alike and their errors do *not* cancel. The second layer fixes this: **feature randomness**. At *every split*, the tree is only allowed to consider a **random subset of about `√p` features** (out of `p` total), forcing different trees to build around different predictors and thereby **decorrelating** them (Lecture 7, slides 19–20/21). That decorrelation is what buys variance reduction *beyond* plain bagging — the defining idea of a random forest.
+
+**Extra Trees** (Extremely Randomized Trees) push the randomness one notch further: in addition to the random feature subset, they pick the **split threshold at random** rather than searching for the optimal one (Lecture 7, slide 21/21). Each individual tree is then a little worse (higher bias), but the trees are even less correlated, so the ensemble's variance can drop further still.
+
+Trees need **no feature scaling**, handle mixed data types, and capture non-linear interactions automatically — so RF is the natural non-linear, low-tuning alternative to [OLS](ols.qmd)/[regularization](regularization.qmd) when you care about prediction more than a "+1 unit ⇒ +β" coefficient story. The price is interpretability: a forest gives you **feature importances** (a ranking of drivers), not signed coefficients with standard errors (Lecture 7, slide 3/21; see [§6](#sec-rf-diag)).
+
+## 2. When to use / when *not* to use {#sec-rf-when}
+
+::: {.callout-intuition}
+**Reach for a random forest when…**
+
+- A single [**decision tree**](decision_trees.qmd) is **overfitting** (large train–test gap) and you want the same non-linear, no-scaling flexibility with far less variance. RF is the standard fix.
+- The relationship is **non-linear with interactions** and you don't want to hand-engineer the form — trees find the structure; the forest stabilizes it.
+- You have a **wide feature space** (many predictors, mixed types) and want strong **out-of-the-box** performance with little tuning (Lecture 7, slide 20/21).
+- You want a **ranking of which features matter** (feature importances) more than a per-feature effect size. This is exactly the Spring exam's Assignment 3 ask on **WDBC** (see [§7](#sec-rf-exam)).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **You need interpretable, signed effects** ("how does this predictor move the outcome, with a standard error?") → [**OLS**](ols.qmd) / [**logistic regression**](logistic.qmd). A forest's importances rank drivers but cannot say "+1 unit ⇒ +β" (see the [big-picture callout in §6](#sec-rf-diag)).
+- **You want to squeeze out the last bit of accuracy and can afford to tune** → [**gradient boosting**](ensembles.qmd) often edges out RF on structured data by reducing **bias** sequentially, where RF reduces **variance** in parallel. The exam's Assignment 3.8 asks you to contrast exactly these two (see [§7](#sec-rf-exam)).
+- **The truth is genuinely linear and `p ≪ n`** → a forest will under-perform a well-specified [linear model](ols.qmd) and is far less transparent.
+- **A single shallow tree already generalizes well and you need a human-readable rule set** → keep the [single tree](decision_trees.qmd); a forest sacrifices the readable flowchart.
+:::
+
+## 3. Code idiom {#sec-rf-code}
+
+The canonical course idiom is `scikit-learn`'s `RandomForestClassifier` (and `ExtraTreesClassifier`); the course *also* hand-builds a forest from `DecisionTreeClassifier` so the bootstrap-plus-feature-subset machinery is not a black box.
+
+**Canonical (sklearn)** — *(notebook `13_Random_forests.ipynb`, cells 12 & 16)*:
+
+```python
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
+
+rfc = RandomForestClassifier(n_estimators=100, max_depth=3, random_state=30)
+rfc.fit(X_train, y_train)            # X: (n, p); trees need no scaling
+rfc.predict(X_test)
+rfc.feature_importances_             # impurity-decrease ranking, one per feature
+
+etc = ExtraTreesClassifier(n_estimators=100, max_depth=3, random_state=1)  # random split thresholds
+etc.fit(X_train, y_train)
+```
+
+The hyperparameters that matter, annotated: `n_estimators` (number of trees — more is steadier, with diminishing returns; never *hurts* variance, only compute); `max_depth` (depth cap — the course pins `3` here to keep trees shallow); **`max_features`** (features considered per split — sklearn's default is `"sqrt"`, i.e. `√p`, **the random-forest knob**; set it to `None` and you get plain *bagging*); `random_state` (reproducibility — note the course uses `30` for the RF and `1` for Extra Trees). With `p = 6` Titanic features, `√p = int(√6) = 2` features per split (computed).
+
+**From scratch — a teaching scaffold** *(notebook `13_Random_forests.ipynb`, cells 4–7)*. This makes the two layers explicit: bootstrap the rows, subset the features, fit a tree; repeat; vote.
+
+```python
+def random_subset(n_features):
+    k = int(np.sqrt(n_features))                                   # √p feature count
+    return np.random.choice(n_features, size=k, replace=False)     # random subset
+
+def train_tree(X_train, y_train, n_features):
+    n = X_train.shape[0]
+    idx = np.random.choice(n, size=n, replace=True)                # bootstrap rows (with replacement)
+    X_boot, y_boot = X_train.iloc[idx], y_train.iloc[idx]
+    feats = random_subset(n_features)                              # subset features
+    dt = DecisionTreeClassifier(max_features=None, random_state=1)
+    dt.fit(X_boot.iloc[:, feats], y_boot)
+    return dt, feats
+
+# Build & vote:
+trees = [train_tree(X_train, y_train, X_train.shape[1]) for _ in range(100)]
+# majority vote across trees:  np.bincount(row).argmax()  per sample
+```
+
+::: {.callout-pitfall}
+**Read the scratch forest as a scaffold, not a faithful RF — three caveats from nb13 ([disagreements NB-6]).** (i) The notebook defines `max_depth = 3` in the loop but **never passes it** to `train_tree`'s `DecisionTreeClassifier`, so the hand-built trees grow to **full depth** while the sklearn `RandomForestClassifier`/`ExtraTreesClassifier` use `max_depth=3` — the two are **not apples-to-apples**. (ii) The feature subset is drawn **once per tree**, not **per split** — a *true* random forest re-subsets at **every node** (Lecture 7, slide 19/21), which is what `DecisionTreeClassifier(max_features="sqrt")` does internally and what makes sklearn's version a real RF. (iii) The notebook also carries **dead imports** (`scipy.stats.mode`, `BaseEstimator`/`ClassifierMixin`) that the code never uses. Treat the scratch version as a *mechanism demo*; rely on the sklearn estimator for the canonical idiom.
+:::
+
+## 4. Worked examples
+
+### Example 1 — from-scratch RF vs sklearn RF vs Extra Trees on Titanic {#sec-rf-titanic}
+
+The course compares all three on **Titanic** *(notebook `13_Random_forests.ipynb`, cells 3–17)*. After `dropna()` and encoding `Sex` (male=1, female=0), six features `['Pclass','Sex','Age','SibSp','Parch','Fare']` predict `Survived`, with a default-size split (`test_size=0.25`, `random_state=1`) — leaving just **137 train / 46 test** rows (computed). The stored metrics *(nb13, cells 9, 13, 16)*:
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| From-scratch RF *(cell 9)* | 0.7609 | 0.7632 | 0.9355 | 0.8406 |
+| sklearn `RandomForestClassifier` *(cell 13)* | 0.7609 | 0.7632 | 0.9355 | 0.8406 |
+| sklearn `ExtraTreesClassifier` *(cell 16)* | 0.7391 | 0.7879 | 0.8387 | (0.8125)¹ |
+
+¹ nb13 cell 16 prints only Accuracy/Precision/Recall for Extra Trees; F1 = 0.8125 is computed via the course `.venv` from the same fit (`random_state=1`).
+
+::: {.callout-pitfall}
+**The identical metrics are a coincidence, not a validation ([disagreements NB-6]).** The from-scratch and sklearn random forests print *byte-for-byte the same* four numbers — and it is tempting to read that as "my scratch RF is correct." It is not a check: the two models are **different** (the scratch trees are full-depth and subset features per-tree; sklearn's are depth-3 and subset per-split, per the [§3 caveat](#sec-rf-code)). On this **tiny 46-row test set** the two happen to agree on every prediction, which is plausible by chance when only ~46 binary calls are being made. On any larger or different split they would generally diverge. Treat the agreement as a teaching artifact of the small post-`dropna()` set, not evidence the implementations match.
+:::
+
+Reading the numbers: the random forest's **recall (0.94) far exceeds its precision (0.76)** — with a 0.67 survival rate in this filtered test set *(nb13, cells 10, 17)*, the depth-3 forest catches almost all survivors but raises some false alarms. **Extra Trees trades the opposite way** (precision 0.79 > recall 0.84… still recall-leaning, but higher precision and slightly lower accuracy) — its extra randomness produces a different, marginally less accurate but more precise classifier here. Neither dominates; on a 46-row test set these gaps are well within noise (computed).
+
+### Example 2 — reading the feature importances (Titanic) {#sec-rf-importance}
+
+The single most exam-relevant output of a forest is `feature_importances_` — how much each feature reduced impurity across all splits in all trees, normalized to sum to 1. Computing it for the sklearn RF above *(computed via the course `.venv`; `RandomForestClassifier(n_estimators=100, max_depth=3, random_state=30)`)*:
+
+| Feature | RF importance | Extra Trees importance |
+|---|---|---|
+| **Sex** | **0.435** | **0.685** |
+| Age | 0.253 | 0.129 |
+| Fare | 0.220 | 0.065 |
+| Parch | 0.039 | 0.040 |
+| SibSp | 0.033 | 0.043 |
+| Pclass | 0.020 | 0.038 |
+
+Both forests agree on the **ranking** — `Sex` dominates, then `Age` and `Fare` — recovering the well-known "women and children (and the wealthy) first" pattern with **no coefficients, no scaling, and no manual interactions** (computed). Note how the *concentration* differs: Extra Trees loads even more weight onto `Sex` (0.69 vs 0.44). This is a hint, not a verdict — impurity-based importances are biased toward high-cardinality features (continuous `Age`/`Fare` get more candidate splits than the binary `Sex`), so the *order* is more trustworthy than the exact shares (see [§6](#sec-rf-diag)). The [§5 chart](#sec-rf-viz) visualizes the RF column.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+This is the move the exam wants on **WDBC** ([§7](#sec-rf-exam)): fit the forest, pull `feature_importances_`, and *interpret the ranking* — which measurements drive the malignant/benign call. Contrast with [OLS](ols.qmd#sec-ols-hitters), where the diagnostic is signed coefficients; see the [§6 big-picture callout](#sec-rf-diag).
+:::
+
+### Example 3 — does adding trees help? (a cautionary `n_estimators` sweep) {#sec-rf-nest}
+
+It is natural to assume "more trees = better." Sweeping `n_estimators ∈ {1, 5, 10, 25, 50, 100, 200}` on the same Titanic split *(computed via the course `.venv`, `max_depth=3, random_state=30`)* gives test accuracies of **0.78, 0.78, 0.76, 0.74, 0.74, 0.76, 0.72** — *not* monotone, and the single-tree-per-forest run even scores highest. The lesson is **not** "fewer trees are better": on a **46-row test set the metric is dominated by sampling noise**, so the curve is unreliable. What *is* reliable in theory is that adding trees **cannot increase variance** — it only stabilizes the estimate with diminishing returns — so in practice you pick `n_estimators` large enough that performance plateaus (here, ~100, the course default) and stop. This example exists to show *why* you need a real validation set (or **OOB error**, [§6](#sec-rf-diag)) rather than reading a noisy hold-out curve.
+
+## 5. Visualization {#sec-rf-viz}
+
+The one figure that earns its place is the **feature-importance bar chart**: it is the forest's primary interpretable output and the exact artifact the exam asks you to read. The bars below are the sklearn RF importances from [Example 2](#sec-rf-importance), computed on Titanic via the course `.venv` and transcribed inline.
+
+```{ojs}
+//| echo: false
+//| label: fig-rf-importance
+//| fig-cap: "Random-forest feature importances on Titanic (RandomForestClassifier(n_estimators=100, max_depth=3, random_state=30); mean impurity decrease, normalized to sum to 1; computed via the course .venv). Sex dominates, then Age and Fare; the three family-structure features (Parch, SibSp, Pclass) contribute little. Caveat: impurity importances are biased toward high-cardinality features (continuous Age/Fare get more candidate split points than the binary Sex), so trust the ranking more than the exact shares."
+famTree = (getComputedStyle(document.documentElement).getPropertyValue('--family-tree').trim() || "#06A77D")
+rfImportances = [
+  {feature: "Sex",    importance: 0.435},
+  {feature: "Age",    importance: 0.253},
+  {feature: "Fare",   importance: 0.220},
+  {feature: "Parch",  importance: 0.039},
+  {feature: "SibSp",  importance: 0.033},
+  {feature: "Pclass", importance: 0.020}
+]
+Plot.plot({
+  height: 300, marginLeft: 70, marginRight: 50, grid: true,
+  x: {label: "Mean impurity decrease (importance)", domain: [0, 0.5]},
+  y: {label: null, domain: rfImportances.map(d => d.feature)},
+  marks: [
+    Plot.ruleX([0], {stroke: "#999"}),
+    Plot.barX(rfImportances, {x: "importance", y: "feature", fill: famTree, fillOpacity: 0.85}),
+    Plot.text(rfImportances, {x: "importance", y: "feature", text: d => d.importance.toFixed(3), dx: 18, fontSize: 10, fill: "#333"})
+  ]
+})
+```
+
+## 6. Diagnostics & interpretation {#sec-rf-diag}
+
+What to report and inspect to judge a random forest:
+
+- **Out-of-bag (OOB) error** — because each tree omits ~37% of rows (its out-of-bag samples), the forest can score itself on held-out data **for free**: predict each row using only the trees that did *not* see it. Set `oob_score=True` and read `.oob_score_`. This is the principled alternative to the noisy hold-out curve in [Example 3](#sec-rf-nest) (Lecture 7, slide 7/21; the ~63%/0.632 bootstrap fraction, [disagreements R9-6]).
+- **Train vs test (or OOB) metrics** — the whole reason to use a forest over a [single tree](decision_trees.qmd) is a *narrower* train–test gap. If the forest still overfits, lower `max_depth` or `max_features`; if it underfits, raise them.
+- **Feature importances** — `feature_importances_` ranks drivers ([Example 2](#sec-rf-importance)). **Caveat:** impurity-based importances are biased toward **high-cardinality / continuous** features (more candidate splits); when it matters, prefer **permutation importance** (model-agnostic, computed on held-out data). Trust the *ranking* over the exact shares.
+- **`n_estimators` plateau** — increase trees until OOB/CV error flattens; more trees never raise variance, so the only cost is compute ([Example 3](#sec-rf-nest)).
+
+::: {.callout-bigpicture}
+**Two contrasts to keep straight.** **(1) RF vs gradient boosting** — both are tree ensembles, but they attack different errors. RF builds *deep, decorrelated* trees **in parallel** and **averages** them to cut **variance** (bagging); [gradient boosting](ensembles.qmd) builds *shallow* trees **sequentially**, each correcting the last, to cut **bias** (boosting). RF is robust and nearly tuning-free; boosting can be more accurate but is touchier (learning rate, early stopping) and easier to overfit. This is the exact RF-vs-GB contrast the exam's Assignment 3.8 asks for ([§7](#sec-rf-exam); Lecture 7, slide 4/21). **(2) RF feature importance vs OLS coefficients** — a forest's importance says *"this feature mattered a lot for splitting,"* a ranking with no sign and no units; an [OLS](ols.qmd#sec-ols-hitters) coefficient says *"+1 unit ⇒ +β, with a standard error."* Different diagnostics for different questions: use importances to *find the drivers*, coefficients to *quantify an effect*.
+:::
+
+## 7. Past-exam lens {#sec-rf-exam}
+
+::: {.callout-exam}
+**How random forests show up — this is core.** In **Assignment 3** the random forest is fit on the **Wisconsin Diagnostic Breast Cancer (WDBC)** dataset (the malignant/benign classification task), and the graded skills are: (i) write the `RandomForestClassifier` idiom from [§3](#sec-rf-code) and fit/evaluate it (accuracy plus precision/recall/F1 as in [Example 1](#sec-rf-titanic) — clinically, *recall* on malignant cases matters); (ii) **extract and interpret `feature_importances_`** — which cell-nucleus measurements drive the diagnosis ([Example 2](#sec-rf-importance)); and (iii) **contrast the random forest with [gradient boosting](ensembles.qmd)** — Assignment **3.8** asks explicitly for RF-vs-GB, i.e. **bagging (parallel, variance-reduction) vs boosting (sequential, bias-reduction)** (see the [§6 big-picture callout](#sec-rf-diag)). The grade rests on the *reasoning* — why decorrelated trees reduce variance, what the importances mean and their cardinality caveat, when you'd prefer boosting — at least as much as the code. Note nb13 demonstrates RF on **Titanic**; **WDBC** is the exam dataset. *([VERIFY] the exact WDBC feature ranking and RF-vs-GB metrics — recompute on WDBC in Phase 3; the numbers in [Examples 1–3](#sec-rf-titanic) are Titanic from nb13/`.venv`, not WDBC.)*
+:::
+
+## 8. Math {#sec-rf-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the random-forest procedure as the course states it (Lecture 7, slides 18–20/21; notebook `13_...` cells 4–7): for $b = 1,\dots,B$ trees, (1) draw a **bootstrap sample** of $n$ rows with replacement; (2) grow a tree, but at **each split** consider only a random subset of $m \approx \sqrt{p}$ of the $p$ features and pick the best split among them; (3) aggregate by **majority vote** (classification) $\hat C_{\text{rf}}(x) = \text{majority}\{\hat C_b(x)\}_{b=1}^B$ or **average** (regression). The **out-of-bag** estimate uses, for each row, only the trees whose bootstrap sample omitted it; the expected unique-row fraction is $1-(1-\tfrac1n)^n \to 1-e^{-1}\approx 0.632$ ([disagreements R9-6]). **Extra Trees** additionally randomizes the split *threshold* (Lecture 7, slide 21/21). See the [math appendix](../appendix/math_appendix.qmd#sec-biasvar) for the variance backdrop.
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — **why $\sqrt{p}$ helps**, via variance reduction by decorrelation. For $B$ identically-distributed trees each with variance $\sigma^2$ and pairwise correlation $\rho$, the average has variance $\rho\sigma^2 + \tfrac{1-\rho}{B}\sigma^2$ (ESL §15.2, Eq. 15.1): as $B\to\infty$ the second term vanishes but the **first, $\rho\sigma^2$, is the floor** — so the only way to drive ensemble variance lower is to **reduce $\rho$**, which is precisely what restricting each split to a random $\sqrt p$-subset achieves. This is the formal statement of "decorrelate the trees." Supplemental ([disagreements R9-7]): the slides give only $m\approx\sqrt p$ (classification); ISL §8.2.2 / ESL §15.2 use $m\approx p/3$ for **regression** forests. Anchored to ESL §15 (random forests) and §7.11 (the 0.632 bootstrap). No derivations are reproduced here yet. See the [math appendix](../appendix/math_appendix.qmd#sec-biasvar).
+:::
 :::

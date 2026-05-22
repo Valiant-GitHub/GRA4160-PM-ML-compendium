@@ -3,6 +3,189 @@ title: "Neural Networks with PyTorch"
 body-classes: fam-neural
 ---
 
+[**Neural**]{.fam-badge} · the same forward-pass-plus-backprop you built by hand in [from-scratch autodiff](autodiff.qmd), now running on PyTorch tensors so it scales. This page is the *low-level* PyTorch idiom — raw tensors with `requires_grad=True`, a hand-written forward pass, manual softmax/cross-entropy, and vanilla SGD by hand — to show exactly what a framework does under the hood. Siblings: [Autodiff](autodiff.qmd) (the engine, built from scratch), [NN basics](nn_basics.qmd) (architecture and the forward pass), [Build a NN](build_a_nn.qmd) (the high-level `nn.Module` you reach for in real work), [Logistic Regression](logistic.qmd) (a one-layer special case).
+
+## 1. Essence
+
+A neural network is just a chain of matrix multiplications with a non-linear function squeezed between them. Feed an input matrix $X$ through a linear map (multiply by weights, add a bias), bend it with an **activation** like ReLU, then map again to produce class scores. The scores become probabilities through **softmax**, and how wrong those probabilities are is measured by **cross-entropy** loss. Training means nudging every weight a little in the direction that lowers the loss, over and over — that is all "fitting a neural network" is (Lecture 9, slides 6–7, 10).
+
+What PyTorch adds is **automatic differentiation at scale**. The same idea you built by hand on a [`Value` engine](autodiff.qmd) — record every operation, then walk the graph backwards applying the chain rule — PyTorch does on whole tensors, on the GPU. You write the forward computation in plain array code; PyTorch silently records it, and a single `loss.backward()` call fills in the gradient of the loss with respect to every tensor flagged `requires_grad=True`. You never write a derivative. This is the bridge between the [from-scratch autodiff](autodiff.qmd) page (one scalar at a time) and the high-level [`nn.Module`](build_a_nn.qmd) page (where even the layers are pre-built).
+
+The version on this page deliberately stays *under* the framework. Instead of `nn.Linear` and `nn.CrossEntropyLoss` and `torch.optim.SGD`, the course notebook manages four parameter tensors `W1, b1, W2, b2` by hand, writes ReLU as `.clamp(min=0)`, codes softmax and cross-entropy from their formulas, and performs the SGD step manually inside a `torch.no_grad()` block (notebook `18_NN_with_PyTorch.ipynb`). The point is pedagogical: once you have *seen* the loop, the [high-level API](build_a_nn.qmd) stops being magic — it is exactly this loop with the boilerplate hidden.
+
+Compared with its neighbors: a single layer with a sigmoid and cross-entropy *is* [logistic regression](logistic.qmd) — a neural net is the same linear machinery stacked and bent. The from-scratch [autodiff](autodiff.qmd) engine is the same computation at one scalar at a time; the [`nn.Module` page](build_a_nn.qmd) is the same computation with the wheel re-attached.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for a neural network (and PyTorch) when…**
+
+- The relationship is **genuinely non-linear and high-dimensional** in a way that hand-engineered features struggle with — images, text, audio, signals — where stacked layers learn the representation for you (Lecture 9, slide 8; Lecture 10 deep-learning framing).
+- You have **enough data** to fit many parameters without memorizing, and ideally hardware (a GPU) to exploit the matrix-multiply structure of the forward pass (Lecture 9, slide 7).
+- You specifically want to **understand what a framework does under the hood** — then the low-level idiom on this page (manual tensors + manual SGD) is the right teaching tool. For production, graduate to [`nn.Module`](build_a_nn.qmd).
+- PyTorch is also simply **an allowed library on the exam** (per the course guidelines), so the idiom is worth knowing even though no Spring-2025 task required it (see §7).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- The data is **tabular and small/medium** — exactly the Iris-sized regime of the worked example. Here a neural net is overkill: [**Random Forests / Gradient Boosting**](random_forests.qmd) and [linear models](logistic.qmd) usually match or beat it with far less tuning, train faster, and are easier to explain. The course uses Iris on this page *to teach the mechanics*, not because a net is the right tool for Iris.
+- You need **interpretable coefficients** — a net gives you a black box; OLS/[logistic regression](logistic.qmd) give you signed, sized effects.
+- You are doing **real work rather than a teaching demo** → do not hand-roll raw tensors and a manual SGD loop. Use [`nn.Module`, `nn.CrossEntropyLoss`, and `torch.optim`](build_a_nn.qmd), which add mini-batching, optimizers, and tested loss functions. The low-level style here is for learning, not shipping.
+- You have **little data or need a fast transparent baseline** → start with a linear model or a tree and only escalate to a net if it clearly wins.
+:::
+
+## 3. Code idiom
+
+The course's low-level idiom builds the whole network out of raw tensors, so every step a framework normally hides is written out: parameter creation, forward pass, the loss, and the optimizer update. The architecture is **4 → 8 → 3** (4 Iris features → 8 hidden units → 3 classes), with **ReLU** on the hidden layer, **learning rate `0.01`**, **`500` epochs**, full-batch.
+
+**Setup: data to tensors** *(notebook `18_NN_with_PyTorch.ipynb`, cell 2)*. Standardize, convert to tensors, split:
+
+```python
+import torch
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+iris = datasets.load_iris()
+X, y = iris.data, iris.target            # X: (150, 4), y: (150,) with classes 0/1/2
+
+np.random.seed(42); torch.manual_seed(42)            # reproducible init + split  (default seed)
+X = StandardScaler().fit_transform(X)                # zero mean, unit variance — helps training
+X = torch.tensor(X, dtype=torch.float32)             # features → float32
+y = torch.tensor(y, dtype=torch.long)                # class labels → long (integer)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)            # 120 train / 30 test
+```
+
+**The network: manual parameters + hand-written forward** *(cell 4 and cell 5)*. Four tensors carry every weight; `requires_grad=True` is what tells autograd to track them:
+
+```python
+input_size, hidden_size, output_size = 4, 8, 3       # 4 → 8 → 3 architecture (hidden_size=8 is arbitrary)
+
+W1 = torch.randn(input_size,  hidden_size, requires_grad=True)   # (4, 8)
+b1 = torch.randn(hidden_size,              requires_grad=True)   # (8,)
+W2 = torch.randn(hidden_size, output_size, requires_grad=True)   # (8, 3)
+b2 = torch.randn(output_size,              requires_grad=True)   # (3,)
+
+def forward(x):
+    z1 = torch.mm(x, W1) + b1        # hidden pre-activation        (n, 8)
+    a1 = z1.clamp(min=0)             # ReLU, by hand: max(0, z)     (n, 8)
+    logits = torch.mm(a1, W2) + b2   # output scores (no activation yet)  (n, 3)
+    return logits
+
+def softmax(logits):                 # numerically-stable softmax
+    exp = torch.exp(logits - torch.max(logits, dim=1, keepdim=True)[0])   # subtract row-max first
+    return exp / torch.sum(exp, dim=1, keepdim=True)
+
+def cross_entropy_loss(logits, y_true):
+    probs = softmax(logits)
+    n = logits.shape[0]
+    correct_logprobs = -torch.log(probs[range(n), y_true])   # −log p[correct class] per sample
+    return torch.sum(correct_logprobs) / n                   # mean over the batch
+```
+
+**The training loop: manual SGD** *(cell 6)*. This is the part a framework's optimizer normally does for you — written out, it is three lines per parameter:
+
+```python
+learning_rate = 0.01     # η  (default for this notebook)
+num_epochs    = 500      # full-batch passes over all 120 training rows
+
+for epoch in range(num_epochs):
+    logits = forward(X_train)                    # forward pass
+    loss   = cross_entropy_loss(logits, y_train) # scalar loss
+    loss.backward()                              # autograd fills W1.grad, b1.grad, W2.grad, b2.grad
+
+    with torch.no_grad():                        # don't track the update itself
+        W1 -= learning_rate * W1.grad            # θ ← θ − η ∇L  (vanilla SGD)
+        b1 -= learning_rate * b1.grad
+        W2 -= learning_rate * W2.grad
+        b2 -= learning_rate * b2.grad
+
+    W1.grad.zero_(); b1.grad.zero_()             # reset grads — PyTorch ACCUMULATES them otherwise
+    W2.grad.zero_(); b2.grad.zero_()
+```
+
+::: {.callout-pitfall}
+**The two pitfalls this loop exists to teach.** (1) **Forgetting `grad.zero_()`.** PyTorch *accumulates* gradients across `backward()` calls (a feature, for summing over mini-batches), so if you do not zero them each epoch they pile up and the updates blow apart. (2) **Forgetting `torch.no_grad()` around the update.** Without it, the in-place `W1 -= …` step is itself recorded on the computation graph, polluting the next backward pass (and leaking memory). The high-level [`torch.optim`](build_a_nn.qmd) handles both for you with `optimizer.step()` and `optimizer.zero_grad()` — but you only trust that once you have hit these bugs by hand. Note also "full-batch" here: the loop uses all 120 rows every step, so this is really batch gradient descent; true [SGD](../appendix/math_appendix.qmd#sec-gd) would draw mini-batches (Lecture 9, slide 15).
+:::
+
+## 4. Worked example
+
+### Iris classification, low-level PyTorch {#sec-nnpt-iris}
+
+The course trains the 4 → 8 → 3 network above on the **Iris** dataset (150 flowers, 4 measurements, 3 species), standardized, with an 80/20 split (`random_state=42`) — 120 training rows, 30 test (notebook `18_NN_with_PyTorch.ipynb`, cells 2, 6, 7). Both seeds are fixed (`np.random.seed(42)`, `torch.manual_seed(42)`), so the run is fully reproducible. Training is full-batch for 500 epochs at `lr=0.01`, printing the loss every 50 epochs, then reporting test accuracy:
+
+```python
+with torch.no_grad():
+    preds = torch.argmax(softmax(forward(X_test)), dim=1)
+    accuracy = (preds == y_test).float().mean()
+    print(f"Test Accuracy: {accuracy.item()*100:.2f}%")
+```
+
+**Expected behaviour (qualitative — outputs not stored in the notebook).** The provided notebook cells carry **no saved execution outputs** — neither the every-50-epoch loss prints nor the final "Test Accuracy" line were captured — and **PyTorch is not installed in this build's venv**, so per the build's no-fabrication rule no specific number is quoted here. What you should *expect*, from the setup and from the method, is: the cross-entropy loss starts high (random `torch.randn` weights give near-uniform 3-class probabilities, so loss begins around $\ln 3 \approx 1.10$ or higher) and falls monotonically across the 500 epochs as SGD descends the loss surface; the standardized, near-linearly-separable Iris classes are easy, so test accuracy lands **high** — Iris with a small MLP is a classic "gets most of the 30 test flowers right" task. [VERIFY: exact final loss and test accuracy — re-run `18_NN_with_PyTorch.ipynb` in an environment with PyTorch installed, seeds 42, to capture the numbers; the notebook ships without stored outputs.]
+
+The teaching payload is not the accuracy — it is that **this entire result came out of four hand-managed tensors and one `loss.backward()`**. No `nn.Module`, no optimizer object, no library loss function. Once you have seen the loop produce a working classifier, the [high-level version](build_a_nn.qmd) is just this with the boilerplate folded away. Note the mismatch flagged in §2: Iris is *too small and too tabular* to need a neural net at all — a [tree](decision_trees.qmd) or [logistic regression](logistic.qmd) would do as well — but it is the perfect size to *watch the machinery work*.
+
+## 5. Visualization
+
+The one picture that earns its place here is the contrast between the two activation functions the lecture puts side by side (Lecture 9, slides 8–9, citing ISL): **ReLU**, used on this network's hidden layer, versus the **sigmoid** it replaced. ReLU is `max(0, z)` — exactly the `z1.clamp(min=0)` in the code idiom — a hard hinge that is flat-zero for negatives and linear for positives; sigmoid is the smooth S-curve `1/(1+e^{-z})` that saturates at both ends. The figure makes visible *why ReLU dominates modern hidden layers*: its gradient is a clean `1` for any positive input (so error signals pass back undiminished), whereas the sigmoid's gradient flattens toward zero in both tails — the "vanishing gradient" that stalls deep [backprop](../appendix/math_appendix.qmd#sec-backprop).
+
+```{ojs}
+//| echo: false
+//| label: fig-nnpt-activations
+//| fig-cap: "ReLU (the hidden-layer activation in this network, drawn solid in the Neural-family color) versus sigmoid (dashed). ReLU = max(0, z) is the `z1.clamp(min=0)` of the code idiom: flat-zero for negatives, slope-1 for positives — so gradients pass back undiminished. Sigmoid saturates at 0 and 1, and its gradient vanishes in both tails. This is the lecture's slide-9 picture (ISL)."
+famNeural = (getComputedStyle(document.documentElement).getPropertyValue('--family-neural').trim() || "#7B2CBF")
+actData = {
+  const zs = d3.range(-6, 6.01, 0.1);
+  const relu = zs.map(z => ({z, v: Math.max(0, z), fn: "ReLU  max(0, z)"}));
+  const sig  = zs.map(z => ({z, v: 1/(1+Math.exp(-z)), fn: "sigmoid  1/(1+e⁻ᶻ)"}));
+  return relu.concat(sig);
+}
+Plot.plot({
+  height: 300, marginLeft: 50, grid: true,
+  x: {label: "z (pre-activation)"}, y: {label: "g(z)", domain: [-0.5, 4]},
+  color: {legend: true, domain: ["ReLU  max(0, z)", "sigmoid  1/(1+e⁻ᶻ)"], range: [famNeural, "#888"]},
+  marks: [
+    Plot.ruleY([0], {stroke: "#ddd"}),
+    Plot.ruleX([0], {stroke: "#ddd"}),
+    Plot.line(actData.filter(d => d.fn.startsWith("sigmoid")), {x: "z", y: "v", stroke: "#888", strokeWidth: 2, strokeDasharray: "4,3"}),
+    Plot.line(actData.filter(d => d.fn.startsWith("ReLU")), {x: "z", y: "v", stroke: famNeural, strokeWidth: 2.5})
+  ]
+})
+```
+
+## 6. Diagnostics & interpretation
+
+What to watch to decide whether this low-level network is actually training:
+
+- **The loss curve.** Print the loss every few epochs (the notebook does so every 50) and confirm it **decreases and flattens**. A loss that does not move signals a dead network — most often the `grad.zero_()` / `torch.no_grad()` pitfalls below, or a learning rate so small nothing happens. A loss that *explodes* (or goes NaN) signals the opposite: too large a learning rate, or accumulated (un-zeroed) gradients.
+- **Learning-rate effects.** The single most important knob. The notebook's `lr=0.01` is conservative; too **large** and the updates overshoot the minimum and diverge; too **small** and 500 epochs are not enough to converge. There is no closed form — you watch the loss curve and adjust, the central tuning loop of [gradient descent](../appendix/math_appendix.qmd#sec-gd).
+- **The manual-gradient pitfalls as diagnostics.** If the loss is erratic or rising, the first two suspects are (1) a missing `grad.zero_()` (gradients accumulating across epochs) and (2) a missing `torch.no_grad()` (the update step being tracked on the graph). Both are silent — no error is raised — so they show up *only* in a misbehaving loss curve. This is precisely why the high-level [`torch.optim`](build_a_nn.qmd) exists.
+- **Train vs test accuracy.** As with every model, a large gap is overfitting; for a net the remedies are [L2 weight decay and dropout](build_a_nn.qmd) (Lecture 9, slides 16–17). On Iris-sized data the bigger risk is the reverse — a net with more parameters than the problem needs.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**The same computation at three levels of abstraction.** This page sits in the middle of a deliberate ladder. (1) [**From-scratch autodiff**](autodiff.qmd) — a `Value` class tracks one scalar at a time and you write the backward pass yourself; you see *the chain rule*. (2) **Low-level PyTorch (this page)** — raw tensors and `requires_grad` give you autograd on whole matrices, but you still hand-write the forward pass, the loss, and the SGD update; you see *what a framework automates*. (3) [**High-level `nn.Module`**](build_a_nn.qmd) — `nn.Linear`, `nn.CrossEntropyLoss`, and `torch.optim.SGD` hide all of it behind `model(x)`, `loss_fn(...)`, and `optimizer.step()`; you see *the API you actually ship*. It is the **identical** forward-pass-and-backprop math each time — only the amount of boilerplate you write changes. Learning all three is what makes the top level stop being magic.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How PyTorch neural networks show up.** They **did not** appear on the **Spring-2025 exam** — no assignment required building or training a neural network (resolution **R8**: stated explicitly so its absence is not mistaken for an omission). The exam's classification and regression tasks were served by linear models, [trees and ensembles](random_forests.qmd), and the unsupervised tasks by [PCA / K-means](pca.qmd). That said, **PyTorch is an allowed library under the course guidelines**, and the low-level idiom on this page is the course's chosen way to teach *how a framework works under the hood* (Lecture 9; notebook `18_NN_with_PyTorch.ipynb`). If a future exam touched neural networks, the examinable skills would be the same three this page builds: (i) write the forward pass as matrix multiplications with an activation, (ii) explain softmax + cross-entropy as the classification loss, and (iii) describe the SGD update `θ ← θ − η∇L` and *why* `loss.backward()` plus `grad.zero_()` implement it. For real exam work you would reach for the [high-level `nn.Module`](build_a_nn.qmd), not these hand-rolled tensors.
+:::
+
+## 8. Math {#sec-nnpt-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the **forward pass in matrix form**: hidden activations $A = g(\mathbf{1}_n w_0^\top + X W^\top)$ with $g$ the element-wise ReLU, then output scores (logits) $Z = \mathbf{1}_n \beta_0^\top + A\,\beta$ (Lecture 9, slide 7). The **softmax** turns logits into class probabilities $p_{ic} = e^{z_{ic}} / \sum_{c'} e^{z_{ic'}}$ (slide 8), and **cross-entropy** scores them, $L = -\tfrac{1}{n}\sum_i \ln p_{i,\,y_i}$ — the manual `-torch.log(probs[range(n), y_true])` of the code idiom. Fitting minimizes $L(\theta)$ by **gradient descent**: $\theta \leftarrow \theta - \eta\,\nabla L(\theta)$ (slides 10–12; here $\eta = 0.01$). Notation: $K$ = number of hidden units, $p$ = number of features, $\eta$ = learning rate (Lecture 8 also writes this as $\alpha$). See the [gradient-descent appendix](../appendix/math_appendix.qmd#sec-gd).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — what `loss.backward()` actually computes: **reverse-mode automatic differentiation** (backpropagation), the chain rule applied layer by layer from the loss backward, $\partial L_i/\partial \beta_k = -(y_i - f_i)A_{ik}$ and $\partial L_i/\partial w_{kj} = -(y_i - f_i)\beta_k\, g'(z_{ik})\, x_{ij}$ — the [from-scratch autodiff](autodiff.qmd) engine generalized to tensors, mapped to ESL's $\delta$-recursion ([backprop appendix](../appendix/math_appendix.qmd#sec-backprop); cross-check R9-10). Also: **why the manual softmax + cross-entropy is numerically delicate** — exponentiating raw logits overflows, which is why the notebook subtracts the row-max before `exp` (the `logits - torch.max(...)` trick); the principled cure is the **log-sum-exp** identity that lets one fold softmax and the log together (this is exactly what the library's fused `nn.CrossEntropyLoss` does, and why §3 warns against rolling your own in production). Anchored to ESL §11.4 (back-propagation) and §11.5 (regularization / weight decay).
+:::
 :::

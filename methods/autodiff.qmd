@@ -3,6 +3,204 @@ title: "Automatic Differentiation"
 body-classes: fam-neural
 ---
 
+[**Neural**]{.fam-badge} · the engine that makes every neural network trainable — a tiny scalar-by-scalar machine that computes exact gradients automatically by remembering how each number was produced. This is the from-scratch counterpart to PyTorch's `autograd`: the same idea ([NN with PyTorch](nn_pytorch.qmd), [Build a NN](build_a_nn.qmd)) stripped down to ~40 lines you can read. The next page, [NN basics](nn_basics.qmd), extends *this exact engine* into a multilayer perceptron.
+
+## 1. Essence
+
+Automatic differentiation (autodiff) is how a computer gets the **exact** derivative of a function it can already evaluate — not a hand-derived formula, and not a noisy finite-difference approximation, but the true gradient, computed mechanically. The trick is to record the computation as it happens. Every arithmetic operation (an add, a multiply, a power) is a small node in a **computational graph**; each node remembers its inputs and knows its own *local* derivative. Once you have evaluated the function forward and reached a single output (a loss), you walk the graph **backward**, multiplying local derivatives together via the chain rule, and every input ends up holding $\partial(\text{loss})/\partial(\text{input})$ (Lecture 8, slides 6–10).
+
+The micrograd-style engine on this page makes that concrete with one class, `Value`, that wraps a single scalar. It stores the number in `.data`, a slot for its gradient in `.grad`, and — crucially — a closure `._backward` that knows how to push gradient from this node to the nodes that made it. Overloading `+`, `*`, and `**` means an ordinary Python expression like `0.5*((w1-1)**2 + (w2-5)**2)` silently builds the graph as it computes the value. A single call to `.backward()` then topologically sorts the graph and runs every node's `_backward` in reverse, filling in every `.grad` (notebook `16_Auto_diff.ipynb`, cell-2).
+
+This is the manual version of what frameworks do for you. You almost never write an autodiff engine in practice — you call PyTorch's `autograd` or TensorFlow. The point of building one is to demystify [backpropagation](../appendix/math_appendix.qmd#sec-backprop): backprop *is* reverse-mode autodiff applied to a network's loss, and once you have seen the `Value` class fill in gradients, the magic word "backward pass" stops being magic. It is the same gradient-descent loop you already met in [Adaline](adaline.qmd), now with the gradients computed for you instead of derived by hand.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for hand-rolled autodiff when…**
+
+- You are **learning what backprop and `autograd` actually do** — this engine is a teaching scaffold, the whole reason the course live-codes it (Lecture 8, slide 29).
+- You want to **differentiate an arbitrary scalar expression** built from `+`, `*`, `**` (and whatever ops you add) without deriving the gradient by hand or trusting finite differences.
+- You need to see, node by node, **why a gradient has the value it does** — the graph is fully inspectable, every `.grad` traceable to a local derivative.
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **You are doing real work** → use a framework's autograd ([NN with PyTorch](nn_pytorch.qmd), [Build a NN](build_a_nn.qmd)). PyTorch differentiates *tensors*, runs on the GPU, and supports far more operations; a scalar engine is unusably slow for anything beyond a toy.
+- **You only need a derivative at one point and the function is cheap** → a quick **numerical** check `(f(x+h) − f(x−h)) / 2h` is fine (and is exactly how you *validate* an autodiff engine — see §6). It just doesn't scale: one forward pass per parameter.
+- **You can write the gradient down by hand** for a simple model → for [Adaline](adaline.qmd) or [logistic regression](logistic.qmd) the gradient is a one-line formula (Lecture 8, slides 20, 28); manual gradients are clearer than building a graph.
+:::
+
+## 3. Code idiom
+
+The course builds the engine from scratch — there is no library call here; the `Value` class *is* the idiom (notebook `16_Auto_diff.ipynb`, cell-2). This is the **default** version used throughout the neural pages.
+
+```python
+class Value:
+    def __init__(self, data, _children=(), _op=''):
+        self.data = data                  # the scalar value this node holds
+        self.grad = 0.0                   # ∂(loss)/∂(this node), filled in by backward()
+        self._prev = set(_children)       # the nodes that produced this one (graph edges)
+        self._op = _op                    # op name, for debugging/tracing
+        self._backward = lambda: None     # closure: push grad from this node to its inputs
+
+    def __repr__(self):
+        return f"Value(data={self.data})"
+
+    def __add__(self, other):                          # Value + Value (or + scalar)
+        other = other if isinstance(other, Value) else Value(other)
+        out = Value(self.data + other.data, (self, other), _op='+')
+        def _backward():                               # ∂(a+b)/∂a = ∂(a+b)/∂b = 1
+            self.grad  += out.grad
+            other.grad += out.grad
+        out._backward = _backward
+        return out
+
+    def __mul__(self, other):                          # Value * Value (or * scalar)
+        other = other if isinstance(other, Value) else Value(other)
+        out = Value(self.data * other.data, (self, other), _op='*')
+        def _backward():                               # ∂(a*b)/∂a = b, ∂(a*b)/∂b = a
+            self.grad  += other.data * out.grad
+            other.grad += self.data  * out.grad
+        out._backward = _backward
+        return out
+
+    def __pow__(self, exponent):                       # Value ** k, k a number
+        assert isinstance(exponent, (int, float))
+        out = Value(self.data ** exponent, (self,), _op=f'**{exponent}')
+        def _backward():                               # ∂(aᵏ)/∂a = k·aᵏ⁻¹
+            self.grad += exponent * (self.data ** (exponent - 1)) * out.grad
+        out._backward = _backward
+        return out
+
+    __radd__ = lambda self, other: self + other        # scalar + Value
+    __rmul__ = lambda self, other: self * other        # scalar * Value
+    __sub__  = lambda self, other: self + (-1 * other) # a − b ≡ a + (−1·b)
+
+    def backward(self):
+        topo, visited = [], set()
+        def build_topo(v):                             # depth-first topological sort
+            if v not in visited:
+                visited.add(v)
+                for child in v._prev:
+                    build_topo(child)
+                topo.append(v)
+        build_topo(self)
+        self.grad = 1.0                                # seed: ∂(loss)/∂(loss) = 1
+        for node in reversed(topo):                    # reverse order = output → inputs
+            node._backward()
+```
+
+Three idioms are doing the real work. **(1)** Each operator returns a *new* `Value` whose `_children` point back at its inputs — so building the expression *is* building the graph. **(2)** Gradients **accumulate** with `+=`, never `=`: a node feeding two places gets contributions from both (the multivariable chain rule). **(3)** `backward()` seeds the output's gradient to `1.0`, then runs `_backward` in **reverse topological order** so every node's `.grad` is finalized before it is used upstream.
+
+Using it is then plain Python — the toy loss from the notebook (cell-3):
+
+```python
+w1, w2 = Value(2.0), Value(3.0)
+loss = 0.5 * ((w1 - 1)**2 + (w2 - 5)**2)   # forward pass builds the graph
+loss.backward()                            # backward pass fills every .grad
+print(w1.grad, w2.grad)                    # 1.0  -2.0
+```
+
+::: {.callout-pitfall}
+**`backward()` accumulates — you must zero gradients between steps.** Because every `_backward` uses `+=`, calling `backward()` twice without resetting doubles the gradients. In any training loop (§4) you must set `p.grad = 0.0` after each update (notebook `16_Auto_diff.ipynb`, cell-7). This is exactly why PyTorch makes you call `optimizer.zero_grad()` — same pitfall, same fix.
+:::
+
+::: {.callout-pitfall}
+**This notebook's `Value` is deliberately minimal.** It supports only `+`, `*`, `**`, and a subtraction built from those. There is **no** `tanh`, `exp`, `__neg__`, or division. The richer engine on [NN basics](nn_basics.qmd) (notebook 17) adds `tanh` and more so it can build an MLP — same skeleton, more operations.
+:::
+
+## 4. Worked example — gradient descent on a toy quadratic {#sec-autodiff-gd}
+
+There is no dataset. The engine is exercised on a hand-built quadratic loss whose answer we know in advance, so we can watch autodiff drive gradient descent straight to it (notebook `16_Auto_diff.ipynb`, cells 3–7):
+
+$$
+\text{loss}(w_1, w_2) = 0.5\big[(w_1 - 1)^2 + (w_2 - 5)^2\big].
+$$
+
+The minimum is obviously $w_1 = 1$, $w_2 = 5$ (loss $= 0$). Starting from $w_1 = 2.0$, $w_2 = 3.0$, one forward pass gives loss $= 2.5$, and `backward()` returns the gradients — which we can check by hand: $\partial\text{loss}/\partial w_1 = (w_1 - 1) = 1.0$ and $\partial\text{loss}/\partial w_2 = (w_2 - 5) = -2.0$. The notebook's by-hand forward/backward trace (cell-4) and the engine agree exactly: **1.0 and −2.0** (notebook cell-5).
+
+Now wrap it in a plain gradient-descent loop — the same nudge-against-the-gradient rule from [Adaline](adaline.qmd), $w \leftarrow w - \eta\,\nabla_w L$ (Lecture 8, slide 3):
+
+```python
+w1, w2 = Value(2.0), Value(3.0)
+params = [w1, w2]
+learning_rate = 0.1
+
+for i in range(100):
+    loss = 0.5 * ((w1 - 1)**2 + (w2 - 5)**2)   # forward
+    loss.backward()                            # gradients
+    for p in params:
+        p.data -= learning_rate * p.grad       # GD update
+        p.grad = 0.0                           # reset (backward accumulates!)
+```
+
+With `learning_rate = 0.1` over `100` iterations the loss falls geometrically and the weights home in on the optimum. After 100 steps: **$w_1 \approx 1.00003$, $w_2 \approx 4.99995$, loss $\approx 0$** — recovering the known minimum $w_1 = 1$, $w_2 = 5$ to four-plus decimals (computed via the course `Value` engine, `.venv` Python, deterministic — there is no randomness in this loop). The descent is smooth and monotone because the loss is a clean convex bowl; the loss at iteration $t$ follows the closed form $2.5 \times 0.81^{\,t}$ (each weight's error shrinks by a factor $1-\eta = 0.9$ per step, and the loss is quadratic), which §5 plots.
+
+The lesson is not the answer (we knew it) but the *mechanism*: at no point did we write a gradient formula. We wrote the loss as an ordinary expression, and the graph + chain rule produced every derivative. Swap the toy loss for a network's loss and you have [backpropagation](../appendix/math_appendix.qmd#sec-backprop).
+
+## 5. Visualization
+
+```{ojs}
+//| echo: false
+//| label: fig-autodiff-descent
+//| fig-cap: "Gradient descent on the toy quadratic loss 0.5·[(w₁−1)² + (w₂−5)²], driven entirely by the from-scratch autodiff engine (lr = 0.1, 100 iterations, start w₁=2, w₂=3). The loss falls geometrically as loss_t = 2.5·0.81ᵗ, reaching ≈0 — the engine's gradients (1.0, −2.0 at the start) point straight downhill in this convex bowl. No dataset, no randomness: the curve is exact."
+famNeural = (getComputedStyle(document.documentElement).getPropertyValue('--family-neural').trim() || "#7B2CBF")
+descentData = {
+  // loss_t = 2.5 · 0.81^t  (closed form; matches the Value-engine GD loop exactly)
+  return Array.from({length: 100}, (_, t) => ({iteration: t, loss: 2.5 * Math.pow(0.81, t)}));
+}
+Plot.plot({
+  height: 320, marginLeft: 55, grid: true,
+  x: {label: "iteration"},
+  y: {label: "loss", domain: [0, 2.6]},
+  marks: [
+    Plot.ruleY([0], {stroke: "#ddd"}),
+    Plot.areaY(descentData, {x: "iteration", y: "loss", fill: famNeural, fillOpacity: 0.12}),
+    Plot.line(descentData, {x: "iteration", y: "loss", stroke: famNeural, strokeWidth: 2.5}),
+    Plot.dot(descentData.filter(d => d.iteration % 10 === 0), {x: "iteration", y: "loss", fill: famNeural, r: 3}),
+    Plot.text([{iteration: 6, loss: 2.5}], {text: ["start: loss = 2.5"], dx: 28, dy: -6, fontSize: 11, fill: famNeural}),
+    Plot.text([{iteration: 99, loss: 0}], {text: ["→ 0"], dx: -10, dy: -10, fontSize: 11, fill: famNeural})
+  ]
+})
+```
+
+The one figure that earns its place here is the **loss-vs-iteration descent curve**: it shows the payoff of the whole machine. Every point on it is a forward pass whose gradient was computed by `backward()` and fed to the update rule — so the smooth geometric fall *is* autodiff working, step after step. A reader who has followed §3–§4 can read the curve as "the chain rule, applied 100 times, draining a convex bowl."
+
+## 6. Diagnostics & interpretation
+
+How do you trust an autodiff engine? You **gradient-check** it against numerical differentiation. For each parameter, perturb it by a tiny $h$ and compare the autodiff gradient to the central difference:
+
+$$
+\frac{\partial L}{\partial w} \;\approx\; \frac{L(w + h) - L(w - h)}{2h}, \qquad h \approx 10^{-5}.
+$$
+
+If the analytic (autodiff) and numerical gradients agree to several decimals, the `_backward` rules are correct. In this notebook the check is trivial and exact: hand math, the engine, and a finite-difference of the toy loss all give $(1.0,\,-2.0)$ at the start (notebook cells 4–5). Numerical differentiation is the **gold reference but the bad workhorse** — it needs one forward pass *per parameter* and is corrupted by round-off, which is precisely why reverse-mode autodiff exists (one backward pass gets *all* gradients; see §8 Mode B).
+
+A second thing to watch is **gradient magnitude as graphs get deep**. Here the graph is a few nodes and gradients are well-behaved. But because backprop *multiplies* local derivatives along the chain, in a deep network those products can shrink toward zero (**vanishing gradients**) or blow up (**exploding gradients**) — the same `+=` accumulation and chain-rule multiplication you see in `_backward`, compounded over many layers. That intuition, visible already in this 6-node graph, is the entire reason deeper nets need care with activations and initialization.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**This is backpropagation.** Replace the toy loss with a neural network's loss and the `Value` graph becomes the network's computation graph; `backward()` becomes the backward pass that fills in every weight's gradient. The hidden-layer gradient on the lecture slides, $\partial L/\partial w_{kj} = -(y-f)\,\beta_k\,\sigma'(z_k)\,x_j$ (Lecture 8, slide 12), is exactly what this engine would produce if you added a sigmoid op and built the network graph — which is what [NN basics](nn_basics.qmd) does. See the [backprop math appendix](../appendix/math_appendix.qmd#sec-backprop) for the general derivation.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How autodiff shows up.** It **did not appear** on the Spring-2025 take-home (the four assignments covered regression on Hitters, PCA/K-means, tree ensembles, and a classifier — not from-scratch autodiff), and it is flagged as not-examined in the build's source review (per disagreements log R8). Treat this page as **conceptual scaffolding**, not exam drill: its job is to make [backpropagation](../appendix/math_appendix.qmd#sec-backprop) and PyTorch's `autograd` ([NN with PyTorch](nn_pytorch.qmd)) legible. If autodiff is assessed at all it would be in the *understanding* register — "explain how a gradient is computed automatically", "why is one backward pass enough?" — answerable from §1, §4, and §8 Mode B, not by reciting the `Value` class.
+:::
+
+## 8. Math {#sec-autodiff-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the chain rule $\dfrac{dy}{dx} = \dfrac{dy}{du}\cdot\dfrac{du}{dx}$ (Lecture 8, slide 9), worked along the toy graph: a forward pass computing $a = w_1-1,\ b=a^2,\ c=w_2-5,\ d=c^2,\ s=b+d,\ \text{loss}=0.5s$, then a backward pass seeding $\partial\text{loss}/\partial\text{loss}=1$ and multiplying local derivatives back to $\partial\text{loss}/\partial w_1=1.0$, $\partial\text{loss}/\partial w_2=-2.0$ (notebook `16_Auto_diff.ipynb`, cell-4). See the [math appendix](../appendix/math_appendix.qmd#sec-backprop).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — reverse-mode automatic differentiation in general: the computational graph as a DAG, local Jacobians at each node, and the reverse accumulation that computes the gradient of one scalar output w.r.t. *all* inputs in a **single** graph traversal — $O(1)$ backward passes versus $O(p)$ forward evaluations for numerical differentiation (the cost argument behind backprop). Connection to the backprop $\delta$-recursion of ESL §11.4, and to forward- vs reverse-mode trade-offs. Anchored to the [backprop appendix](../appendix/math_appendix.qmd#sec-backprop).
+:::
 :::

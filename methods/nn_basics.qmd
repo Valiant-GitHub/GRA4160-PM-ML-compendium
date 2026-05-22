@@ -3,6 +3,195 @@ title: "Neural Network Basics"
 body-classes: fam-neural
 ---
 
+[**Neural**]{.fam-badge} · a feed-forward network is a stack of linear combinations passed through nonlinear activations — the family that scales a single neuron up to deep learning. Here it is built **from scratch** on the course's own [autodiff](autodiff.qmd) engine. Siblings: a single neuron is essentially [Logistic Regression](logistic.qmd) / [Adaline](adaline.qmd); the same idea moves to a real framework in [NN with PyTorch](nn_pytorch.qmd) and [Build a NN](build_a_nn.qmd).
+
+## 1. Essence
+
+A neural network is a function built by composing simple pieces. Each **neuron** takes a weighted sum of its inputs, adds a bias, and squashes the result through a nonlinear **activation** (here `tanh`); stack neurons side by side into a **layer**, stack layers end to end into a **multi-layer perceptron (MLP)**, and you have a flexible nonlinear function from inputs to outputs. The whole point of the nonlinearity is that *without* it a stack of layers would collapse back into a single linear map — the activations are what let the network bend, curve, and carve non-linear decision regions (Lecture 9, slide 8/17).
+
+The course teaches this from first principles: the single-hidden-layer model is `f(X) = β₀ + Σ_k β_k g(w_{k0} + Σ_j w_{kj} X_j)` — a sum of `K` activation "bumps," each a neuron, weighted by output coefficients `β_k` (Lecture 9, slide 4/17; this matches **ISL Eq. 10.1**, which Lecture 9 explicitly cites). Notation here: `K` is the number of hidden units, `g(·)` the activation, `β_k` the output-layer weights, `w_{kj}` the hidden-layer (input→hidden) weights, and `η` the learning rate.
+
+It is a **parametric** model trained by **gradient descent**: you write a loss, compute its gradient with respect to every weight by **backpropagation** (the chain rule run backward through the computation graph), and nudge each weight downhill. That makes neural nets enormously flexible — universal approximators in the limit — but data-hungry, slow to train, and hard to interpret. A single neuron with a sigmoid activation *is* [logistic regression](logistic.qmd); a single neuron with a linear activation *is* [Adaline](adaline.qmd) / [OLS](ols.qmd) on the labels (Lecture 8). Everything on this page is built on the scalar [autodiff](autodiff.qmd) `Value` engine; the same model written with tensors and a GPU is [PyTorch](nn_pytorch.qmd).
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for a neural network when…**
+
+- You have **large amounts of unstructured data** — images, text, audio — where useful features are not hand-engineered but *learned* from the raw signal (Lecture 10, slides 3/15, 5/15).
+- The input→output mapping is **strongly nonlinear** and you cannot, or do not want to, specify its form by hand.
+- You have the **compute and the data volume** to justify the cost: "more data beats a cleverer algorithm, but only if the algorithm can exploit it" (Lecture 10, slide 4/15).
+- You need a building block you fully understand: this from-scratch [autodiff](autodiff.qmd) MLP is the conceptual seed that grows into [PyTorch](nn_pytorch.qmd) models.
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **The data is small and tabular** → prefer [trees / Random Forests / gradient boosting](random_forests.qmd) or a [linear model](ols.qmd). The course's blunt heuristic: *"gradient-boosted trees are rarely beaten by deep learning on tabular data"* (Lecture 10, slide 15/15 — a professor rule-of-thumb, not a theorem).
+- **Interpretability is the goal** (credit decisions, inference on coefficients) → a neural net is a black box; use [logistic regression](logistic.qmd), [LDA](lda.qmd), or a single [tree](decision_trees.qmd) (Lecture 10, slide 5/15).
+- **You have little data or little compute** → a NN will overfit and is expensive to tune. Start simple — logistic regression or a random forest — and escalate to deep learning only if needed (Lecture 10, slide 5/15).
+- **The relationship is essentially linear** → the extra capacity buys nothing but variance.
+:::
+
+## 3. Code idiom
+
+The course idiom is **from scratch**: notebook 17 extends the [autodiff](autodiff.qmd) `Value` engine (adding `tanh` and `exp`) and then defines `Neuron` / `Layer` / `MLP` as pure-Python classes — no NumPy tensors, scalar values only, so every gradient is visible. The canonical build is `MLP(3, [3, 3, 1])`: 3 inputs, two hidden layers of 3 `tanh` neurons, and a single `tanh` output.
+
+**The model classes** *(notebook `17_Neural_nets_basics.ipynb`, cell-10)*. A `Neuron` is a weighted sum plus bias, squashed by `tanh`; a `Layer` is a list of neurons; an `MLP` chains layers:
+
+```python
+import random
+
+class Neuron:
+    def __init__(self, nin):
+        self.w = [Value(random.uniform(-1, 1)) for _ in range(nin)]  # one weight per input
+        self.b = Value(random.uniform(-1, 1))                        # ← NO seed set: non-deterministic
+    def __call__(self, x):
+        act = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)      # Σ w_kj x_j + bias
+        return act.tanh()                                           # activation g(·) = tanh
+    def parameters(self):
+        return self.w + [self.b]
+
+class Layer:
+    def __init__(self, nin, nout):
+        self.neurons = [Neuron(nin) for _ in range(nout)]
+    def __call__(self, x):
+        outs = [n(x) for n in self.neurons]
+        return outs[0] if len(outs) == 1 else outs
+    def parameters(self):
+        return [p for neuron in self.neurons for p in neuron.parameters()]
+
+class MLP:
+    def __init__(self, nin, nouts):
+        sz = [nin] + nouts                                          # [3, 3, 3, 1]
+        self.layers = [Layer(sz[i], sz[i+1]) for i in range(len(nouts))]
+    def __call__(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return x
+    def parameters(self):
+        return [p for layer in self.layers for p in layer.parameters()]
+```
+
+**The training loop** *(notebook `17_Neural_nets_basics.ipynb`, cell-14)*. Full-batch gradient descent on a **sum-of-squared-errors** loss (no averaging), learning rate **1.0**, **200 iterations** — all hard-coded:
+
+```python
+n = MLP(3, [3, 3, 1])                                  # the default architecture
+for k in range(200):                                   # n_iter = 200  (hard-coded)
+    ypred = [n(x) for x in xs]
+    loss = sum((yout - ygt)**2 for ygt, yout in zip(ys, ypred))  # SSE — summed, not averaged
+
+    for p in n.parameters():                           # zero the gradients
+        p.grad = 0.0
+    loss.backward()                                    # backprop through the whole graph
+
+    for p in n.parameters():                           # update step
+        p.data += -1.0 * p.grad                         # lr = 1.0  (the −1.0 multiplier)
+```
+
+The three "hyperparameters" worth marking: the architecture `[3, 3, 1]` (the *default* in this notebook), the activation `tanh` (every neuron, including the output), the learning rate **`1.0`**, and `n_iter = 200`. A learning rate of 1.0 is unusually large — it works only because the dataset is a 4-sample toy (see the spike in §4).
+
+::: {.callout-pitfall}
+**Idiom note — no seed.** `Neuron` initializes weights with `random.uniform(-1, 1)` and the notebook never calls `random.seed(...)`, so **each run starts from different weights and prints different per-iteration losses** *(`phase0/notebook_17_NN_basics.md`)*. The worked example below fixes a seed purely to make the numbers reproducible; the notebook as written is non-deterministic.
+:::
+
+## 4. Worked example
+
+### A 4-sample MLP that learns ±1 targets {#sec-nn-toy}
+
+The only dataset in notebook 17 is a hard-coded toy: four 3-feature samples with targets in `{-1, +1}` (matching the `tanh` output range) *(notebook `17_Neural_nets_basics.ipynb`, cell-13)*:
+
+```python
+xs = [[2.0, 3.0, -1.0],
+      [3.0, -1.0, 0.5],
+      [0.5, 1.0, 1.0],
+      [1.0, 1.0, -1.0]]
+ys = [1.0, -1.0, -1.0, 1.0]   # desired targets, in {-1, +1}
+```
+
+Running the §3 loop on `MLP(3, [3, 3, 1])` (28 trainable parameters) drives the loss to essentially zero. The notebook stores no numeric outputs, so the figures below are **computed** with the course code under a fixed seed (`random.seed(42)`, `./.venv/Scripts/python.exe`):
+
+| iteration `k` | SSE loss |
+|---|---|
+| 0 | 2.23 |
+| 1 | **7.85** |
+| 10 | 0.0005 |
+| 50 | 0.0001 |
+| 199 | 0.00004 |
+
+Final predictions after 200 steps: **`[1.00, −0.99, −1.00, 1.00]`** versus targets `[1, −1, −1, 1]` — the network has memorized all four points (computed, seed 42). The arresting feature is **iteration 1: the loss jumps from 2.23 to 7.85 before collapsing.** That overshoot is the learning-rate-1.0 step kicking the weights past the minimum on the first move; on a 4-point toy it recovers immediately, but on real data a step that large would diverge — a concrete reminder of why `η` is normally `≪ 1` (see Diagnostics, §6). Because the notebook sets no seed, the *exact* loss trajectory differs run to run, though the qualitative story (early spike, then near-zero) is stable.
+
+## 5. Visualization
+
+The one picture that earns its place is the **activation functions** — the nonlinearity is the entire reason a stack of layers is more than a single linear map. Sigmoid and `tanh` both *saturate* (flatten) for large `|z|`, which is exactly where their gradient `g'(z)` goes to zero and learning stalls (the vanishing-gradient problem, §6); ReLU stays linear for `z > 0`, which is why modern nets default to it.
+
+```{ojs}
+//| echo: false
+//| label: fig-nn-activations
+//| fig-cap: "The three activation functions from Lecture 9 (slide 8/17). Sigmoid σ(z)=1/(1+e⁻ᶻ) maps to (0,1); tanh maps to (−1,1) and is the activation used in notebook 17; ReLU(z)=max(0,z) is unbounded above. Both sigmoid and tanh flatten (saturate) at the edges — where the gradient vanishes and learning slows; ReLU does not saturate for z>0."
+famNeural = (getComputedStyle(document.documentElement).getPropertyValue('--family-neural').trim() || "#7B2CBF")
+actData = {
+  const zs = d3.range(-6, 6.01, 0.05);
+  const sigmoid = z => 1/(1+Math.exp(-z));
+  const tanh = z => Math.tanh(z);
+  const relu = z => Math.max(0, z);
+  const rows = [];
+  for (const z of zs) {
+    rows.push({z, g: sigmoid(z), fn: "sigmoid"});
+    rows.push({z, g: tanh(z),    fn: "tanh"});
+    rows.push({z, g: relu(z),    fn: "ReLU"});
+  }
+  return rows;
+}
+Plot.plot({
+  height: 320, marginLeft: 50, marginRight: 70, grid: true,
+  x: {label: "z (pre-activation)"},
+  y: {label: "g(z)", domain: [-1.2, 3]},
+  color: {legend: true, domain: ["sigmoid", "tanh", "ReLU"],
+          range: [famNeural, "#C77DFF", "#3D405B"]},
+  marks: [
+    Plot.ruleY([0], {stroke: "#ccc"}),
+    Plot.ruleX([0], {stroke: "#ccc"}),
+    Plot.line(actData, {x: "z", y: "g", stroke: "fn", strokeWidth: 2.5})
+  ]
+})
+```
+
+## 6. Diagnostics & interpretation
+
+What to watch when training an MLP:
+
+- **The loss curve.** Plot loss against iteration. It should fall and flatten. A loss that **spikes or diverges** (as at iteration 1 in §4, or worse) signals the learning rate `η` is too large; one that **barely moves** signals `η` too small or vanishing gradients. A train loss near zero while held-out loss climbs is **overfitting** (high variance); both losses stuck high is **underfitting** (too few hidden units / too little capacity).
+- **Over- vs under-fitting via width and depth.** The number of hidden units `K` and the number of layers are the network's capacity dial. Too small ⇒ underfit; too large ⇒ overfit. The toy in §4 reaching *zero* training loss on 4 points with 28 parameters is overfitting by construction — it has far more parameters than data.
+- **Vanishing gradients.** With `sigmoid` or `tanh`, saturated units have `g'(z) ≈ 0` (see §5), so the backprop signal `−(y−f)·β_k·g'(z_k)·x_j` is multiplied by ≈0 and upstream weights stop learning. This is the practical reason ReLU is the modern default activation, and why initialization scale matters.
+- **Regularization.** Two course tools fight overfitting: **L2 weight decay** (penalize large weights) and **dropout** (randomly zero a fraction of units during training, typically **0.2–0.5**, train-only) — both detailed in §8 Mode B.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**The capacity dial, and when a net is the wrong tool.** A neural network's bias–variance trade-off is governed by its **width (`K`) and depth** — more units/layers lower bias but raise variance, the same dial as polynomial degree in [bias–variance](bias_variance.qmd). But the dial only pays off with enough data to constrain all those parameters. On **small tabular** problems that condition fails, and a [random forest or gradient-boosted trees](random_forests.qmd) — which get strong nonlinear fits with little tuning and far less data — will usually win (Lecture 10, slide 15/15). The network's flexibility is an asset only when data volume can cash it in.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How neural-network basics show up.** They **did not appear on the Spring-2025 exam** (`phase0/disagreements.md`, R8 — not examined). The graded deep-learning content in the course centers on the [PyTorch](nn_pytorch.qmd) workflow and the regularization tools (L2, dropout) covered in [Build a NN](build_a_nn.qmd), not on the from-scratch [autodiff](autodiff.qmd) MLP, which is a *conceptual* scaffold: it exists so that the forward pass, the backprop chain rule (§8), and the meaning of "a layer is a matrix multiply followed by an activation" are not a black box before you reach for a framework. If neural nets were examined, expect conceptual questions — architecture, the forward-pass formula, why nonlinearity matters, the role of `η` — rather than a from-scratch derivation under time pressure.
+:::
+
+## 8. Math {#sec-nn-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the single-hidden-layer model and forward pass.
+
+The model is `f(X) = β₀ + Σ_{k=1}^{K} β_k g(w_{k0} + Σ_{j=1}^{p} w_{kj} X_j)` (Lecture 9, slide 4/17), which **matches ISL Eq. 10.1** (Lecture 9 slide 9/17 explicitly cites ISL 2021). In two steps: each hidden unit computes an activation `A_k = g(z_k)` with pre-activation `z_k = w_{k0} + Σ_j w_{kj} X_j`, then the output is the linear combination `f(X) = β₀ + Σ_k β_k A_k` (slide 6/17). As **matrix multiplication** over an `n×p` input matrix `X`: the hidden layer is `A = g(1_n w₀ᵀ + X Wᵀ)` (with `W` the `K×p` weight matrix), and the output is `Y = β₀ 1_n + A β` (slide 7/17) — "each layer is a matrix multiply followed by an activation," which is what makes nets fast on GPUs. Activations (slide 8/17): **sigmoid** `g(z)=1/(1+e⁻ᶻ)` (same as [logistic regression](logistic.qmd)), **ReLU** `g(z)=max(0,z)`, and **softmax** `g(z_i)=e^{z_i}/Σ_j e^{z_j}` for multi-class output. See the [math appendix](../appendix/math_appendix.qmd#sec-backprop).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — fitting by gradient descent + backpropagation, plus regularization.
+
+Fit by minimizing the least-squares cost `L(θ) = ½ Σ_i (y_i − f(x_i))²` over all parameters `θ = {w_{kj}, β_k}` via gradient descent `θ_{t+1} = θ_t − η ∇L(θ_t)` (Lecture 9, slides 10–12/17). The gradients come from the **chain rule applied backward** (slide 14/17): `∂L_i/∂β_k = −(y_i − f_i) A_{ik}` and `∂L_i/∂w_{kj} = −(y_i − f_i) β_k g'(z_{ik}) x_{ij}` — each weight receives a share of the residual `(y_i − f_i)` propagated back through the graph (cross-check ESL §11.3–11.5; the slide chain-rule form maps to ESL's δ-recursion with `δ_k ≡ −(y−f)β_k g'(z_k)`, see `phase0/disagreements.md` [R9-10]). **Regularization:** L2 weight decay adds `+ λ Σ_{k,j} w_{kj}²` (slide 16/17) — note this slide sums **only over the hidden weights `w_{kj}`**, not the output weights `β_k`, whereas ESL §11.5 penalizes all weights and notebook 19 (`Build a NN`) penalizes all parameters; see `phase0/disagreements.md` [R9-9]. **Dropout** randomly zeros units during training (rate 0.2–0.5, train-only; slide 17/17). Full derivation in the [backprop math appendix](../appendix/math_appendix.qmd#sec-backprop).
+:::
 :::

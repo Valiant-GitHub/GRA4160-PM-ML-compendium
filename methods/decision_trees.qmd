@@ -3,6 +3,184 @@ title: "Decision Trees"
 body-classes: fam-tree
 ---
 
+[**Tree family**]{.fam-badge} · the interpretable non-parametric classifier that splits the feature space into axis-aligned boxes — and the high-variance building block every [ensemble](ensembles.qmd) is made of. Siblings: [Random Forests](random_forests.qmd) and [Ensembles](ensembles.qmd) (average / boost many trees to tame the variance), [Logistic Regression](logistic.qmd) and [LDA](lda.qmd) (linear boundaries instead of axis-aligned cuts), [kNN](knn.qmd) (the other non-parametric local learner).
+
+## 1. Essence
+
+A decision tree predicts by asking a sequence of simple yes/no questions about one feature at a time — "is petal width ≤ 0.8?", then "is petal length ≤ 4.95?" — until it reaches a leaf, where it returns the majority class of the training points that landed there. It is built by **recursively partitioning** the training set: starting from the whole sample at the root, the algorithm searches every feature and every candidate threshold, picks the single split that makes the two resulting subsets as **pure** (class-homogeneous) as possible, and then repeats the same procedure on each subset until a stopping rule fires (Lecture 4, slides 9–10/11). The result is a flowchart you can read top-to-bottom, which is the method's headline selling point.
+
+It is a **non-parametric** model: it commits to no functional form and no fixed number of parameters, so it can carve out arbitrarily complex, **axis-aligned** decision regions and capture non-linearities and interactions automatically — no scaling, no encoding, no linearity assumption (Lecture 4, slide 9/11). That flexibility is also its weakness. Grown unchecked, a tree will keep splitting until every leaf is pure, **memorizing the training data**; and because each split depends on the one above it, a tiny change in the data can flip an early split and reshape the whole tree — trees are **high-variance and unstable** (Lecture 4, slide 9/11; Lecture 7, slide 15/21).
+
+Compared with its nearest neighbors: a single tree is the **baseline** that [Random Forests](random_forests.qmd) and [Ensembles](ensembles.qmd) exist to improve on — they grow *many* trees and average (bagging) or stage (boosting) them to cancel out that variance. Against the [linear](logistic.qmd) classifiers, a tree draws **staircase** boundaries (perpendicular cuts) where [Logistic Regression](logistic.qmd) and [LDA](lda.qmd) draw a single straight line — a tree wins when the true boundary is blocky or interaction-heavy, and loses (needing a deep, jagged staircase) when it is genuinely linear. Like [kNN](knn.qmd) it is non-parametric and makes local decisions, but a tree's regions are learned splits rather than distance to stored points.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for a decision tree when…**
+
+- You want a **fully interpretable** model you can read as a flowchart and show a non-technical stakeholder — the path from root to leaf *is* the explanation (Lecture 4, slide 9/11).
+- Features are a **mix of types and scales** (numeric, ordinal, categorical) and you'd rather not standardize or one-hot-encode — trees split on thresholds, so **no feature scaling is needed** (Lecture 4, slide 9/11).
+- The relationship is **non-linear with interactions** and you don't want to hand-engineer terms — recursive splitting captures curvature and "feature A matters only when feature B is high" for free.
+- You need a **fast, transparent baseline** before reaching for the heavier machinery. On the Spring-2025 exam's breast-cancer task (Assignment 3), a single tree is exactly that baseline before [Random Forests](random_forests.qmd) and gradient boosting (see [§7](#sec-tree-exam)).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **Predictive accuracy and stability matter more than reading a single tree** → a lone tree overfits and is high-variance. Bag it into a [**Random Forest**](random_forests.qmd) or stage it with [**gradient boosting**](ensembles.qmd) — that is the entire reason those methods exist, and exactly the progression the exam asks for ([§7](#sec-tree-exam)). The [depth curve in §5](#sec-tree-viz) shows the overfitting symptom directly.
+- **The true boundary is essentially linear** → [**Logistic Regression**](logistic.qmd) or [**LDA**](lda.qmd) capture it with one smooth boundary, whereas a tree needs a deep, jagged staircase of axis-aligned cuts to approximate a diagonal line (and overfits doing so).
+- **The data is small and noisy** → tree structure is **unstable**; a few flipped points can rebuild the tree (Lecture 7, slide 15/21). Prefer a lower-variance model or, again, an ensemble.
+- **You need smooth probability estimates or "+1 unit ⇒ +β" effect sizes** → a tree's leaf probabilities are piecewise-constant and coarse; use a [linear](logistic.qmd) model for calibrated, interpretable coefficients.
+:::
+
+## 3. Code idiom {#sec-tree-code}
+
+The canonical course idiom is `scikit-learn`'s `DecisionTreeClassifier` from `sklearn.tree`, paired with `plot_tree` to render the flowchart. The course uses **sklearn only** here — there is no from-scratch tree in the lecture notebooks.
+
+**The default tree — fit, score, inspect size** *(notebook `07_Decision_trees.ipynb`, cell 7)*:
+
+```python
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+
+clf = DecisionTreeClassifier()        # all defaults: criterion='gini', max_depth=None (grow until pure)
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)             # accuracy on the held-out 30%
+clf.get_depth(); clf.get_n_leaves()   # how big did the unconstrained tree grow?
+```
+
+**Choosing the split criterion, and pre-pruning to fight overfitting** *(notebook `07_Decision_trees.ipynb`, cells 12, 13, 16)*:
+
+```python
+DecisionTreeClassifier(criterion='gini',    random_state=0)   # default criterion (Gini impurity)
+DecisionTreeClassifier(criterion='entropy', random_state=0)   # entropy ≡ information gain
+
+# Pre-pruning: require ≥5 training samples in every leaf → shallower, simpler tree
+clf_pruned = DecisionTreeClassifier(min_samples_leaf=5, random_state=0)
+clf_pruned.fit(X_train, y_train)
+```
+
+Every hyperparameter, annotated. `criterion` selects the impurity measure — **`'gini'` is the default** (slightly cheaper to compute), `'entropy'` uses information gain ([§8](#sec-tree-math); the two usually give very similar trees). `random_state` fixes the tie-breaking among equally-good splits, so set it for reproducibility. The **stopping / pre-pruning** knobs all default to "grow until pure": `max_depth=None` (no depth cap), `min_samples_split=2`, `min_samples_leaf=1`, `min_impurity_decrease=0.0`. Tightening any of them — e.g. `max_depth=3` or `min_samples_leaf=5` — shrinks the tree and trades a little training fit for lower variance. In practice you **tune these by cross-validation** (`GridSearchCV`), which is exactly what the exam's Assignment 3.3 asks for ([§7](#sec-tree-exam)).
+
+::: {.callout-pitfall}
+**A default tree overfits — and watch the leaf-count comment trap.** With `max_depth=None` the tree splits until every leaf is pure, so **training accuracy goes to 100% while test accuracy peaks early and then sags** (the [§5 depth curve](#sec-tree-viz) shows this on real WDBC data). Always pre-prune (`max_depth` / `min_samples_leaf`) or, better, ensemble. Two implementation traps from notebook 07 worth flagging so you don't copy them blindly: (i) cell 17 builds the "pruned" tree with **`min_samples_leaf=10`** even though the surrounding comment *and* the plot title both say "5" — quote the **actual** value `10` if you lift it [NB-1]; (ii) cells 12, 13 and 17 fit on the **full `X, y`** (for a complete-looking picture) rather than on `X_train` — only cells 7 and 16 use the train/test split, so don't read those full-data trees as held-out evaluations [NB-1].
+:::
+
+## 4. Worked examples
+
+### Example 1 — a default tree on Iris, and the size it grows to {#sec-tree-iris}
+
+The course's running example is the **Iris** dataset (150 flowers, 3 species, 4 features), loaded from the UCI URL with a 70/30 split (`random_state=0`) *(notebook `07_Decision_trees.ipynb`, cells 4, 7)*. An **unconstrained** `DecisionTreeClassifier()` fit on the 105 training flowers:
+
+```python
+clf = DecisionTreeClassifier().fit(X_train, y_train)
+clf.score(X_test, y_test)   # 0.9778
+clf.get_depth()             # 4
+clf.get_n_leaves()          # 7
+```
+
+scores **test accuracy ≈ 0.978** (44/45 correct) with a tree of **depth 4 and 7 leaves** *(computed via the course `.venv`, reproducing nb07 cell 7; `random_state=0`)*. Iris is nearly linearly separable on petal measurements, so even a default tree generalizes well — but note it still grew to 7 leaves on 105 points, fitting some of the training-set detail it didn't need. The tree's `feature_importances_` confirm the intuition: **`petal_width` carries ≈ 0.92** of the importance and `sepal_length` exactly `0.0` — the tree never splits on it (computed). That is decision-tree feature selection happening for free, and the kind of ranking Assignment 3.7 asks for on the breast-cancer data.
+
+### Example 2 — Gini vs entropy, and pre-pruning the tree {#sec-tree-prune}
+
+Re-fitting with each split criterion *(notebook cells 12, 13)* — both on the same data — produces trees of **identical size: depth 5, 9 leaves** for Gini *and* for entropy (computed via `.venv`). This is the practical face of [disagreement R9-1](#sec-tree-math): Gini and (log₂) entropy are different formulas but rank candidate splits almost identically, so they usually yield the same tree — the course notebook says as much ("both often yield similar results, although `gini` is somewhat faster", nb07 cell 2).
+
+Now **pre-prune**. Requiring at least 5 samples per leaf *(notebook cell 16, on the train split)* collapses the tree from depth 4 to **depth 3 with 5 leaves**, but here test accuracy *drops* to **0.911** (computed) — on an already-easy problem, pruning bought simplicity at a small accuracy cost rather than a gain. (The notebook's *next* cell, 17, then builds a tree with **`min_samples_leaf=10` fit on the full `X, y`** — depth 4, 6 leaves — and mislabels it "min_samples_leaf=5"; that is the [NB-1] code/comment mismatch from [§3](#sec-tree-code), and the depth-4 figure is over the whole dataset, not a held-out score.) The lesson: pruning is a **variance-reducing** move — it earns its keep when the unpruned tree is overfitting, which Iris barely does but WDBC clearly does ([Example 3](#sec-tree-wdbc)).
+
+### Example 3 — a single tree as the WDBC baseline (exam Assignment 3) {#sec-tree-wdbc}
+
+The Spring-2025 exam's Assignment 3 classifies the **Wisconsin Diagnostic Breast Cancer** data (`wdbc.data`: 569 tumors, 30 real-valued nucleus features, target malignant `M` / benign `B`, 357 B / 212 M) and walks up the tree family: **single tree → [Random Forest](random_forests.qmd) → gradient boosting** (`phase0/exam_spring2025_notebook.md`). The single tree is step 3.3 — the baseline the ensembles must beat. With a stratified 75/25 split (`random_state=1`):
+
+```python
+df = pd.read_csv("wdbc.data", header=None)        # col 1 = diagnosis, cols 2: = 30 features
+X, y = df.iloc[:, 2:].values, df[1].values
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.25, stratify=y, random_state=1)
+
+tree = DecisionTreeClassifier(random_state=1).fit(Xtr, ytr)
+tree.score(Xtr, ytr)   # 1.000  ← memorized the training set
+tree.score(Xte, yte)   # 0.923
+```
+
+An unconstrained tree hits **train accuracy 1.000 but test accuracy 0.923** (depth 7, 18 leaves) — the train–test gap is the **overfitting fingerprint** in plain sight (computed via `.venv`). Tuning the complexity by 5-fold cross-validation (Assignment 3.3) selects `max_depth=5` with CV accuracy ≈ 0.944 and test accuracy ≈ 0.909 — barely different on the test set, because **a single tree's variance can't be cross-validated away, only ensembled away** (computed). That is precisely why the exam continues to Random Forests and boosting (3.4–3.6): the [§5 depth curve](#sec-tree-viz) shows the test accuracy plateauing around 0.92 no matter how deep you grow, while a forest of such trees pushes it higher.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+This is the setup where [**Random Forests**](random_forests.qmd) and [**Ensembles**](ensembles.qmd) earn their keep, and why the exam pairs the single tree with them: a tree is a *high-variance, low-bias* learner, so **averaging many decorrelated trees** (bagging / RF) slashes the variance at almost no bias cost. See the [classification showdown](../cross_method/showdowns.qmd) for Tree vs RF vs Gradient Boosting on this same WDBC data.
+:::
+
+## 5. Visualization {#sec-tree-viz}
+
+The one figure that earns its place for a decision tree is the **overfitting curve**: training and test accuracy as the tree is allowed to grow deeper. It makes the family's defining failure mode visible — training accuracy climbs monotonically to a perfect 1.0 as the tree memorizes, while test accuracy peaks early and then *stops improving* (here it plateaus; on noisier data it would decline). The gap that opens between the two lines **is the variance** that [Random Forests](random_forests.qmd) and [Ensembles](ensembles.qmd) are built to close. The data below is computed on the real WDBC exam dataset (75/25 stratified split, `random_state=1`).
+
+```{ojs}
+//| echo: false
+//| label: fig-tree-depth
+//| fig-cap: "Decision-tree overfitting curve on the WDBC breast-cancer data (computed via the course .venv, 75/25 stratified split, random_state=1). x-axis: max_depth of the tree; y-axis: accuracy. The green line is training accuracy — it climbs straight to 1.0 by depth 7 as the tree memorizes the 426 training tumors. The grey line is test accuracy — it peaks at depth 2–3 (≈0.93) and then plateaus around 0.92 no matter how much deeper the tree grows. The widening gap between the two lines is the tree's variance: extra depth buys training fit but not generalization. This is exactly why the exam moves on to Random Forests and boosting."
+famTree = (getComputedStyle(document.documentElement).getPropertyValue('--family-tree').trim() || "#06A77D")
+depthData = [
+  {depth: 1,  train: 0.9225, test: 0.8951},
+  {depth: 2,  train: 0.9648, test: 0.9301},
+  {depth: 3,  train: 0.9718, test: 0.9301},
+  {depth: 4,  train: 0.9859, test: 0.9091},
+  {depth: 5,  train: 0.9953, test: 0.9091},
+  {depth: 6,  train: 0.9977, test: 0.9161},
+  {depth: 7,  train: 1.0000, test: 0.9231},
+  {depth: 8,  train: 1.0000, test: 0.9231},
+  {depth: 9,  train: 1.0000, test: 0.9231},
+  {depth: 10, train: 1.0000, test: 0.9231}
+]
+tidy = depthData.flatMap(d => [
+  {depth: d.depth, accuracy: d.train, set: "training"},
+  {depth: d.depth, accuracy: d.test,  set: "test"}
+])
+Plot.plot({
+  height: 320, marginLeft: 55, marginRight: 80, grid: true,
+  x: {label: "max_depth (tree complexity →)", domain: [1, 10]},
+  y: {label: "Accuracy", domain: [0.85, 1.01]},
+  color: {domain: ["training", "test"], range: [famTree, "#777"], legend: true},
+  marks: [
+    Plot.line(tidy, {x: "depth", y: "accuracy", stroke: "set", strokeWidth: 2.5}),
+    Plot.dot(tidy, {x: "depth", y: "accuracy", fill: "set", r: 3}),
+    Plot.text(tidy.filter(d => d.depth === 10), {x: "depth", y: "accuracy", text: "set", dx: 10, fontSize: 11, fill: "set"})
+  ]
+})
+```
+
+(The other natural figure is the **flowchart itself** — `plot_tree(clf, filled=True, feature_names=..., class_names=...)` from nb07 cells 12/13/17 — which renders the splits and leaf classes; it's the static artifact you'd put in an exam write-up to explain a model.)
+
+## 6. Diagnostics & interpretation
+
+What to report and inspect to judge a decision tree:
+
+- **Train vs test accuracy** — the headline. A perfect (or near-perfect) **train** accuracy with a clearly lower **test** accuracy (WDBC: 1.000 vs 0.923) is the overfitting/variance fingerprint. Compare across `max_depth` (the [§5 curve](#sec-tree-viz)) to find where test accuracy stops improving.
+- **Tree size — `get_depth()` and `get_n_leaves()`** — a deep tree with many leaves relative to the sample size is memorizing. Pre-pruning (`max_depth`, `min_samples_leaf`) shrinks both; report them before and after.
+- **`feature_importances_`** — total impurity decrease attributed to each feature (sums to 1). This is the tree's interpretation output: which features drive the splits (Iris: `petal_width` ≈ 0.92; nb07 cell 19 suggests inspecting it). It *ranks* drivers but, unlike a [linear](logistic.qmd) coefficient, gives no sign or "+1 unit ⇒ +β" reading.
+- **The plotted tree** — read root-to-leaf paths as decision rules; the root split is the single most informative threshold. Watch for leaves built on very few samples (high-variance predictions).
+- **Stability check** — refit on a slightly different split or bootstrap; if early splits change, the tree is unstable (Lecture 7, slide 15/21), a direct cue to ensemble.
+
+::: {.callout-bigpicture}
+Comparative diagnostic vs siblings: a single tree gives you a *readable rule set* and *impurity-based feature importances* but **noisy, high-variance predictions**; a [**Random Forest**](random_forests.qmd) trades the readable rules for *averaged, low-variance predictions* and *more reliable* (permutation or impurity) importances. Choose the diagnostic that matches the question: "show me the rule" → single tree; "rank the drivers and predict well" → forest.
+:::
+
+## 7. Past-exam lens {#sec-tree-exam}
+
+::: {.callout-exam}
+**How decision trees show up — as the baseline of the tree family.** In the **Spring-2025 take-home (Assignment 3, on `wdbc.data`)**, the single decision tree is **step 3.3**: load and stratify-split the breast-cancer data, fit a tree, **use cross-validation on the training set to choose a complexity constraint** (e.g. `max_depth` / `min_samples_leaf` via `GridSearchCV`), refit, and report test performance (`phase0/exam_spring2025_notebook.md`). It is then the reference that **[Random Forest](random_forests.qmd) (3.4)** and **gradient boosting (3.5)** must beat, with 3.6 asking you to *compare all three through the bias–variance lens* and 3.8 asking *why an ensemble can beat a single tree* — the tree's high variance is the answer. Expect to (i) write the `DecisionTreeClassifier` idiom from [§3](#sec-tree-code); (ii) **tune complexity by cross-validation** and justify the chosen depth; (iii) report and interpret the **train–test gap as variance**; and (iv) read off `feature_importances_` (3.7 asks this for the forest). The grade rests on the *reasoning* — explaining why the ensemble improves on the single tree — at least as much as the code.
+:::
+
+## 8. Math {#sec-tree-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the two **impurity measures** for a node $S$ with class proportions $p_i$ over $C$ classes (Lecture 4, slide 11/11; notebook `07_...` cell 2): the **Gini index** $\;G(S) = \sum_{i=1}^{C} p_i(1-p_i) = 1 - \sum_{i=1}^{C} p_i^2\;$ and the **entropy** $\;H(S) = -\sum_{i=1}^{C} p_i \log_2 p_i\;$ (both $=0$ for a perfectly pure node), with **information gain** = the impurity reduction of a split, $\;\text{IG} = I(\text{parent}) - \sum_{\text{children }k} \tfrac{n_k}{n}\, I(\text{child}_k)\,$, the quantity each split maximizes. Note on the log base [disagreements R9-1]: the course slide and notebook use **$\log_2$** (information-theoretic bits) — kept as primary here; ISL §8.1 writes cross-entropy with the **natural log**, $D = -\sum_k \hat p_{mk}\log \hat p_{mk}$. The difference is only the constant factor $\ln 2$, which **does not change the argmax split** — Gini and entropy therefore rank splits almost identically (the practical consequence shown in [§4 Example 2](#sec-tree-prune)). See the [math appendix](../appendix/math_appendix.qmd).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — **CART recursive binary partitioning**: at each node, choose feature $j$ and threshold $t$ to solve $\;\min_{j,t}\big[\tfrac{n_L}{n}\,I(S_L(j,t)) + \tfrac{n_R}{n}\,I(S_R(j,t))\big]\,$, the greedy impurity-weighted split, recursing until a stopping rule; leaves predict the majority class (classification) or node mean (regression). Then **cost-complexity (weakest-link) pruning**: grow the full tree $T_0$ and minimize $\;C_\alpha(T) = \sum_{m=1}^{|T|} n_m I(R_m) + \alpha |T|\,$, where $|T|$ is the number of leaves and $\alpha \ge 0$ penalizes size — increasing $\alpha$ collapses the tree from the full $T_0$ ($\alpha=0$) toward the root, with the optimal subtree chosen by cross-validation (sklearn exposes this as `ccp_alpha`). Anchored to ESL §9.2 (and ISL §8.1). The log-base note from Mode A [R9-1] carries over: impurity is defined up to the choice of $\log_2$ vs $\ln$ for entropy. See the [math appendix](../appendix/math_appendix.qmd).
+:::
 :::

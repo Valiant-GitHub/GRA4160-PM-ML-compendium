@@ -3,6 +3,217 @@ title: "k-Nearest Neighbors (kNN)"
 body-classes: fam-linear
 ---
 
+[**Linear family**]{.fam-badge} · the simplest possible supervised baseline — it stores the training set and classifies a new point by looking at who its neighbors are. Grouped here with the baseline supervised methods, but unlike the rest of the family it is **non-parametric**: it assumes no functional form at all. Siblings: [Logistic Regression](logistic.qmd) and [LDA](lda.qmd) (parametric linear boundaries), [Decision Trees](decision_trees.qmd) (non-parametric, axis-aligned), [OLS](ols.qmd) (the parametric regressor it is most often contrasted with).
+
+## 1. Essence
+
+k-Nearest Neighbors classifies a new point by a vote of its closest training examples: measure the distance from the query to every training point, keep the **K** nearest, and assign the label that the majority of those K hold (Lecture 2, slide 8/10). There is no "model" in the usual sense — nothing is fitted, no coefficients are estimated. The training set *is* the model; "fitting" just stores it. All the work happens at **prediction** time, when the distances are computed.
+
+It is the textbook **non-parametric** method: it commits to no functional form and has no fixed number of parameters — the effective complexity grows with the data (Lecture 2, slide 9/10). That makes it flexible (it can carve out arbitrarily wiggly decision boundaries) and almost assumption-free, but also hungry for data, expensive to query, and exquisitely sensitive to two choices: **how many neighbors** to consult (K) and **how distance is measured** (the metric, and therefore the scale of the features).
+
+The single knob, K, *is* the [bias–variance](bias_variance.qmd) dial made tangible. K too small → the boundary chases individual points → **overfit, high variance**. K too large → the vote washes out local structure toward the global majority → **underfit, high bias** (Lecture 2, slide 8/10). The course's prescription is to **choose K by cross-validation** (Lecture 2, slide 8/10).
+
+Compared with its nearest neighbors: [OLS](ols.qmd) and [logistic regression](logistic.qmd) fix a form (a line/plane) and spend training time estimating a handful of coefficients, then predict instantly; kNN inverts that — instant "training," expensive prediction, and a boundary that is local rather than global. [Decision trees](decision_trees.qmd) are the other non-parametric baseline, but they partition the space with axis-aligned cuts and ignore feature scale, whereas kNN measures raw distance and so *demands* that features be scaled.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for kNN when…**
+
+- You want a **fast-to-stand-up, assumption-free baseline** for **classification** (it also does regression by averaging neighbors, Lecture 2 slide 8/10, but the course uses it as a classifier). It is the "first model" you try alongside [Naive Bayes](../drill/exercise_02_spam_naive_bayes.qmd) (Lecture 2, slide 8/10).
+- The **decision boundary is irregular** but locally smooth — kNN follows curvature that [OLS](ols.qmd)/[logistic](logistic.qmd) cannot, without you specifying any form.
+- You have **enough data relative to the number of features**, and you can **scale** the features so distance is meaningful.
+- You want intuition you can *point at*: a prediction is literally "these K labeled examples nearby."
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **The feature space is high-dimensional** → the *curse of dimensionality* makes "nearest" almost meaningless (all points become roughly equidistant). Use a parametric model ([logistic](logistic.qmd)/[LDA](lda.qmd)), reduce dimensions first with [PCA](pca.qmd), or use a [tree](decision_trees.qmd)/[random forest](random_forests.qmd) that selects features.
+- **You need an interpretable global rule** ("+1 unit of X ⇒ +β") → kNN gives no coefficients; reach for [OLS](ols.qmd)/[logistic](logistic.qmd), or a [decision tree](decision_trees.qmd) for if-then rules.
+- **Prediction must be cheap or the dataset is large** → every query scans (a structure over) the whole training set; a fitted [logistic](logistic.qmd) or [tree](decision_trees.qmd) predicts in constant time (Lecture 2, slide 8/10: "computationally expensive for large data").
+- **Features are on wildly different scales and you can't scale them** → the largest-range feature silently dominates the distance (see §3 and the wine example in §4).
+- **The boundary really is linear** → a parametric linear model will match kNN with far less data and a readable boundary; this is the parametric-vs-non-parametric trade-off (Lecture 2, slide 9/10).
+:::
+
+## 3. Code idiom
+
+The course teaches kNN both **from scratch** (so the distance-and-vote mechanics are not a black box) and via `scikit-learn`'s `KNeighborsClassifier`. Both run on the **same** iris split with **K = 3** and agree (§4).
+
+**Canonical (sklearn)** — *(notebook `03_Supervised_learning_with_kNN (1).ipynb`, cell 12)*
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+
+# Create a k-NN classifier with 3 neighbors
+knn = KNeighborsClassifier(n_neighbors=3)   # n_neighbors = K, the only knob you must set
+knn.fit(X_train, y_train)                     # "fit" just stores the training data
+y_pred = knn.predict(X_test)                  # the work happens here, at predict time
+knn.score(X_test, y_test)                     # mean accuracy on the test set
+```
+
+`n_neighbors` (the K of the algorithm) is the hyperparameter you tune — by [cross-validation](cv_info_criteria.qmd), per Lecture 2 slide 8/10. Everything else in the notebook is left at the sklearn `default`: `weights='uniform'` (every neighbor votes equally — `'distance'` would weight closer points more), and `metric='minkowski'` with `p=2`, which **is** Euclidean distance — exactly the metric the course defines (notebook cell 3).
+
+**From scratch — distance, sort, vote** *(notebook `03_Supervised_learning_with_kNN (1).ipynb`, cell 7)*. This is the whole algorithm in three small functions, and shows literally what `predict` does under the hood — compute every distance, take the K smallest, majority-vote:
+
+```python
+import numpy as np
+
+def euclidean_distance(x, y):
+    """Calculate the euclidean distance between two points"""
+    return np.sqrt(np.sum((x - y)**2))
+
+def predict(X_train, y_train, X_test, k):
+    """Find the k nearest neighbors of x_test in X_train"""
+    distances = [euclidean_distance(X_test, x) for x in X_train]  # distance to every train point
+    k_nearest = np.argsort(distances)[:k]                          # indices of the K smallest
+    return y_train[k_nearest]                                      # their labels
+
+def predict_label(X_train, y_train, X_test, k):
+    """Find the most common label among the k nearest neighbors of X_test in X_train"""
+    return np.bincount(predict(X_train, y_train, X_test, k)).argmax()  # majority vote
+```
+
+Used across the whole test set with **k = 3** *(cell 8)*:
+
+```python
+y_pred = [predict_label(X_train, y_train, x, 3) for x in X_test]
+accuracy = np.mean(y_pred == y_test)
+```
+
+::: {.callout-pitfall}
+**Scaling is not optional for kNN.** Distance treats every feature in its raw units, so a feature with a large numeric range dominates the vote regardless of how informative it is. The course notebook feeds **unscaled** iris features straight in (cell 4 — no `StandardScaler`), which is fine *only because iris's four features share a comparable scale (all cm)*. On a dataset with mismatched ranges it silently breaks: on `wine`, `proline` (std ≈ 314) swamps features with std ≈ 0.12, and raw-feature kNN scores **68.89%** versus **97.78%** once standardized (§4, computed). Wrap kNN in a `Pipeline([StandardScaler(), KNeighborsClassifier(...)])`. (`bincount` in the from-scratch version also assumes **non-negative integer labels** — fine for iris targets {0,1,2}, but it would break on string labels.)
+:::
+
+## 4. Worked examples
+
+### Example 1 — iris, from scratch vs sklearn (the cross-check) {#sec-knn-iris}
+
+The course's anchor example loads iris, splits 80/20, and runs kNN both ways on the *same* split so the two implementations can be checked against each other *(notebook `03_Supervised_learning_with_kNN (1).ipynb`, cells 4, 8, 12)*:
+
+```python
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+
+iris = datasets.load_iris()
+X, y = iris.data, iris.target                       # 150 × 4 features, 3 species
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=10)          # 120 train, 30 test
+```
+
+With **K = 3** on this fixed split (`random_state=10`), the from-scratch classifier and `KNeighborsClassifier(n_neighbors=3)` both score **96.67% on the 30-point test set** (29/30 correct) — they agree exactly, which is the point of the cross-check (computed; the notebook stores no outputs for cells 8/12). The single test point inspected first (cell 7) has true label `1` and is predicted `1` (computed). Iris is nearly linearly separable, so even this minimal classifier with no scaling does well.
+
+### Example 2 — choosing K is choosing your place on the bias–variance dial {#sec-knn-kchoice}
+
+Sweeping K on the same iris split makes the [bias–variance](bias_variance.qmd) trade-off concrete (computed, `random_state=10`):
+
+| K | train accuracy | test accuracy |
+|---:|---:|---:|
+| 1 | 100.00% | 96.67% |
+| 3 | 96.67% | 96.67% |
+| 11 | 97.50% | 100.00% |
+| 50 | 93.33% | 93.33% |
+| 100 | 75.83% | 60.00% |
+
+At **K = 1** the training accuracy is a perfect 100% — every point is its own nearest neighbor — the textbook signature of **high variance** (it has memorized the training set). As K grows, the vote averages over a wider neighborhood; by **K = 100** (out of only 120 training points) the model is essentially predicting the global majority class and collapses to **60% on test** — textbook **high bias / underfit** (Lecture 2, slide 8/10). The sweet spot is in between, and you don't read it off the test set — you pick it by [cross-validation](cv_info_criteria.qmd) on the *training* data (5-fold CV here is flat at ≈ 94% for K = 3…25, computed; iris is too easy to produce a sharp optimum). The principle generalizes: **small K overfits, large K underfits, choose K by CV** (Lecture 2, slide 8/10).
+
+### Example 3 — why scaling decides the outcome (wine) {#sec-knn-scaling}
+
+To show the scaling pitfall from §3 with numbers, take `wine` (13 chemical features on very different scales) with a 75/25 split (`random_state=1`), K = 3 (computed):
+
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
+raw    = KNeighborsClassifier(n_neighbors=3).fit(Xtr, ytr).score(Xte, yte)        # 0.6889
+scaled = make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=3)
+                       ).fit(Xtr, ytr).score(Xte, yte)                            # 0.9778
+```
+
+Raw-feature kNN gets **68.89%**; standardizing first lifts it to **97.78%** — a 29-point jump from one preprocessing line. The reason is mechanical: `proline` ranges in the hundreds-to-thousands (std ≈ 314) while other features sit near std ≈ 0.12, so before scaling the Euclidean distance is *almost entirely* the proline difference and the other twelve features barely vote. This is exactly why the Spring-2025 exam's Assignment 4 explicitly asks you to "scale if necessary" and notes that "distance/gradient models like k-NN" need it, while trees do not (§7).
+
+## 5. Visualization
+
+```{ojs}
+//| echo: false
+//| label: fig-knn-vote
+//| fig-cap: "kNN classifies the red star (test point) by majority vote of its K=3 nearest neighbors (ringed), on three deterministic 2-D blobs. The dashed segments are the distances kNN ranks; the star is colored by the winning class. Reload to draw a new test point: where it lands among the blobs decides the vote — near a boundary the K=3 ring can straddle two colors, which is exactly where the choice of K matters most."
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+classColors = ["#2E86AB", "#06A77D", "#F18F01"]   // 3 blob classes
+knnData = {
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296}}
+  const r = mulberry32(0);   // deterministic; mirrors the notebook's np.random.seed(0) make_blobs idea
+  const gauss = () => { let u=0,v=0; while(!u)u=r(); while(!v)v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+  const centers = [[-3,-2],[3,-1],[0,4]];   // 3 well-separated blob centers
+  const pts = [];
+  centers.forEach((c, cls) => {
+    for (let i=0;i<26;i++) pts.push({x: c[0]+1.0*gauss(), y: c[1]+1.0*gauss(), cls});
+  });
+  return pts;
+}
+knnTest = {
+  const xs = knnData.map(d=>d.x), ys = knnData.map(d=>d.y);
+  const [xmin,xmax] = [Math.min(...xs), Math.max(...xs)];
+  const [ymin,ymax] = [Math.min(...ys), Math.max(...ys)];
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296}}
+  const r = mulberry32((Date.now() & 1023));   // new point on reload
+  return {x: xmin + r()*(xmax-xmin), y: ymin + r()*(ymax-ymin)};
+}
+knnVote = {
+  const K = 3;
+  const withDist = knnData.map((d,i) => ({...d, i, dist: Math.hypot(d.x-knnTest.x, d.y-knnTest.y)}));
+  const nearest = withDist.slice().sort((a,b)=>a.dist-b.dist).slice(0, K);
+  const counts = [0,0,0];
+  nearest.forEach(d => counts[d.cls]++);
+  const winner = counts.indexOf(Math.max(...counts));
+  return {nearest, winner};
+}
+Plot.plot({
+  height: 340, marginLeft: 50, grid: true,
+  x: {label: "Feature 1"}, y: {label: "Feature 2"},
+  marks: [
+    Plot.dot(knnData, {x: "x", y: "y", fill: d => classColors[d.cls], fillOpacity: 0.55, r: 4}),
+    Plot.link(knnVote.nearest, {x1: knnTest.x, y1: knnTest.y, x2: "x", y2: "y", stroke: "#888", strokeDasharray: "3,3"}),
+    Plot.dot(knnVote.nearest, {x: "x", y: "y", stroke: "#111", strokeWidth: 1.6, r: 9, fill: "none"}),
+    Plot.dot([knnTest], {x: "x", y: "y", fill: classColors[knnVote.winner], stroke: famLinear, strokeWidth: 2, symbol: "star", r: 11})
+  ]
+})
+```
+
+This is the picture that earns its place for kNN: it makes the *algorithm itself* visible. The dashed segments are the very distances kNN computes and ranks; the three ringed points are the vote; the star takes their majority color. It also shows why K matters — drop the test point near a blob boundary and the K = 3 ring straddles two colors, the regime where small K is jumpy (high variance) and a larger K would steady the vote. This mirrors the notebook's own visualization idiom (a starred test point with its nearest neighbors highlighted on `make_blobs` data, cell 10), rebuilt with deterministic in-browser data so it needs no network or stored dataset.
+
+## 6. Diagnostics & interpretation
+
+What to look at to decide whether a kNN model is working:
+
+- **Accuracy on a held-out set, and beyond accuracy** — report **precision, recall, F1** when classes are imbalanced (the Spring-2025 exam insists on this for Assignment 4, §7). A confusion matrix shows *which* classes the neighbors confuse.
+- **The K curve (train vs CV accuracy across K)** — the diagnostic that locates your bias–variance position (Example 2). A huge train–CV gap at small K signals variance; both sagging at large K signals bias. Pick K at the CV peak, never on the test set.
+- **Did you scale?** — the first thing to check on any disappointing kNN result. An unscaled distance-based model is the most common silent failure (Example 3): inspect feature ranges/standard deviations.
+- **Dimensionality** — as features multiply, "nearest" loses meaning (the curse of dimensionality, §8 Mode B). If accuracy degrades as you add features, that is the symptom; reduce with [PCA](pca.qmd) or switch to a feature-selecting model.
+- **Predict-time cost** — there are no coefficients to read; a kNN "explanation" is the neighbor set itself. Watch query latency on large training sets (Lecture 2, slide 8/10).
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+Comparative diagnostic vs a sibling: [logistic regression](logistic.qmd) hands you **coefficients** — a single global, interpretable boundary you can write down and reason about ("the odds rise with X"). kNN hands you **a local vote** — no global rule, but a boundary that bends to the data wherever it needs to. This is the parametric-vs-non-parametric trade (Lecture 2, slide 9/10): the logistic model generalizes from a fixed form and few parameters; kNN's complexity grows with the data and lives entirely in K and the metric. Match the choice to the question — interpretable global effect, or flexible local fit.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How kNN shows up.** In the **Spring-2025 take-home, Assignment 4** ("Predictive classification challenge" on `SimulatedData.csv`, exercises 4.1–4.9, `phase0/exam_spring2025_notebook.md`), kNN is named as a **candidate classifier**. Two exercises bear on it directly: **4.3** asks you to "encode categoricals, scale if necessary" and explicitly notes that "trees may not need scaling; distance/gradient models like k-NN or logistic regression do" — so if you submit kNN, the scaling decision from §3/§4 is being graded. **4.4** asks for at least two classifiers (a simple baseline plus a more complex model) with justification, **4.5** for **hyperparameter tuning via CV** (for kNN that is choosing K, §2/§4), and **4.6** for accuracy/precision/recall/F1. Crucially, **4.8** is run by the grader on a **hidden hold-out test set**, so your preprocessing (the scaler!) must be wired into a pipeline that generalizes to unseen rows — a raw, unscaled kNN that "worked" on your split will misfire on theirs. The data is simulated with "non-linear effects and noise," which is the regime where a non-parametric method like kNN can shine — or, if you skip scaling and ignore the curse of dimensionality, quietly fail. kNN has not appeared as a stand-alone derivation question; it appears as a baseline classifier to deploy and justify.
+:::
+
+## 8. Math {#sec-knn-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the **Euclidean distance metric** $d(x,y) = \sqrt{\sum_{i=1}^{p}(x_i - y_i)^2}$ (notebook `03_Supervised_learning_with_kNN (1).ipynb`, cell 3) and the **majority-vote** rule over the K nearest neighbors $\mathcal{N}_K(x)$ — $\hat{y}(x) = \arg\max_{c}\sum_{i \in \mathcal{N}_K(x)} \mathbb{1}[y_i = c]$ — with the **weighted-vote** variant (`weights='distance'`) as the natural generalization, and the regression form (average of neighbor targets). See the [math appendix](../appendix/math_appendix.qmd#sec-linalg).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — the **curse of dimensionality** (why distances concentrate as $p$ grows, so "nearest" stops being near), and the **asymptotic consistency** of kNN — the 1-NN error is bounded by twice the Bayes error, and kNN is Bayes-consistent when $K \to \infty$ with $K/n \to 0$. Anchored to ESL §13.3 (and §2.5 on dimensionality), marked supplemental (the course slides give kNN conceptually only — Lecture 2, slide 8/10).
+:::
 :::

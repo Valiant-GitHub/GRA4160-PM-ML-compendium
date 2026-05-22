@@ -3,6 +3,232 @@ title: "Build a Neural Network"
 body-classes: fam-neural
 ---
 
+[**Neural**]{.fam-badge} · the capstone of the neural block — the *practical* PyTorch workflow you would actually reach for, where `nn.Module` hides the autodiff and the optimizer behind a few lines. Siblings: [NN basics](nn_basics.qmd) (the architecture and forward pass), [Autodiff](autodiff.qmd) (the engine that computes the gradients), [NN with PyTorch](nn_pytorch.qmd) (the same network built one tensor at a time), [Regularization](regularization.qmd) (L2 / weight decay, here applied to a net).
+
+## 1. Essence
+
+"Building a neural network" in this course means assembling a feed-forward classifier out of pre-made PyTorch building blocks and training it with a standard loop, rather than hand-coding the math. You subclass [`nn.Module`](nn_pytorch.qmd), declare a few `nn.Linear` layers and an activation in `__init__`, describe how data flows through them in `forward`, and then let `loss.backward()` and `optimizer.step()` do the [backpropagation](../appendix/math_appendix.qmd#sec-backprop) and the gradient-descent update for you. The whole network is just the single-hidden-layer model of [NN basics](nn_basics.qmd) — `f(X) = β₀ + Σ_k β_k g(w_{k0} + Σ_j w_{kj} X_j)` (Lecture 9, slide 4/17) — stacked two layers deep and run on real data.
+
+This is the **high-level** end of a three-level spectrum the course walks you up: from-scratch [autodiff](autodiff.qmd) (you write the `Value`/`backward` engine), then [low-level PyTorch tensors](nn_pytorch.qmd) (PyTorch does autograd, but you wire softmax, cross-entropy and the SGD update by hand), and finally here, `nn.Module` (PyTorch supplies the layers, the loss, and the optimizer). Each level trades transparency for convenience; this page is the convenient one — the version you'd write in practice. The notebook trains on **MNIST** (60,000 training / 10,000 test handwritten digits, each a 28×28 image flattened to 784 inputs, 10 output classes) and is unusual in the course for shipping with **real saved test accuracies**, which §4 quotes verbatim.
+
+Two architectures anchor the comparison: a `SingleLayerNet` (784→10, no hidden layer — a linear/logistic classifier in disguise) and a `TwoHiddenLayerNet` (784→128→64→10 with ReLU). Two regularizers are then bolted on by hand — **L2 / weight decay** (penalize large weights) and **dropout** (randomly silence neurons during training). The takeaway is practical: depth buys a real accuracy jump on this image task, while the regularizers barely move the needle *here* because the network was not overfitting to begin with (notebook `19_Build_a_NN.ipynb`, markdown cells 22, 29).
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for the `nn.Module` workflow when…**
+
+- You have **large, unstructured data** — images, audio, text — where the input is high-dimensional and the useful features are not hand-engineered. MNIST is the canonical example: a deep net reaches **97.50%** test accuracy where the linear baseline tops out at **92.26%** (§4).
+- You want the **practical** abstraction level: PyTorch should handle autograd, the loss, and the optimizer so you can iterate on architecture and hyperparameters, not plumbing. Drop down to [low-level tensors](nn_pytorch.qmd) only to *understand* what `nn.Module` hides, or to from-scratch [autodiff](autodiff.qmd) to understand what *PyTorch* hides.
+- You need **non-linear** decision boundaries that a deeper stack of layers can learn automatically, and you have enough data and compute to fit the many parameters (this net has hundreds of thousands).
+- You expect to **regularize**: the same workflow drops in [L2 / weight decay](regularization.qmd) and dropout with a couple of lines (§3).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **The data is tabular and/or small.** On structured, modest-sized tables, gradient-boosted [trees and random forests](random_forests.qmd) routinely match or beat deep nets with far less tuning (Lecture 10, "Traditional ML vs Deep Learning": boosted trees are rarely beaten by DL on tabular data). A neural net here is over-engineering.
+- **You need interpretable coefficients.** A net gives you weights you can't read; for "+1 unit ⇒ +β" inference use [OLS](ols.qmd) / [logistic regression](logistic.qmd).
+- **You want to *learn the mechanics*, not ship a model.** Then deliberately step *down* the abstraction ladder to [NN basics](nn_basics.qmd) / [autodiff](autodiff.qmd) / [low-level PyTorch](nn_pytorch.qmd) — the choice between this page and those is a choice of *abstraction level*, not of model.
+- **A linear model already suffices.** If a `SingleLayerNet` (= logistic regression) is close enough, the extra layers, epochs, and tuning may not be worth it.
+:::
+
+## 3. Code idiom
+
+The canonical idiom is to subclass `nn.Module`, then run a standard train/eval loop. All snippets below are lifted from notebook `19_Build_a_NN.ipynb`; hyperparameters are quoted at the values actually used.
+
+**Define the models** — *(notebook `19_Build_a_NN.ipynb`, cell 2)*. One class with no hidden layer, one with two:
+
+```python
+import torch
+import torch.nn as nn
+
+class SingleLayerNet(nn.Module):                 # 784 → 10: a linear (logistic) classifier
+    def __init__(self, input_size, output_size):
+        super().__init__()
+        self.linear = nn.Linear(input_size, output_size)
+    def forward(self, x):
+        return self.linear(x)                     # no activation; CrossEntropyLoss adds softmax
+
+class TwoHiddenLayerNet(nn.Module):              # 784 → 128 → 64 → 10
+    def __init__(self, input_size, hidden_size1, hidden_size2, output_size,
+                 activation_fn=nn.ReLU):          # default activation = ReLU
+        super().__init__()
+        self.hidden1 = nn.Linear(input_size, hidden_size1)
+        self.hidden2 = nn.Linear(hidden_size1, hidden_size2)
+        self.output_layer = nn.Linear(hidden_size2, output_size)
+        self.activation = activation_fn()         # nn.ReLU (default) / nn.Tanh / nn.Sigmoid
+    def forward(self, x):
+        x = self.activation(self.hidden1(x))
+        x = self.activation(self.hidden2(x))
+        return self.output_layer(x)               # raw logits out (no output activation)
+
+input_size, output_size = 784, 10                 # 28×28 flattened; 10 digit classes
+hidden_size1, hidden_size2 = 128, 64
+model = TwoHiddenLayerNet(input_size, hidden_size1, hidden_size2, output_size).to(device)
+```
+
+**Data + loss + optimizer** — *(cells 8, 10)*. MNIST via `torchvision`, batched by a `DataLoader`:
+
+```python
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+transform = transforms.ToTensor()                 # pixels → tensor scaled to [0, 1]
+train_dataset = datasets.MNIST(root='./data', train=True,  transform=transform, download=True)
+test_dataset  = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
+batch_size = 32                                    # mini-batch size; 16/32/64 are common
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader  = DataLoader(test_dataset,  batch_size=batch_size, shuffle=False)
+
+criterion = nn.CrossEntropyLoss()                  # applies softmax internally; expects raw logits
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1)   # lr=0.1 (high but fine for MNIST)
+```
+
+**The training loop** — *(cell 12)*. The four lines that *are* gradient descent are `zero_grad → forward → backward → step`:
+
+```python
+num_epochs = 5                                     # 5 passes over the data
+for epoch in range(num_epochs):
+    model.train()                                  # training mode (matters for dropout)
+    for images, labels in train_loader:
+        images = images.view(images.size(0), -1)   # flatten (batch, 1, 28, 28) → (batch, 784)
+        outputs = model(images)                    # forward pass
+        loss = criterion(outputs, labels)
+        optimizer.zero_grad()                      # clear last step's gradients
+        loss.backward()                            # backprop: ∂loss/∂params
+        optimizer.step()                           # SGD update: θ ← θ − η·∇L
+```
+
+**Evaluation** — *(cell 14)*. Switch to `eval()` (disables dropout) and turn off autograd:
+
+```python
+model.eval()
+correct = total = 0
+with torch.no_grad():
+    for images, labels in test_loader:
+        images = images.view(images.size(0), -1)
+        _, predicted = torch.max(model(images), 1) # argmax logit = predicted class
+        correct += (predicted == labels).sum().item()
+        total += labels.size(0)
+print(100 * correct / total)                       # → 97.50 for the deep net
+```
+
+**Manual L2 regularization (weight decay)** — *(cell 19)*. Add `λ·Σw²` over the parameters to the data loss before `backward()`:
+
+```python
+lambda_reg = 1e-4                                  # L2 strength λ; try 1e-3 / 1e-4 / 1e-5
+for images, labels in train_loader:
+    images = images.view(images.size(0), -1)
+    base_loss = criterion(model_reg(images), labels)
+    l2_loss = sum(torch.sum(p.pow(2)) for p in model_reg.parameters())  # Σ over ALL params
+    loss = base_loss + lambda_reg * l2_loss        # penalize large weights
+    optimizer_reg.zero_grad(); loss.backward(); optimizer_reg.step()
+```
+
+::: {.callout-pitfall}
+**The L2 scope diverges from the slide.** Lecture 9 (slide 16/17) writes the penalty as `λ Σ_{k,j} w_{kj}²` — summing over the **hidden-layer weights only**. The notebook's `sum(p.pow(2) for p in model.parameters())` sums over **every** parameter — output weights `β_k` *and* biases included — which is the standard ESL §11.5 weight-decay convention. The notebook's own comment acknowledges biases could be excluded via `param.ndim > 1` but includes them anyway ("a small effect whether biases are included or not"). Quote the code as written, but know the slide and the code disagree on scope. See [R9-9]; PyTorch's built-in `weight_decay=` argument on the optimizer is the functionally equivalent shortcut.
+:::
+
+**Manual inverted dropout** — *(cell 24)*. After each hidden activation, zero a fraction `p` of units and rescale, but **only while training**:
+
+```python
+def forward(self, x):
+    x = self.activation(self.hidden1(x))
+    if self.training:                              # gated by model.train()/model.eval()
+        mask = (torch.rand_like(x) > self.dropout_prob).float()  # keep w.p. (1−p)
+        x = x * mask / (1.0 - self.dropout_prob)   # inverted dropout: rescale survivors by 1/(1−p)
+    x = self.activation(self.hidden2(x))
+    if self.training:
+        mask = (torch.rand_like(x) > self.dropout_prob).float()
+        x = x * mask / (1.0 - self.dropout_prob)
+    return self.output_layer(x)                    # no dropout on the output layer
+# dropout_prob = 0.5  (Lecture 9: typical rates 0.2–0.5; train-only, off at inference)
+```
+
+The hyperparameters to know, with their notebook values (all `default` where PyTorch supplies one): `lr=0.1`, `num_epochs=5`, `batch_size=32`, `lambda_reg=1e-4`, `dropout_prob=0.5`, hidden sizes `128, 64`, activation `nn.ReLU` (the default for `TwoHiddenLayerNet`).
+
+## 4. Worked example
+
+### MNIST: shallow vs deep vs L2 vs dropout {#sec-nn-mnist}
+
+This is the rare course notebook that ships with **real saved outputs**, so the numbers below are quoted directly from its stored cells, not recomputed. All four models share the recipe `CrossEntropyLoss`, `SGD(lr=0.1)`, `batch_size=32`, `5 epochs` on MNIST; only the architecture / regularizer changes.
+
+| Model | Architecture | Regularizer | Test accuracy | Cell |
+|---|---|---|---|---|
+| Shallow | 784→10 (linear) | none | **92.26%** | cell 16 |
+| Deep | 784→128→64→10, ReLU | none | **97.50%** | cell 14 |
+| Deep + L2 | 784→128→64→10, ReLU | λ = 1e-4 | **96.95%** | cell 21 |
+| Deep + Dropout | 784→128→64→10, ReLU | p = 0.5 | **97.13%** | cell 28 |
+
+The headline result is **depth**: adding two hidden layers with ReLU lifts test accuracy from 92.26% to 97.50% — a 5-point jump that more than halves the error rate (≈7.7% → 2.5%). The shallow net *is* a logistic classifier; the gain is exactly the non-linear representational power the lecture promises (notebook markdown cell 17).
+
+The two regularizers, by contrast, **barely move** the result: L2 lands at 96.95% and dropout at 97.13%, both *slightly below* the unregularized 97.50%. This is not a failure — it is the expected behavior when the model is **not overfitting** in the first place. The deep net's training accuracy after 5 epochs is 98.27% (cell 12) against 97.50% test: a gap of well under one point. With almost no overfitting to remove, adding a penalty can only cost a little fit and return little generalization in exchange (the notebook says exactly this in markdown cells 22 and 29). The regularizers' value would show on a *deeper, longer-trained, or noisier* model with a large train–test gap — which is why dropout's training accuracy is the lowest of the four (94.34%, cell 26): it is deliberately handicapping training to buy robustness it doesn't need here.
+
+```{ojs}
+//| echo: false
+//| label: fig-nn-mnist
+//| fig-cap: "MNIST test accuracy of the four models (stored notebook outputs, 5 epochs, SGD lr=0.1, batch 32). Depth is the big lever: 784→128→64→10 with ReLU (97.50%) clears the linear baseline (92.26%) by 5 points. L2 (96.95%) and dropout (97.13%) sit just below the unregularized deep net — the network was barely overfitting, so there is little for a regularizer to recover. The dashed line marks the deep net's accuracy as a reference."
+famNeural = (getComputedStyle(document.documentElement).getPropertyValue('--family-neural').trim() || "#7B2CBF")
+nnData = [
+  {model: "Shallow",        acc: 92.26, kind: "baseline"},
+  {model: "Deep",           acc: 97.50, kind: "deep"},
+  {model: "Deep + L2",      acc: 96.95, kind: "reg"},
+  {model: "Deep + Dropout", acc: 97.13, kind: "reg"}
+]
+Plot.plot({
+  height: 320, marginLeft: 55, marginBottom: 55,
+  x: {label: null, domain: nnData.map(d => d.model)},
+  y: {label: "Test accuracy (%)", domain: [90, 99], grid: true},
+  marks: [
+    Plot.ruleY([90]),
+    Plot.barY(nnData, {
+      x: "model", y: "acc",
+      fill: d => d.kind === "deep" ? famNeural : (d.kind === "baseline" ? "#b79bd6" : "#9d6fc9"),
+      fillOpacity: d => d.kind === "deep" ? 1 : 0.78
+    }),
+    Plot.ruleY([97.50], {stroke: famNeural, strokeDasharray: "3,3", strokeOpacity: 0.6}),
+    Plot.text(nnData, {x: "model", y: "acc", text: d => d.acc.toFixed(2) + "%", dy: -8, fontWeight: "bold"})
+  ]
+})
+```
+
+## 5. Visualization
+
+The bar chart in §4 is the visualization that earns its place here: it puts the four stored test accuracies side by side so the *one* large effect (depth: the 5-point gap from the linear baseline to the deep net) and the *three* near-ties (deep, deep+L2, deep+dropout, all within ~0.5 point) are legible at a glance. Prose can assert "depth helped, regularization barely did"; only the picture makes the *magnitudes* obvious — the regularizer bars sitting just under the dashed reference line is the whole "nothing to overfit, nothing to recover" story in one image.
+
+## 6. Diagnostics & interpretation
+
+What to look at to judge whether the network is working, and which knob to turn:
+
+- **Train vs test gap.** The single most important diagnostic. Here the deep net is 98.27% train / 97.50% test (cells 12, 14) — a sub-1-point gap, i.e. essentially no overfitting. A *large* gap is the cue to regularize (L2 or dropout) or get more data; a *small* gap means a regularizer will mostly just cost you fit, as it does here.
+- **Effect of depth.** Going shallow→deep added ~5 points of test accuracy — added capacity helps when the task is genuinely non-linear and you have the data to fit it. This is the lever that paid off.
+- **Effect of L2 (λ).** Penalizing `Σw²` shrinks weights toward zero. Too large a λ underfits (the notebook warns 0.1 would cripple it); too small does nothing. At λ=1e-4 on a non-overfitting net, the effect is a slight *decrease* (96.95%). Tune λ over 1e-3 / 1e-4 / 1e-5 against a validation score.
+- **Effect of dropout (p).** Dropout's hallmark is a *lower training* accuracy (94.34% here) for *equal-or-better test* accuracy (97.13%) — it deliberately handicaps training so neurons can't co-adapt. Typical p is 0.2–0.5 (Lecture 9, slide 17/17). Remember `model.eval()` at test time, or dropout stays on and your test numbers go random.
+- **When added capacity helps.** More layers/units help only up to the point where you start fitting noise (the train–test gap opens); past that, regularize or stop. The four-model table is a miniature version of this trade-off curve.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**Two big pictures at once.** First, the **abstraction ladder**: this `nn.Module` page sits on top of [low-level PyTorch tensors](nn_pytorch.qmd) (you write softmax/CE/SGD by hand) which sits on top of from-scratch [autodiff](autodiff.qmd) (you write `backward()` yourself). Same network, three transparency-vs-convenience levels — pick by whether you're learning the mechanics or shipping a model. Second, **dropout as an ensemble**: randomly dropping neurons each step trains a different sub-network every batch, all sharing weights — so a dropout net behaves like an *average over exponentially many thinned networks*, which is why it generalizes (Lecture 9, slide 17/17). That is the same variance-reduction logic that makes a [random forest](random_forests.qmd) beat a single tree, arrived at from a completely different direction.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How "Build a NN" shows up.** It **did not appear on the Spring-2025 exam** — there is no neural-network task in the take-home assignments, which centered on regression/regularization (Hitters), clustering/PCA, and tree ensembles (per [R8] and `phase0/concept_inventory.md`). Treat this page as conceptual scaffolding for the neural block, not as drill for a known exam item. If a future exam *did* probe it, the examinable core is the *workflow and the trade-offs*, not memorized accuracies: be able to (i) write the `nn.Module` class + the `zero_grad → forward → backward → step` loop from §3, (ii) explain why the deep net beats the shallow one (non-linearity / representational power) and why L2 and dropout barely helped *here* (no overfitting to remove), and (iii) state the abstraction-level choice between this page, [low-level PyTorch](nn_pytorch.qmd), and [autodiff](autodiff.qmd).
+:::
+
+## 8. Math {#sec-nn-build-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the layer composition `A_k = g(w_{k0} + Σ_j w_{kj} X_j)`, `f(X) = β₀ + Σ_k β_k A_k` (Lecture 9, slides 4–7/17, with ReLU `g(z)=max(0,z)`); the **cross-entropy** classification loss with softmax (the regression loss `½Σ(y−f)²` of slide 10 becomes cross-entropy for the 10-class MNIST head, matching `nn.CrossEntropyLoss`); the **SGD** update `θ ← θ − η∇L(θ)` on mini-batches (slides 11–12, 15); the **L2 penalty** `+ λ Σ w²` (slide 16 writes `λ Σ_{k,j} w_{kj}²` over hidden weights only — note the notebook sums all params, [R9-9]); and **dropout** as a train-only random mask with rate `p` (slide 17, rates 0.2–0.5), rescaled `1/(1−p)` for inverted dropout. See the [backprop math appendix](../appendix/math_appendix.qmd#sec-backprop).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — **weight decay** as the MAP estimate under a Gaussian weight prior and its scope question [R9-9] (slide penalizes `w_{kj}` only; ESL §11.5 penalizes all weights); **dropout as model averaging** — the precise sense in which inverted dropout approximates a geometric-mean ensemble over `2^(#units)` thinned sub-networks; and the backprop equations for this two-layer ReLU net mapped to ESL δ-notation. Anchored to ESL §11.5.
+:::
 :::

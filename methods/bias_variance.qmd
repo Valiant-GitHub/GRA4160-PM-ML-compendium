@@ -3,6 +3,208 @@ title: "Bias–Variance Trade-off"
 body-classes: fam-cross
 ---
 
+[**Cross-cutting**]{.fam-badge} · not a model but the *lens* every model is read through — the single axis along which you diagnose whether a fit is too simple or too complex. The same knob recurs everywhere: polynomial degree (here), [kNN](knn.qmd) neighbour count `K`, [Decision Tree](decision_trees.qmd) depth, and [Regularization](regularization.qmd) strength `λ`. It is also the language the [Spring-2025 exam](#sec-bv-exam) asks you to speak when comparing [OLS](ols.qmd) against Ridge/Lasso.
+
+## 1. Essence
+
+Every supervised model's expected error on new data splits into two parts you can trade against each other. **Bias** is error from over-simple assumptions: a model too rigid to represent the true relationship makes the *same* systematic mistake no matter which training sample it sees — it is consistent but wrong, and it **underfits** (Lecture 2, slide 5/10; Lecture 5, slide 10/11). **Variance** is sensitivity to the particular training set: a model flexible enough to chase the noise will fit each sample's quirks differently, so it does well in-sample but generalizes poorly — it **overfits** (Lecture 5, slide 10/11). The goal is neither extreme but the **sweet spot that minimizes total error** — "ML is largely the art of balancing bias and variance" (Lecture 5, slide 11/11).
+
+The trade-off is structural, not optional: making a model more complex (more polynomial terms, deeper tree, smaller `K`, smaller `λ`) lowers bias but raises variance; simplifying it does the reverse (notebook `09_Bias_variance_tradeoff.ipynb`, cell 1). You cannot drive both to zero. This page is the **universal frame**; each method page applies it to its own complexity knob, and the cross-method [showdowns](../cross_method/showdowns.qmd) line several knobs up on the same data.
+
+What this is *not*: a thing you fit. There is no `BiasVarianceTradeoff()` estimator. It is the diagnostic vocabulary — train-vs-validation gap, learning curves, the U-shaped test-error curve — you use to decide *which way to turn* whatever knob your chosen model exposes (§6). The course demonstrates it concretely with **polynomial regression of increasing degree** on a noisy sine (§4), the cleanest possible illustration because "complexity" is just one integer.
+
+## 2. When to use / when *not* to use
+
+Because this is a diagnostic frame rather than a model, the usual "reach for it / reach for something else" becomes "which side are you on, and how do you tell?"
+
+::: {.callout-intuition}
+**You're under-fitting (too much bias) when…**
+
+- **Training error itself is high** — the model can't even fit the data it has seen. In §4, polynomial degree 1 on the sine leaves an obvious systematic miss (train MSE ≈ 0.21, far above the 0.04 noise floor).
+- **Train and validation error are both bad and close together** — a small gap but a high level. The model is consistently wrong.
+- **Fix:** *increase complexity* — add features / higher-degree terms, a deeper [tree](decision_trees.qmd), a smaller [kNN](knn.qmd) `K`, less [regularization](regularization.qmd) (smaller `λ`) (Lecture 5, slide 10/11: "increase complexity, add features").
+:::
+
+::: {.callout-pitfall}
+**You're over-fitting (too much variance) when…**
+
+- **Training error is low but validation/test error is much higher** — a large train–test *gap*. This is the headline tell (§6). In §4 the degree-20 fit nails the training points yet its 10-fold cross-validated error explodes.
+- **The fitted curve wiggles through individual points / noise** rather than the trend (notebook `09`, cell 13: "capturing the noise … as well as the underlying pattern").
+- **Predictions swing wildly when you re-draw the training sample** — high sensitivity to the data you happened to get.
+- **Fix:** *reduce complexity or variance* — [regularization](regularization.qmd), **more training data**, or a simpler model (Lecture 5, slide 10/11: "regularization, more data, simplify model").
+:::
+
+The whole job is to walk from one callout toward the middle. The §4 sweep makes the journey literal: degree 1 = the first callout, degree 20 = the second, degree 3–4 = the target in between.
+
+## 3. Code idiom
+
+There is no estimator to call; the *idiom* is the **experiment** that exposes the trade-off — sweep a complexity knob and read out-of-sample error with [cross-validation](cv_info_criteria.qmd). The course's instrument is a polynomial-regression pipeline scored by `cross_val_score` *(notebook `09_Bias_variance_tradeoff.ipynb`, cell 5)*:
+
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
+
+def polynomial_regression(degree, cv=10):
+    model = Pipeline([('poly',   PolynomialFeatures(degree=degree)),
+                      ('linear', LinearRegression(fit_intercept=False))])
+    scores = cross_val_score(model, X, y, cv=cv)   # <-- no scoring= : returns R², not MSE
+    y_pred = model.fit(X, y).predict(X)
+    # ... plot data + fitted curve ...
+```
+
+`PolynomialFeatures(degree=d)` is the **complexity knob**: `degree` is to this pipeline what `K` is to [kNN](knn.qmd), `max_depth` to a [tree](decision_trees.qmd), and `alpha` (=`λ`) to [Ridge/Lasso](regularization.qmd). `LinearRegression(fit_intercept=False)` is deliberate — `PolynomialFeatures` already emits a degree-0 (constant) column, so the intercept is absorbed there (notebook `09`, and notation cross-check: the bias *column* here is unrelated to statistical *bias*).
+
+::: {.callout-pitfall}
+**Idiom trap — this returns R², not MSE [NB-2].** In the notebook, `cross_val_score(model, X, y, cv=cv)` is called **with no `scoring=` argument**, so it returns the regression default — **R²**, not MSE — even though the markdown (cell 2) says "estimate the mean squared error" and the plot label prints `error={np.mean(np.abs(scores))}`. The printed "error" is therefore the **mean absolute R²**, which is *not* a meaningful error metric (R² can go very negative on a badly-predicted held-out fold). When you lift this idiom, do one of two things:
+
+```python
+# Option A — keep R² but read it correctly (higher = better, ≤ 1; can be < 0):
+scores = cross_val_score(model, X, y, cv=10)                          # R²
+
+# Option B — actually measure error (what the prose intends):
+scores = cross_val_score(model, X, y, cv=10,
+                         scoring='neg_mean_squared_error')            # MSE = -scores
+```
+
+§4 reports **both** so the metric is never ambiguous.
+:::
+
+## 4. Worked examples
+
+### Example 1 — the polynomial degree sweep (the canonical demo) {#sec-bv-sweep}
+
+The course's set piece *(notebook `09_Bias_variance_tradeoff.ipynb`, cells 3–13)*: 80 points of a noisy sine, fit by polynomials of growing degree.
+
+```python
+np.random.seed(10)
+X = np.sort(5 * np.random.rand(80, 1), axis=0)        # 80 points in [0, 5)
+y = np.sin(X).ravel() + 0.2 * np.random.randn(80)     # sine + Gaussian noise, σ = 0.2
+```
+
+The noise is added with standard deviation 0.2, so the **irreducible-error floor** is `σ² = 0.2² = 0.04` — no model, however clever, can push the expected squared error below it (this is the `σ²` term in §8 Mode B). Running the cell-5 pipeline for the degrees the notebook actually calls (1, 2, 3, 4, 8, 20) gives *(computed with `./.venv/Scripts/python.exe`, scikit-learn 1.8.0, replicating the notebook's seed and `cv=10`; the notebook stores no outputs)*:
+
+| degree | 10-fold CV **MSE** (lower = better) | 10-fold CV **R²** (the notebook's default scorer) | regime |
+|---:|---:|---:|---|
+| 1  | 0.336 | −7.45  | **underfit** (high bias) |
+| 2  | 0.162 | −5.82  | improving |
+| 3  | 0.103 | −1.36  | good |
+| 4  | **0.073** | **−0.90** | **best** of these |
+| 8  | 0.399 | −17.0  | overfitting |
+| 20 | ≈ 1.14 × 10⁶ | ≈ −6.3 × 10⁷ | **overfit** (variance blow-up) |
+
+Read the **MSE** column: error falls from degree 1 to a minimum at degree 4, then climbs — the bias–variance U-curve. Degree 1 underfits (notebook cell 7: "too simple … high bias"); degree 20 overfits catastrophically (cell 13: "capturing the noise … high variance"), its CV MSE exploding by six orders of magnitude as the wiggly fit extrapolates wildly on held-out folds.
+
+::: {.callout-pitfall}
+**Why are the R² values so negative?** [NB-2 in action] Two compounding reasons: (1) `cross_val_score` returns **R²** by default, and (2) the data is **sorted by `X` with no shuffle**, so each fold holds out a contiguous slice of the sine that the model — trained on the rest — predicts poorly, driving held-out R² far below 0. The notebook then takes `np.mean(np.abs(scores))`, turning these into large positive "errors". They are *not* MSE. The MSE column is the one to trust; the R² column is shown only to reproduce, and demystify, the notebook's printed numbers.
+:::
+
+### Example 2 — train error vs validation error: seeing the gap {#sec-bv-gap}
+
+Bias and variance separate cleanly when you watch **in-sample (training) error and out-of-sample (CV) error together** across the same sweep *(computed via venv, same data/seed, `scoring='neg_mean_squared_error'`)*:
+
+| degree | train MSE | 10-fold CV MSE | gap (CV − train) |
+|---:|---:|---:|---:|
+| 1  | 0.214 | 0.336 | 0.12 |
+| 3  | 0.050 | 0.103 | 0.05 |
+| 4  | 0.043 | **0.073** | 0.03 |
+| 8  | 0.043 | 0.399 | 0.36 |
+| 12 | 0.043 | ≈ 503 | huge |
+
+Training MSE falls **monotonically** and then flattens near **0.043 ≈ the noise floor σ² = 0.04** — a model flexible enough simply memorizes the training noise, so its train error can't beat the floor and barely tries to. The **CV** MSE, by contrast, bottoms out at degree 4 and then diverges. The **growing gap** between the two curves *is* variance made visible: at degree 1 the curves are close but high (bias); past degree 4 the train curve stays low while CV runs away (variance). This gap is the single most useful diagnostic in §6, and it is exactly the train-vs-test $R^2$ gap the [OLS](ols.qmd#sec-ols-hitters) page flags on Hitters (0.55 vs 0.36).
+
+## 5. Visualization
+
+The figure below is the canonical bias–variance picture: **training error sliding down while cross-validated error traces a U** as model complexity grows. The data points are the *real computed* train- and CV-MSE values from Examples 1–2 (degrees 1–10; the degree-20 explosion is left off the axis so the U near the minimum stays legible). The minimum of the validation curve marks the sweet spot; the widening vertical distance to its right is variance; the jointly-high left end is bias; the dashed line is the irreducible noise floor `σ² = 0.04`.
+
+```{ojs}
+//| echo: false
+//| label: fig-bv-ucurve
+//| fig-cap: "Bias–variance trade-off on the noisy-sine polynomial sweep (notebook 09, recomputed). Training MSE (open) falls and flattens at the noise floor; 10-fold cross-validation MSE (filled) traces a U with its minimum at degree 4 — the sweet spot. Left of it: high bias (both curves high). Right of it: high variance (the train–CV gap widens). Dashed line = irreducible error σ² = 0.04 (the 0.2-scale noise)."
+famCross = (getComputedStyle(document.documentElement).getPropertyValue('--family-cross').trim() || "#3D405B")
+
+bvData = [
+  {degree: 1,  train: 0.2138, cv: 0.3358},
+  {degree: 2,  train: 0.0860, cv: 0.1617},
+  {degree: 3,  train: 0.0496, cv: 0.1029},
+  {degree: 4,  train: 0.0434, cv: 0.0734},
+  {degree: 5,  train: 0.0433, cv: 0.0952},
+  {degree: 6,  train: 0.0433, cv: 0.2298},
+  {degree: 7,  train: 0.0428, cv: 0.2483},
+  {degree: 8,  train: 0.0427, cv: 0.3990},
+  {degree: 9,  train: 0.0427, cv: 0.2079},
+  {degree: 10, train: 0.0427, cv: 0.3939}
+]
+
+bvLong = bvData.flatMap(d => [
+  {degree: d.degree, mse: d.train, kind: "training MSE"},
+  {degree: d.degree, mse: d.cv,    kind: "cross-validated MSE"}
+])
+
+Plot.plot({
+  height: 340, marginLeft: 55, marginBottom: 42, grid: true,
+  x: {label: "model complexity → polynomial degree", domain: [0.5, 10.5], ticks: [1,2,3,4,5,6,7,8,9,10]},
+  y: {label: "10-fold MSE (lower = better)", domain: [0, 0.42]},
+  color: {legend: true, domain: ["training MSE", "cross-validated MSE"], range: ["#9aa0b5", famCross]},
+  marks: [
+    Plot.ruleY([0.04], {stroke: "#c0392b", strokeDasharray: "4,3", strokeOpacity: 0.8}),
+    Plot.text([{degree: 9.4, mse: 0.058}], {x: "degree", y: "mse", text: ["σ² = 0.04"], fill: "#c0392b", fontSize: 11}),
+    Plot.line(bvLong, {x: "degree", y: "mse", stroke: "kind", strokeWidth: 2.5, curve: "catmull-rom"}),
+    Plot.dot(bvLong.filter(d => d.kind === "training MSE"), {x: "degree", y: "mse", stroke: "#9aa0b5", fill: "white", r: 4}),
+    Plot.dot(bvLong.filter(d => d.kind === "cross-validated MSE"), {x: "degree", y: "mse", fill: famCross, r: 4}),
+    Plot.dot([bvData[3]], {x: "degree", y: "cv", r: 8, stroke: famCross, fill: "none", strokeWidth: 2}),
+    Plot.text([{degree: 4, mse: 0.073}], {x: "degree", y: "mse", text: ["sweet spot"], dy: -18, fill: famCross, fontSize: 11, fontWeight: "bold"})
+  ]
+})
+```
+
+This single curve generalizes to every method: swap the x-axis label for `K` (decreasing → more complex), tree `max_depth`, or `−log λ`, and the same U appears (§6 big-picture).
+
+## 6. Diagnostics & interpretation
+
+How to tell which side you're on, and what to do about it:
+
+- **Train-vs-validation gap — the key tell.** Low training error with much higher validation/test error ⇒ **variance/overfit**. Both high and close ⇒ **bias/underfit**. This is the train–test $R^2$ gap on [OLS/Hitters](ols.qmd#sec-ols-hitters) (0.55 vs 0.36) and the train–CV gap in §4 Example 2. Always report *both* numbers, never just training error.
+- **The validation-error U-curve (§5).** Sweep the complexity knob and find the minimum of the cross-validated error; that degree/`K`/`depth`/`λ` is your operating point. The notebook builds intuition for this by plotting fits at degrees 1 … 20; [CV & Information Criteria](cv_info_criteria.qmd) is the page that formalizes *how* to pick it (k-fold, AIC/BIC).
+- **Learning curves (error vs *training-set size*).** A high-variance model improves a lot as you add data (gap closes) — so "get more data" is a real fix for variance; a high-bias model plateaus early and adding data won't help (Lecture 5, slide 10/11 lists "more data" as a *variance* remedy specifically). [VERIFY: learning-curve-vs-sample-size plots are not in nb09; this is the standard ESL §7.x diagnostic, included as the conceptual companion to the degree sweep.]
+- **The irreducible floor.** Don't chase error below `σ²` (§8 Mode B). In §4, train MSE flattening at ≈ 0.043 ≈ 0.2² signals you've hit the noise, not a modelling failure — exactly the point the [OLS synthetic example](ols.qmd#sec-ols-synth) makes about a modest $R^2$ under large noise.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**One knob, every method.** The bias–variance axis is the same wherever you turn; only the dial's name changes:
+
+| Method | Complexity knob | More complex (↑ variance, ↓ bias) | Simpler (↑ bias, ↓ variance) |
+|---|---|---|---|
+| Polynomial regression (here) | `PolynomialFeatures(degree)` | higher degree | lower degree |
+| [kNN](knn.qmd) | neighbours `K` | **small** `K` (e.g. 1) | large `K` |
+| [Decision Trees](decision_trees.qmd) | tree depth / leaf size | deep tree | shallow / pruned |
+| [Ridge / Lasso](regularization.qmd) | penalty `λ` (sklearn `alpha`) | **small** `λ` (→ OLS) | large `λ` |
+
+Note the inversions: for kNN and regularization the *small* setting is the high-variance one. This table is the spine of the cross-method [showdowns](../cross_method/showdowns.qmd).
+:::
+
+## 7. Past-exam lens {#sec-bv-exam}
+
+::: {.callout-exam}
+**How the trade-off shows up.** In the **Spring-2025 take-home (Assignment 1, on `Hitters.csv`)**, the bias–variance trade-off is the *interpretation* the grader wants: fit [OLS](ols.qmd) as the baseline, then Ridge/Lasso with cross-validated `alpha`, and **explain the trade-off** — why shrinkage (more `λ` ⇒ more bias, less variance) closes the train–test gap and can improve out-of-sample error, even though it makes the in-sample fit worse (`phase0/exam_spring2025_notebook.md`; concept-inventory entry 7). Expect to (i) name the train–test performance gap as the **variance** symptom (§6), (ii) frame regularization's effect in bias–variance terms, and (iii) argue *why* trading a little bias for a lot less variance is worth it on a dataset with many correlated predictors. The vocabulary of this page — bias, variance, overfit/underfit, irreducible error — is what earns the interpretation marks; the bias–variance trade-off is also a recurring framing concept across Lectures 1, 2, 3, and 5.
+:::
+
+## 8. Math {#sec-bv-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level decomposition (and "full" for the rigorous version with the irreducible-error term).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the course's two-term decomposition `Total Error = Bias² + Variance` (Lecture 5, slide 10/11), with the plain-language reading: bias = systematic error from over-simple assumptions, variance = sensitivity to the training sample, and why increasing complexity moves error from the first term to the second. See the [math appendix](../appendix/math_appendix.qmd#sec-biasvar).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — the full pointwise decomposition with the **irreducible-error term** the slide omits [R9-2]:
+$$
+\mathbb{E}\!\left[(y - \hat f(x))^2\right] \;=\; \underbrace{\sigma^2}_{\text{irreducible}} \;+\; \underbrace{\operatorname{Bias}^2[\hat f(x)]}_{} \;+\; \underbrace{\operatorname{Var}[\hat f(x)]}_{}
+$$
+where `σ²` is the variance of the noise in `y` (here `0.2² = 0.04`) — the floor no model can beat — anchored to **ESL §7.3**. The derivation (adding and subtracting `E[f̂]`, expanding the square, and showing the cross-term vanishes) is supplied in Phase 3; the slide's two-term form is the special case that drops `σ²`. Anchored to ESL §7.3.
+:::
 :::

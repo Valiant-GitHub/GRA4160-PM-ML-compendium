@@ -3,6 +3,186 @@ title: "Principal Component Analysis (PCA)"
 body-classes: fam-unsup
 ---
 
+[**Unsupervised**]{.fam-badge} · the workhorse of linear dimensionality reduction — it rewrites your features as a handful of uncorrelated directions that pack in as much variance as possible, for visualization, noise reduction, or compression. Siblings: [LDA](lda.qmd) (the *supervised* cousin — maximizes class separation, not raw variance), [K-Means](kmeans.qmd) (the natural downstream step — reduce, then cluster), [Regularization](regularization.qmd) (the rival fix for many/correlated predictors — *shrink* the original axes instead of *projecting* onto new ones).
+
+## 1. Essence
+
+Principal Component Analysis takes a dataset with many (possibly correlated) features and finds a new set of axes — the **principal components** — that are mutually orthogonal and ordered so the first captures the most variance in the data, the second the most of what remains, and so on. Keeping only the first few components gives you a faithful lower-dimensional version of the data: fewer columns, but most of the information retained. It is a **linear** technique — each component is a weighted combination of the original features — and it is **unsupervised**: it looks only at the spread of the predictors and *ignores any class labels* entirely (Lecture 6, slide 9/19).
+
+The three things people do with it are visualization, preprocessing, and compression. **Visualization**: project high-dimensional data down to 2 or 3 components and plot it to spot clusters, trends, and outliers. **Preprocessing / noise reduction**: drop the low-variance components, which often carry mostly noise, to mitigate the curse of dimensionality and feed a cleaner, smaller representation to a downstream model. **Compression**: store the few high-variance components instead of all original features (the Eigenfaces idea for images) (Lecture 6, slide 10/19).
+
+The single most important practical rule is **standardize first**. PCA chases variance, and variance is not scale-invariant: a feature measured in large units (proline in milligrams, area in mm²) will dominate the first component purely because its *numbers* are bigger, not because it is more informative. Lecture 6 calls standardization "crucial for unbiased results" (slide 11/19), and the worked examples in §4 show exactly what goes wrong when you skip it. Compared with its neighbours: [LDA](lda.qmd) does dimensionality reduction too, but *supervised* — it keeps the directions that separate the classes, not the directions of largest total spread; [Regularization](regularization.qmd) tackles the same many/correlated-predictor problem but by shrinking coefficients on the *original* (interpretable) axes rather than replacing them with components; and [K-Means](kmeans.qmd) is the clustering step PCA most often feeds (Lecture 6, slide 18/19).
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for PCA when…**
+
+- You have **many features, some correlated**, and want to **compress them into a few uncorrelated directions** while keeping most of the information — read off how much you keep from the **explained-variance ratio** (Lecture 6, slide 6/19).
+- You want to **visualize** high-dimensional data in 2D/3D to look for clusters, trends, or outliers before modelling (Lecture 6, slide 10/19).
+- You want **noise reduction / preprocessing** — discard the low-variance tail of components, which is often noise, then feed the reduced data to a classifier or to [K-Means](kmeans.qmd) (Lecture 6, slides 10/18). The exam's Assignment 2 does exactly this: scale → PCA to 90 % variance → cluster (see §7).
+- You need **compression** of a large, redundant feature set (images, sensor banks).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **You have labels and care about class separation, not raw spread** → [**LDA**](lda.qmd). PCA's top component can run *across* the classes rather than between them, because it never sees `y`; LDA spends its budget on separability (the Iris contrast on the [LDA page](lda.qmd#sec-lda-iris) makes this vivid).
+- **The structure is genuinely non-linear** → PCA only finds *linear* directions; a curved manifold defeats it. Lecture 6 lists linearity as the first limitation (slide 11/19); reach for a non-linear reducer (t-SNE is named on slide 4/19) or a kernel method.
+- **You want to keep interpretable original features** and merely tame correlation/overfitting → [**Regularization**](regularization.qmd) (Ridge/Lasso) shrinks or zeros coefficients on the *original* axes; PCA's components are blends of all features and are harder to read (Lecture 6 lists interpretability as a limitation, slide 11/19).
+- **Outliers dominate** → PCA is variance-driven, so a few extreme points can swing the components (Lecture 6, slide 11/19); diagnose and consider robust methods first.
+:::
+
+## 3. Code idiom {#sec-pca-code}
+
+The canonical course idiom is `scikit-learn`'s `PCA`. There is no from-scratch implementation in the lecture notebook — the eigendecomposition/SVD mechanics are left as markdown theory *(notebook `10_PCA.ipynb`, cell 1)*; see [§8](#sec-pca-math) for that math (marked supplemental).
+
+**Canonical (sklearn)** — *(notebook `10_PCA.ipynb`, cell 6)*
+
+```python
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)        # keep the top 2 components
+pca.fit(X)                      # learns the directions from the spread of X (no y — unsupervised)
+pca.components_                 # the principal axes (each a length-p combination of features)
+X_proj = pca.transform(X)       # project X onto the 2 components → (n_samples, 2)
+pca.explained_variance_ratio_   # fraction of total variance each component captures
+```
+
+The one hyperparameter you normally touch is `n_components`: an **integer** keeps that many components; a **float in (0, 1)** keeps the *smallest* number of components reaching that cumulative variance — `PCA(n_components=0.90)` is the exact idiom for the exam's "90 % variance" task. The course reads off how much variance two components keep with *(notebook `10_PCA.ipynb`, cell 7)*:
+
+```python
+sum(pca.explained_variance_ratio_.round(2))   # e.g. 0.99 for unscaled seeds
+```
+
+**Standardize first — the pipeline idiom** *(notebook `10_PCA.ipynb`, cell 12)*. Because PCA is scale-sensitive, the course wraps a `StandardScaler` in front of it (here also feeding a downstream classifier), so the scaling is learned on the training fold and never leaks:
+
+```python
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.naive_bayes import GaussianNB
+
+std_clf = make_pipeline(StandardScaler(), PCA(n_components=2), GaussianNB())
+std_clf.fit(X_train, y_train)
+std_clf.named_steps['pca'].explained_variance_ratio_   # reach into a pipeline step
+```
+
+::: {.callout-pitfall}
+**The reproducibility + labeling traps in the lecture notebook (`phase0/disagreements.md` [NB-3]).** Three things in `10_PCA.ipynb` cell 12 are worth fixing when you reuse it: (i) its `train_test_split(features, target, test_size=0.30)` has **no `random_state`**, so the accuracy printout changes every run — *always* set a seed (the §4 numbers below use `random_state=42`). (ii) The left "Training dataset after PCA" panel actually plots `X_train[..., 0]` and `X_train[..., 1]` — the first two **raw features**, not the PCA projection — so it is **mislabeled**; only the right (standardized) panel truly shows PCA output. (iii) The notebook loads `../data/seeds.csv` (lowercase) while the repo file is `Data/seeds.csv` (capital D) — harmless on Windows but a real path-case mismatch.
+:::
+
+## 4. Worked examples
+
+### Example 1 — seeds: how much do 2 components keep, and does scaling matter? {#sec-pca-seeds}
+
+The lecture's first dataset is **`seeds.csv`** — 140 wheat kernels, **7 geometric features** (`area`, `perimeter`, `compactness`, `length`, `width`, `asymmetry_coefficient`, `grove_length`), target `type` with 2 varieties (70 each) *(notebook `10_PCA.ipynb`, cells 3–4)*. The notebook fits PCA on the **raw** features *(cell 6)* and reports two components capture **0.99** of the variance *(cell 7 idiom `sum(pca.explained_variance_ratio_.round(2))`)*:
+
+```python
+X = seeds[['area','perimeter','compactness','length','width',
+           'asymmetry_coefficient','grove_length']]
+pca = PCA(n_components=2).fit(X)
+pca.explained_variance_ratio_          # ≈ [0.834, 0.157]  → sum ≈ 0.991
+```
+
+That **99 %** looks fantastic — until you remember PCA chases raw variance and these features are *unscaled*. `area` and `perimeter` have far larger numeric spread than `compactness`, so they dominate PC1 by units, not by importance. **Standardize first** and the picture is honest *(computed via the course `.venv`, `./.venv/Scripts/python.exe`)*:
+
+| seeds PCA | PC1 | PC1+PC2 | components for ≥ 90 % |
+|---|---|---|---|
+| **Unscaled** (nb10 cell 6) | 0.834 | **0.991** | 2 |
+| **Standardized** (`StandardScaler` first) | 0.692 | **0.859** | **3** |
+
+After standardizing, two components keep only **86 %**, and you need **three** to clear 90 % (computed) — the cumulative-variance curve in [§5](#sec-pca-viz) shows exactly where the 90 % line is crossed. The unscaled "99 %" was largely an artifact of `area`/`perimeter`'s units: this is the standardization lesson (Lecture 6, slide 11/19) made concrete on the course's own dataset, and it is precisely the decision the exam's "PCA to 90 % variance" hangs on.
+
+### Example 2 — wine: scaling flips a mediocre PCA into an excellent one {#sec-pca-wine}
+
+The lecture's second dataset is **Wine** (178 samples, **13 chemical features**, 3 cultivars), used to compare PCA *with* and *without* standardization through a `GaussianNB` classifier *(notebook `10_PCA.ipynb`, cell 12)*. Reproducing it with a fixed seed (the [NB-3] fix) *(computed via the `.venv`, `random_state=42`)*:
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    features, target, test_size=0.30, random_state=42)   # NB-3 fix: add a seed
+
+unscaled = make_pipeline(PCA(n_components=2), GaussianNB()).fit(X_train, y_train)
+scaled   = make_pipeline(StandardScaler(), PCA(n_components=2), GaussianNB()).fit(X_train, y_train)
+```
+
+| Wine, 2-component PCA → GaussianNB | PC1 evr | PC1+PC2 evr | Test accuracy |
+|---|---|---|---|
+| **Unscaled** | **0.998** | 0.9998 | 0.81 |
+| **Standardized** | 0.362 | 0.550 | **0.98** |
+
+Read the table the right way round. The *unscaled* PCA looks like it captures everything — **99.8 %** on PC1 alone — yet classifies worst (**0.81**). That single component is essentially just `proline`, whose raw variance (≈ 98,600) dwarfs every other feature by orders of magnitude (computed), so PCA aligns PC1 with one chemical and throws away the rest. **Standardize**, and the variance spreads across components (36 % / 19 %), PC1+PC2 keep a more modest 55 % — *and accuracy jumps to 0.98* (computed). More retained variance is not the goal; **retained *useful* variance** is, and only scaling delivers it. This is the headline limitation from Lecture 6 (slide 11/19): without standardization PCA is biased toward whichever feature happens to be measured in big numbers.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+Both examples teach the same thing from opposite directions: on seeds, scaling makes the "99 %" honestly *shrink* to 86 %; on wine, scaling makes a useless 99.8 %-on-PC1 split *spread out* and the downstream accuracy soar. The explained-variance ratio is only trustworthy **after** standardizing.
+:::
+
+## 5. Visualization {#sec-pca-viz}
+
+The one figure that earns its place for PCA is the **cumulative explained-variance curve** (a "scree"-style plot): how much of the total variance you have retained as you add components, with a horizontal line at the variance budget you are willing to keep. It turns the abstract phrase "PCA to 90 % variance" into a concrete *count* — read straight up from where the curve crosses the line. The data below is the **standardized seeds** PCA, computed in the course `.venv` *(`./.venv/Scripts/python.exe`, deterministic — PCA on fixed data has no random seed to set)*; it is the honest, scaled version of [Example 1](#sec-pca-seeds), and it is exactly the diagnostic the exam asks for.
+
+```{ojs}
+//| echo: false
+//| label: fig-pca-scree
+//| fig-cap: "Cumulative explained-variance curve for PCA on the standardized seeds data (7 features; computed in the course .venv, deterministic). Each point adds one principal component; the y-value is the running fraction of total variance retained. The dashed line is a 90 % variance budget — read straight up from where the curve crosses it: on the *standardized* data you need 3 components to clear 90 % (PC1+PC2 reach only 86 %), whereas the unscaled data hit 99 % on 2 components purely because area/perimeter dominate by raw units (see §4). This 'how many components for X % variance' read-off is exactly the exam's Assignment-2 task."
+famUnsup = (getComputedStyle(document.documentElement).getPropertyValue('--family-unsup').trim() || "#F18F01")
+screeData = [
+  {pc: 1, evr: 0.6924, cum: 0.6924},
+  {pc: 2, evr: 0.1666, cum: 0.8590},
+  {pc: 3, evr: 0.1258, cum: 0.9848},
+  {pc: 4, evr: 0.0098, cum: 0.9946},
+  {pc: 5, evr: 0.0039, cum: 0.9985},
+  {pc: 6, evr: 0.0014, cum: 0.9999},
+  {pc: 7, evr: 0.0001, cum: 1.0000}
+]
+Plot.plot({
+  height: 320, marginLeft: 55, marginRight: 20, grid: true,
+  x: {label: "number of principal components kept", domain: [0.5, 7.5], ticks: [1,2,3,4,5,6,7]},
+  y: {label: "cumulative variance retained", domain: [0, 1.02], percent: true},
+  marks: [
+    Plot.ruleY([0.90], {stroke: "#888", strokeDasharray: "5,4"}),
+    Plot.text([{x: 6.4, y: 0.90}], {x: "x", y: "y", text: ["90% budget"], dy: -8, fontSize: 11, fill: "#666"}),
+    Plot.areaY(screeData, {x: "pc", y: "cum", fill: famUnsup, fillOpacity: 0.12}),
+    Plot.line(screeData, {x: "pc", y: "cum", stroke: famUnsup, strokeWidth: 2.5}),
+    Plot.dot(screeData, {x: "pc", y: "cum", fill: famUnsup, r: 4}),
+    Plot.ruleX([3], {y1: 0, y2: 0.9848, stroke: famUnsup, strokeDasharray: "2,3", strokeOpacity: 0.6}),
+    Plot.text(screeData, {x: "pc", y: "cum", text: d => (d.cum*100).toFixed(0) + "%", dy: -12, fontSize: 9, fill: "#444"})
+  ]
+})
+```
+
+Static prose can say "keep components until you reach 90 %"; only the picture shows *which* count that is, and that the answer changes the moment you standardize — the elbow after PC3 is where the remaining components carry almost no variance (the noise tail you can safely discard for [K-Means](kmeans.qmd) or any downstream model).
+
+## 6. Diagnostics & interpretation
+
+What to report and look at to decide whether a PCA is doing its job:
+
+- **`explained_variance_ratio_` and its cumulative sum** — the headline. Report per-component and cumulative variance; choose `n_components` by a budget (90 %, 95 %) read off the [§5 curve](#sec-pca-viz), or by an elbow where added components stop paying. Remember it is only meaningful **after** standardizing (§4).
+- **Did you standardize?** — the first thing to check. On raw features with mixed units the top component can be one high-variance feature in disguise (wine's `proline`, §4). Lecture 6 stresses this as *crucial* (slide 11/19).
+- **Component loadings (`components_`)** — each component is a weighted blend of original features; inspect the weights to *interpret* what a component "means," but accept that blends are inherently harder to read than single features (the interpretability limitation, slide 11/19).
+- **Outlier check** — because PCA is variance-driven, a few extreme points can tilt the components; scan the projection scatter (or the original features) for outliers before trusting the axes (slide 11/19).
+
+::: {.callout-bigpicture}
+**PCA vs LDA, and choosing the number of components.** Both reduce dimensions linearly, but they optimize different things: [**PCA**](lda.qmd) is *unsupervised* — it keeps the directions of greatest **total variance**, ignoring labels — while [**LDA**](lda.qmd) is *supervised* and keeps the directions of greatest **class separation** (Lecture 6 slide 9/19; the [LDA Iris example](lda.qmd#sec-lda-iris) shows LDA's LD1 capturing ~99 % of between-class separation, which need not coincide with PCA's top variance axis). LDA is also *capped* at #classes − 1 components; PCA can return up to #features. For **choosing the count**, PCA has no labels to validate against, so the rule is the explained-variance budget (the §5 curve), not cross-validated accuracy — that is the exam's chosen criterion (90 %). Versus [**Regularization**](regularization.qmd), PCA *projects* onto new uncorrelated axes (losing interpretability of the originals) where Ridge/Lasso *shrink* the original coefficients (keeping them).
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How PCA shows up — this is core to the unsupervised assignment.** In the **Spring-2025 take-home (Assignment 2)** the unsupervised task runs on **`WholesaleCustomers.csv`**: **standardize the features, apply PCA keeping enough components for 90 % of the variance, interpret what those components represent, then feed the reduced data into [K-Means](kmeans.qmd)** (`phase0/concept_inventory.md`; `phase0/exam_spring2025_notebook.md`). Expect to (i) write the pipeline idiom from [§3](#sec-pca-code) — *`StandardScaler` before `PCA`*, the non-negotiable step (§4); (ii) use **`PCA(n_components=0.90)`** (or read the cumulative-variance curve, [§5](#sec-pca-viz)) and *justify the component count*; (iii) **interpret the components** from their loadings — "PC1 is mostly spending on X and Y" — accepting that blends are harder to read; and (iv) hand the projection to [K-Means](kmeans.qmd) and choose `k` by elbow/silhouette. The grade rests on the *reasoning* — why standardize, why this many components, what they mean — at least as much as on the code. The classic slip to avoid: running PCA on **unscaled** features, which (as the wine example shows) lets one big-unit feature hijack the first component.
+:::
+
+## 8. Math {#sec-pca-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — PCA stated as the course teaches it (conceptually): principal components are the **orthogonal directions that successively maximize variance** — PC1 captures the most variance in the data, PC2 the most of the remaining variance subject to being orthogonal to PC1, and so on (Lecture 6, slide 9/19). The amount kept is summarized by the **explained-variance ratio** — the fraction of total variance along each component — which the notebook reads off as `explained_variance_ratio_` and sums to decide how many components to keep (notebook `10_PCA.ipynb`, cell 7). **Note:** Lecture 6 gives PCA *only conceptually* — there is **no covariance-eigendecomposition or SVD formula on the slides** (`phase0/disagreements.md` [R9-5]); the formal eigen/SVD statement lives in Mode B below, drawn from the textbooks, not the course deck.
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor *(supplemental — ESL §14.5 / ISL §12.2, not on the course slides; `phase0/disagreements.md` [R9-5])*.** *(written in Phase 3)* — the eigen/SVD characterization the slides omit. Center the data, $\bar X = X - \operatorname{mean}(X)$, and form the sample covariance $\Sigma = \tfrac1n \bar X^\top \bar X$; its **eigendecomposition** $\Sigma v_j = \lambda_j v_j$ gives the principal components as the eigenvectors $v_j$ ordered by eigenvalue $\lambda_j$ (the variance along $v_j$), and the projection $\hat X = \bar X V$ keeps the top columns of $V$ (notebook `10_PCA.ipynb`, cell 1, markdown). Equivalently, via the **singular value decomposition** $X = U D V^\top$, the right-singular vectors (columns of $V$) are the components and the singular values $d_j$ give the variance — the numerically preferred route (sklearn's `PCA` uses SVD). The **explained-variance ratio** of component $j$ is then $\lambda_j / \sum_k \lambda_k = d_j^2 / \sum_k d_k^2$, and "PCA to 90 % variance" means the smallest $m$ with $\sum_{j\le m}\lambda_j / \sum_k \lambda_k \ge 0.90$. *Local notation* (per `phase0/notation_table.md`, which records that the slides assign **no symbol** to PCA components): $v_j$ = $j$-th principal-component vector, $\lambda_j$ = its eigenvalue/variance, $d_j$ = $j$-th singular value — supplied from ESL §14.5. Here $\lambda$ is a **PCA eigenvalue**, not a regularization strength. Anchored to ESL §14.5 and ISL §12.2. See the [math appendix](../appendix/math_appendix.qmd#sec-linalg).
+:::
 :::

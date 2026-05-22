@@ -3,6 +3,227 @@ title: "Cross-Validation & Information Criteria"
 body-classes: fam-cross
 ---
 
+[**Cross-cutting**]{.fam-badge} · the machinery for *choosing* a model and *honestly estimating* how good it is — the tuning engine behind every other page. Two routes to the same goal: **information criteria** (AIC/BIC) score complexity-vs-fit from a single fit, no hold-out needed; **cross-validation** re-uses the data as its own validation set. Used to set [Ridge/Lasso](regularization.qmd) `alpha`, tree depth on [Decision Trees](decision_trees.qmd), `k` for clustering — and to keep [bias and variance](bias_variance.qmd) in balance.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**Notation on this page.** `k` is overloaded in the course (Lecture 5 uses it for *both* the number of parameters in AIC/BIC *and* the number of folds in CV). To stay unambiguous we follow the [notation table](../appendix/notation_table.qmd): **`d`** = number of parameters (AIC/BIC), **`V`** = number of folds (CV), `n` = sample size, and the likelihood is written **𝓛** ("the slide writes `L`"). Where we quote a course formula verbatim we keep its symbols and note the mapping.
+:::
+
+## 1. Essence
+
+Two questions sit underneath every modelling task, and Lecture 5 (slide 3/11) insists they are *different*. **Model selection** asks "which model — or which hyperparameter — is best?"; its job is to pick the structure, and its tools are validation sets and information criteria. **Model evaluation** asks "how well will the chosen model do on data it has never seen?"; its job is to estimate real-world error honestly, and its tool is a held-out test set. The cardinal sin — repeated as the lecture's first takeaway (slide 11/11) — is to **tune on the test set**: once you have used data to *choose*, that data can no longer give you an *unbiased estimate* of performance.
+
+**Information criteria** (AIC, BIC) attack selection from one fit. They take the model's likelihood — how well it explains the data — and *penalize* it for the number of parameters, so a more complex model only "wins" if its better fit outweighs its extra cost. The headline property: they need **no hold-out set**, just a likelihood, so they are fast and use all the data (Lecture 5, slide 6/11; slide 11/11).
+
+**Cross-validation** attacks both selection and evaluation by recycling the data: split it into `V` folds, train on `V−1`, score on the one left out, rotate, and average. It assumes nothing about the model — no likelihood required — which is why Lecture 5 calls (stratified) CV "the gold standard" (slide 11/11). The cost is `V` model fits instead of one. Everything else on this page is a variation on these two ideas, and both are in service of the [bias–variance trade-off](bias_variance.qmd): selection is the act of finding the complexity sweet spot.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for information criteria (AIC/BIC) when…**
+
+- You have a model with a **likelihood** ([OLS](ols.qmd) / logistic regression, Lasso paths) and want to **compare nested or competing models cheaply** — one fit, no hold-out (Lecture 5, slide 6/11).
+- **Data is scarce** and you can't afford to carve off a validation set.
+- You want a **parsimony bias**: use **BIC** when you specifically want the *simplest* defensible model — its `ln(n)·d` penalty is heavier than AIC's `2d`, so it favours fewer parameters as `n` grows (slide 6/11).
+- You want to **estimate out-of-sample error** without a hold-out: that is exactly what **AIC** approximates (slide 6/11).
+
+**Reach for cross-validation when…**
+
+- The model has **no clean likelihood** (kNN, trees, random forests, SVMs) — CV is **model-agnostic** and the course's default tuning tool.
+- You are **selecting a hyperparameter** (`alpha`, `k`, `max_depth`) — score each candidate by CV and pick the best (§4).
+- You need an **honest performance estimate** and can spare the compute — CV is the gold standard (slide 11/11).
+- **Classes are imbalanced** → use **stratified** `V`-fold so every fold keeps the class ratio (slide 9/11).
+- **`n` is small** → **LOOCV** (`V = n`) is nearly unbiased (slide 9/11).
+:::
+
+::: {.callout-pitfall}
+**Watch out when…**
+
+- **Comparing AIC/BIC across different datasets or different targets** → meaningless. The rule of thumb is *lower is better, but only on the same data* (Lecture 5, slide 6/11). An AIC of 4000 on one fit and 50 on another tells you nothing if they were not fit to the same `y`.
+- **The model has no likelihood** → AIC/BIC don't apply; use CV.
+- **LOOCV on a large `n` or a slow model** → `n` refits is expensive (slide 9/11); prefer 5- or 10-fold.
+- **You let the test set leak into selection** → any preprocessing fit (scaling, feature selection) must live *inside* the CV loop / pipeline, or the estimate is optimistically biased. The course idiom wraps the scaler and estimator in `make_pipeline` precisely so the scaler is re-fit on each training fold (§3).
+- **A single validation set drives many decisions** → you can overfit *that subset*; CV (averaging over folds) is the antidote (slide 3/11).
+:::
+
+## 3. Code idiom
+
+The course teaches both routes with `scikit-learn`. There is no from-scratch implementation in the notebook — AIC/BIC are derived as markdown theory and the CV is delegated to sklearn estimators *(notebook `08_Information_criteria_and_cross_validation (1).ipynb`, cell 5)*.
+
+**Information criteria via the Lasso path** *(notebook `08_…`, cell 6)*. `LassoLarsIC` fits the full Lasso regularization path and picks the `alpha` that minimizes the criterion. Note the `make_pipeline` wrapper so `StandardScaler` is re-fit per fit, and the `set_params` idiom for switching criterion:
+
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LassoLarsIC
+from sklearn.pipeline import make_pipeline
+
+# AIC: minimizes 2d − 2ln(𝓛) along the Lasso path
+lasso_lars_ic = make_pipeline(StandardScaler(), LassoLarsIC(criterion="aic")).fit(X, y)
+alpha_aic = lasso_lars_ic[-1].alpha_       # alpha that minimizes AIC
+coefs     = lasso_lars_ic[-1].coef_        # coefficients at that alpha
+zero_coefs = np.where(coefs == 0)[0]       # which features Lasso dropped
+
+# Switch the same pipeline to BIC and refit (heavier penalty → simpler model)
+lasso_lars_ic.set_params(lassolarsic__criterion="bic").fit(X, y)
+alpha_bic = lasso_lars_ic[-1].alpha_
+```
+
+**Cross-validated `alpha`** *(notebook `08_…`, cells 11–12)*. Two solvers, two CV settings as written in the notebook:
+
+```python
+from sklearn.linear_model import LassoCV, LassoLarsCV
+
+# coordinate descent, 10-fold CV
+model = make_pipeline(StandardScaler(), LassoCV(cv=10)).fit(X, y)
+lasso = model[-1]
+lasso.alpha_       # CV-selected alpha
+lasso.alphas_      # the alpha grid  ← attribute name
+lasso.mse_path_    # MSE per (alpha, fold)
+
+# least-angle regression, 20-fold CV
+model2 = make_pipeline(StandardScaler(), LassoLarsCV(cv=20)).fit(X, y)
+lasso2 = model2[-1]
+lasso2.cv_alphas_  # the alpha grid  ← DIFFERENT attribute name
+```
+
+::: {.callout-pitfall}
+**Real API difference worth memorizing.** `LassoCV` exposes its grid as **`.alphas_`** (cell 11) but `LassoLarsCV` exposes it as **`.cv_alphas_`** (cell 12). Plotting the MSE path with the wrong attribute name raises `AttributeError`. This is a genuine sklearn distinction, not a typo. *(Aside: the notebook uses `cv=10` for `LassoCV` but `cv=20` for `LassoLarsCV`, while a comment still says "10-fold" — a code/prose inconsistency, not an error; quote the actual `cv=20` per the build rules. `[VERIFY: intended cv=20 for Lars?]`)*
+:::
+
+**Model-agnostic CV — the universal idiom** *(exercise `05_Model_selection_evaluation_and_assessment_VHL.ipynb`, cells 2 & 5)*. `cross_val_score` for a quick estimate; `GridSearchCV` to search a hyperparameter grid:
+
+```python
+from sklearn.model_selection import cross_val_score, GridSearchCV
+
+# one number per fold; .mean() summarizes, .std() is the CV variance
+scores = cross_val_score(KNeighborsClassifier(n_neighbors=k), X, y, cv=5)
+
+# exhaustive grid search, scored by CV
+param_grid = {"max_depth": [None, 2, 3, 4, 5],
+              "min_samples_leaf": [1, 2, 3],
+              "min_samples_split": [2, 3, 4]}
+grid = GridSearchCV(DecisionTreeClassifier(random_state=42), param_grid, cv=5, scoring="accuracy")
+grid.fit(X, y)
+grid.best_params_, grid.best_score_
+```
+
+## 4. Worked examples
+
+### Example 1 — do AIC, BIC and CV pick the same `alpha`? (diabetes + injected noise) {#sec-cv-diabetes}
+
+The notebook's centrepiece is a stress test for feature selection *(notebook `08_…`, cells 2–3)*: take sklearn's **diabetes** data (442 patients, 10 real features), scale it, then **append 8 pure-noise features** (`random_00 … random_07`, drawn with `np.random.RandomState(10)`). A good selector should keep the real signal and drop the noise. We then ask three selectors — AIC, BIC, and CV — for their `alpha`:
+
+```python
+X, y = load_diabetes(return_X_y=True, as_frame=True)
+X = X / X.std()
+rng = np.random.RandomState(10)
+X_random = pd.DataFrame(rng.randn(X.shape[0], 8),
+                        columns=[f"random_{i:02d}" for i in range(8)])
+X = pd.concat([X, X_random], axis=1)        # 442 × 18 (10 real + 8 noise)
+```
+
+Running the notebook's exact code (computed, sklearn 1.8.0, the notebook stores no numeric outputs in our extract):
+
+| Selector | chosen `alpha` | # non-zero features (of 18) | noise features kept |
+|---|---|---|---|
+| **AIC** (`LassoLarsIC`) | ≈ 1.52 | 8 | 1 (`random_07`) |
+| **BIC** (`LassoLarsIC`) | ≈ 4.35 | 5 | 0 |
+| **CV** (`LassoCV`, `cv=10`) | ≈ 1.70 | 8 | 1 (`random_07`) |
+| **CV** (`LassoLarsCV`, `cv=20`) | ≈ 1.39 | 9 | 2 (`random_04`, `random_07`) |
+
+(computed via `./.venv/Scripts/python.exe`; the noise injection is seeded with `RandomState(10)`, so these are reproducible.)
+
+The story this tells: **they do *not* all pick the same `alpha`**, and the differences are exactly what the theory predicts. **BIC's heavier `ln(n)·d` penalty** (with `n = 442`, `ln 442 ≈ 6.1` vs AIC's `2`) forces the largest `alpha`, keeps the fewest features (5), and is the **only selector that drops *all* the noise** — a vivid demonstration that BIC favours simpler models (Lecture 5, slide 6/11). AIC and `LassoCV` land close to each other (~1.5–1.7) and each let **one** noise feature (`random_07`) slip through; `LassoLarsCV`'s lighter `alpha` keeps **two**. The lesson is the connective tissue of this whole site: *the selection rule you choose changes the model you ship*, and BIC↔AIC↔CV trade between parsimony and fit.
+
+::: {.callout-bigpicture}
+This is the same `alpha` that [Ridge/Lasso](regularization.qmd) need set, and the exam's Assignment 1 sets it by CV on `Hitters.csv`. The general pattern — *fit a path, score each `alpha`, pick the best* — is what CV does for `max_depth` on a [tree](decision_trees.qmd) and `k` on a clusterer. CV is the tuning engine behind every method page.
+:::
+
+### Example 2 — choosing `k` for kNN by `cross_val_score` (Iris) {#sec-cv-knn}
+
+The model-agnostic route, straight from the course exercise *(exercise `05_…_VHL.ipynb`, cell 2)*. Loop `k` over a range, score each with 5-fold CV, plot the curve, read off the peak:
+
+```python
+for k in range(1, 15):
+    scores = cross_val_score(KNeighborsClassifier(n_neighbors=k), X, y, cv=5)
+    print(f"k={k}: CV accuracy = {scores.mean():.3f}")
+```
+
+Computed (sklearn 1.8.0, Iris is deterministic so no seed needed): accuracy rises then plateaus — `k=1` gives **0.960**, climbing to a **0.980** peak at `k=7` and `k=10`, then easing back to **0.967** by `k=15`. (Searching `k = 1…14` as the exercise does, the best is `k=6` at 0.980.) Small `k` is high-variance (jagged boundary, sensitive to single points); large `k` is high-bias (over-smoothed) — the curve *is* the [bias–variance trade-off](bias_variance.qmd) made visible, and CV is what lets you see it without touching the test set. The per-fold spread (e.g. `k=7`: folds `[0.967, 1.0, 0.967, 0.967, 1.0]`, std ≈ 0.016) is the **variance of the CV estimate** itself — see Diagnostics.
+
+For a grid of *several* hyperparameters at once, `GridSearchCV` does the same search exhaustively. On Iris with a decision tree *(exercise `05_…`, cell 5)* it returns `best_params_ = {'max_depth': 3, 'min_samples_leaf': 1, 'min_samples_split': 2}` at a best CV accuracy of **0.973** (computed) — the CV-chosen tree complexity, exactly the move Assignment 3 makes on breast-cancer data.
+
+## 5. Visualization
+
+The figure below is the AIC/BIC route from Example 1: each criterion as a function of `alpha`, with the chosen (minimizing) `alpha` marked. It makes the selection *mechanism* visible — you literally see each curve bottom out at a different `alpha`, and you see BIC's minimum sitting to the right of AIC's (a larger `alpha`, a simpler model). The notebook draws this with `results.plot()` plus `vlines` at `alpha_aic`/`alpha_bic` *(notebook `08_…`, cell 8)*; here it is rebuilt as an Observable Plot with the computed minimizing-`alpha` values marked.
+
+```{ojs}
+//| echo: false
+//| label: fig-cv-ic
+//| fig-cap: "Information-criterion model selection on diabetes + 8 noise features (after notebook 08, cell 8). Each curve is an information criterion vs the Lasso penalty α (log scale); lower is better. The dashed verticals mark the minimizing α — AIC ≈ 1.52, BIC ≈ 4.35 (computed, sklearn 1.8.0). BIC's heavier ln(n)·d penalty pushes its minimum to a larger α, i.e. a simpler model. The criterion curves here are an illustrative convex schematic anchored to the two computed minima, not the notebook's per-α values."
+famCross = (getComputedStyle(document.documentElement).getPropertyValue('--family-cross').trim() || "#3D405B")
+icData = {
+  // log-spaced alpha grid; two illustrative convex criterion curves whose minima
+  // sit at the COMPUTED minimizing alphas (AIC≈1.52, BIC≈4.35). Shapes schematic.
+  const alphas = d3.range(0, 60).map(i => Math.pow(10, -1 + (3*i/59)));  // 0.1 … 100
+  const aicMin = 1.52, bicMin = 4.35;
+  const curve = (a, amin, base, scale) => base + scale*Math.pow(Math.log(a/amin), 2);
+  const rows = [];
+  for (const a of alphas) {
+    rows.push({alpha: a, criterion: curve(a, aicMin, 4030, 95), kind: "AIC"});
+    rows.push({alpha: a, criterion: curve(a, bicMin, 4075, 95), kind: "BIC"});
+  }
+  return rows;
+}
+Plot.plot({
+  height: 320, marginLeft: 60, grid: true,
+  x: {type: "log", label: "α (Lasso penalty, log scale)"},
+  y: {label: "criterion (lower is better)", domain: [4000, 4600]},
+  color: {legend: true, domain: ["AIC", "BIC"], range: [famCross, "#F18F01"]},
+  marks: [
+    Plot.line(icData, {x: "alpha", y: "criterion", stroke: "kind", strokeWidth: 2}),
+    Plot.ruleX([1.52], {stroke: famCross, strokeDasharray: "4,3", strokeOpacity: 0.8}),
+    Plot.ruleX([4.35], {stroke: "#F18F01", strokeDasharray: "4,3", strokeOpacity: 0.8}),
+    Plot.text([{a: 1.52, l: "AIC α≈1.52"}], {x: "a", y: 4560, text: "l", fill: famCross, dx: -4, textAnchor: "end", fontSize: 11}),
+    Plot.text([{a: 4.35, l: "BIC α≈4.35"}], {x: "a", y: 4560, text: "l", fill: "#F18F01", dx: 4, textAnchor: "start", fontSize: 11})
+  ]
+})
+```
+
+## 6. Diagnostics & interpretation
+
+What to look at to decide whether your selection/evaluation is trustworthy:
+
+- **AIC vs BIC divergence.** When they pick the same model, you have a robust choice. When they disagree (as in Example 1: AIC keeps 8 features, BIC keeps 5), the gap *is* information — BIC's `ln(n)·d` penalty is telling you the extra parameters AIC kept are weakly supported. Prefer BIC when parsimony matters, AIC when out-of-sample prediction is the goal (Lecture 5, slide 6/11). Report **both**; quote them only relative to each other on the **same data**.
+- **CV variance (the fold spread).** `cross_val_score` gives one number per fold; its **standard deviation** measures how stable the estimate is. A large spread means your performance estimate is itself uncertain — the cue to use more folds or **repeated CV**, which re-runs `V`-fold with fresh splits to reduce the variance of the estimate (slide 9/11).
+- **The one-standard-error rule.** When the CV curve is flat near its optimum, don't blindly take the literal minimum. The **1-SE rule** (Lecture 3, slide 19/20, for λ-selection) picks the *simplest* model within one standard error of the best CV score — a deliberate lean toward parsimony that guards against chasing noise in the CV estimate. This is the principled way to break a near-tie like Iris kNN's `k=6/7/10` plateau (§4).
+- **Stratification check (classification).** If classes are imbalanced, plain `V`-fold can produce folds with skewed (or missing) classes; **stratified** `V`-fold preserves the ratio and is "the gold standard" for classification (slide 9/11). sklearn uses stratified folds by default for classifiers in `cross_val_score`/`GridSearchCV`.
+- **Did selection leak?** Confirm scaling/feature-selection sit inside the pipeline (so they're re-fit per fold) and that the **test set was never touched during tuning** (slide 3/11).
+
+::: {.callout-bigpicture}
+Comparative diagnostic: information criteria give you a *number per model* you can rank instantly (cheap, but needs a likelihood and assumes the model class is correctly specified); CV gives you a *distribution of scores* (richer — you see the variance — but costs `V` fits and any model). Match the tool to the question: AIC/BIC for fast likelihood-based comparison, CV for everything else.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How CV shows up.** Cross-validation is the **connective tissue of the entire Spring-2025 take-home**: *all four assignments tune hyperparameters via CV* (`phase0/exam_spring2025_notebook.md`). **Assignment 1** (`Hitters.csv`): use CV on the training set to find the optimal **`alpha`** for Ridge and Lasso, report the chosen values, then evaluate on the test set (item 1.6). **Assignment 2** (`WholesaleCustomers.csv`): choose **`k`** for K-Means via the elbow method and/or silhouette score (item 2.4). **Assignment 3** (`wdbc.data`): CV for **tree complexity** (item 3.3) and **boosting parameters** (item 3.5). **Assignment 4** (`SimulatedData.csv`): general CV tuning with a *hidden grader hold-out* — the model must generalize (items 4.5, 4.8). The recurring workflow the grader expects is explicit: *load → EDA → clean → encode/scale → split → model → **tune via cross-validation** → evaluate → compare → interpret*. The grade rests on doing selection and evaluation **separately** — never tuning on the test set (Lecture 5, slide 3/11) — and on *justifying* the chosen hyperparameter, not just printing it. Information criteria do **not** appear as an exam task in 2025; they are lecture/notebook material (AIC/BIC on the diabetes example).
+:::
+
+## 8. Math {#sec-cv-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the two information criteria as written on Lecture 5 slide 6/11, with `d` = number of parameters, `n` = sample size, `𝓛` = likelihood (the slide writes `L`):
+$$\mathrm{AIC} = 2d - 2\ln(\mathcal{L}), \qquad \mathrm{BIC} = \ln(n)\,d - 2\ln(\mathcal{L})$$
+"lower is better; compare only on the same data." Plus the `V`-fold CV procedure (slide 7/11): shuffle → split into `V` folds → for each fold, train on the other `V−1` and score on the held-out fold → average the `V` scores; with the special cases **stratified** `V`-fold (preserve class ratios, slide 9/11), **LOOCV** (`V = n`, slide 9/11), and **repeated CV**. Note the `[R9-2]` caveat that the bias–variance decomposition the course writes as `Bias² + Variance` omits the irreducible `σ²` floor (full form `Err = σ² + Bias² + Var`, ESL §7.3). See the [math appendix](../appendix/math_appendix.qmd#sec-infocrit).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — **AIC** as an estimate of the expected Kullback–Leibler divergence between the fitted and true distributions (asymptotic bias correction `+2d`); **BIC** as the Laplace/Schwarz approximation to the log marginal likelihood (the `ln(n)·d` term arising from the determinant of the Hessian). Per `[R9-3]`: the **general likelihood form** above is primary (matches ESL §7.5/7.7, `−2·loglik + 2d` and `+(log n)d`); note that **ISL §6.1's linear-model AIC** `(1/nσ̂²)(RSS + 2dσ̂²)` differs by scaling and constants — same minimizer, different units. CV's link to the **bias–variance trade-off** of the *estimator of test error* (LOOCV nearly unbiased but higher-variance; `V=5/10` a common compromise) and the **one-standard-error rule**. Anchored to ESL §7.5–7.7 (criteria), §7.10 (cross-validation).
+:::
 :::

@@ -3,6 +3,170 @@ title: "Ordinary Least Squares (OLS)"
 body-classes: fam-linear
 ---
 
+[**Linear family**]{.fam-badge} · the baseline you reach for first in regression, and the reference every other regressor is judged against. Siblings: [Ridge / Lasso / Elastic Net](regularization.qmd) (shrink OLS), [kNN](knn.qmd) and [Decision Trees](decision_trees.qmd) (non-parametric alternatives), [Logistic Regression](logistic.qmd) (the classification analogue).
+
+## 1. Essence
+
+Ordinary least squares fits a straight-line relationship between a set of predictors and a continuous target by choosing the coefficients that make the model's predictions miss the observed values by as little as possible — specifically, by minimizing the **sum of squared residuals**. The output is one number per predictor (a *coefficient*, or weight) plus an intercept, which together describe how the target is expected to move when each predictor moves by one unit. That interpretability is the whole point: OLS is used as much for *inference* ("how does this feature influence the outcome?") as for *prediction* (Lecture 2, slide 7/10).
+
+It is a **parametric** model: you commit to a fixed functional form (linear) with a fixed number of parameters, so it trains instantly, needs little data, and is easy to read — but it is misleading if the true relationship is far from linear. Under the Gauss–Markov assumptions (linearity, no perfect multicollinearity, homoscedastic uncorrelated errors), OLS is the **Best Linear Unbiased Estimator** (BLUE) — among all unbiased linear estimators it has the smallest variance (Lecture 2, slide 7/10).
+
+Compared with its nearest neighbors: [Ridge and Lasso](regularization.qmd) are OLS with a penalty that trades a little bias for much lower variance when predictors are many or correlated; [kNN](knn.qmd) and [trees](decision_trees.qmd) drop the linear-form assumption entirely (more flexible, less interpretable, hungrier for data); and [logistic regression](logistic.qmd) is the same linear machinery aimed at a binary target instead of a continuous one.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for OLS when…**
+
+- The target is **continuous** and you expect a roughly **linear** relationship (or you can make it linear with transforms / interactions).
+- You want **interpretable coefficients** for inference — the sign and size of each effect, with standard errors.
+- You have **more rows than predictors** ($n > p$), little multicollinearity, and roughly constant-variance noise.
+- You need a **fast, transparent baseline** before trying anything fancier. On the Spring-2025 exam's Hitters task, OLS is exactly that baseline (see §7).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else when…**
+
+- **Predictors outnumber or rival observations ($p \gtrsim n$), or are strongly correlated** → coefficients become unstable and variance explodes. Use [**Ridge**](regularization.qmd) (shrinks correlated coefficients together) or [**Lasso**](regularization.qmd) (zeros out the irrelevant ones). The Hitters example in §4 shows the symptom: a large train–test $R^2$ gap.
+- **The relationship is clearly non-linear** and you don't want to hand-engineer the form → [**Decision Trees / Random Forests**](random_forests.qmd) or [**kNN**](knn.qmd) capture curvature automatically.
+- **The target is a class, not a number** → [**Logistic Regression**](logistic.qmd) or [**LDA**](lda.qmd).
+- **Outliers dominate** → squared error is sensitive to them; consider robust regression or at least diagnose with residual plots (§6).
+:::
+
+## 3. Code idiom
+
+The canonical course idiom is `scikit-learn`'s `LinearRegression`; the course also builds OLS from scratch from the normal equations so the mechanics are not a black box.
+
+**Canonical (sklearn)** — *(notebook `02_OLS (1).ipynb`, cell 13)*
+
+```python
+import sklearn.linear_model as lm
+
+model = lm.LinearRegression(fit_intercept=True)  # fit_intercept=True → also estimate β₀
+model.fit(X, y)                                   # X: (n_samples, n_features), y: (n_samples,)
+model.coef_        # the slopes β₁…β_p
+model.intercept_   # the intercept β₀
+model.predict(X_new)
+```
+
+The only hyperparameter you normally touch is `fit_intercept` (leave it `True` unless your data is already centered). Everything else is `default`.
+
+**From scratch — the normal equations** *(notebook `02_OLS (1).ipynb`, cell 8)*. This is what `fit` is doing under the hood, $\hat\beta = (X^\top X)^{-1}X^\top y$:
+
+```python
+X_ = np.column_stack((np.ones(n_samples), X))  # prepend a column of 1s for the intercept
+betas = np.linalg.inv(X_.T @ X_) @ (X_.T @ y)  # betas[0] = intercept, betas[1:] = slopes
+```
+
+::: {.callout-pitfall}
+**Idiom variation worth knowing.** Inverting $X^\top X$ explicitly (`np.linalg.inv`) is fine for teaching but numerically fragile. The course's OOP version *(notebook `02_OLS (1).ipynb`, cell 10)* prefers `np.linalg.solve(XTX, XTY)`, which solves the system without forming the inverse — use `solve` (or sklearn) in real work.
+:::
+
+## 4. Worked examples
+
+### Example 1 — recovering a known line (synthetic) {#sec-ols-synth}
+
+The course generates data from a known process and checks that OLS recovers it *(notebook `02_OLS (1).ipynb`, cell 3)* — the cleanest possible sanity check:
+
+```python
+# Data-generating process: y = intercept + coeff·x + 0.2·noise
+X      = np.random.rand(n_samples, 1)          # 100 points, one feature ~ Uniform(0,1)
+coeffs = np.random.rand(1).round(2)            # the "truth" we want to recover
+intercept = np.random.rand(1).round(2)[0]
+y = intercept + X @ coeffs + 0.2*np.random.randn(n_samples)
+```
+
+Fitting OLS on a fixed draw (seed 0: true intercept 0.27, true slope 0.68) recovers **intercept ≈ 0.290, slope ≈ 0.712** — close to the truth, the small gap being the $0.2$-scale noise. The in-sample $R^2 \approx 0.52$ is modest *because the noise is large relative to the signal*, not because the fit is wrong: a vivid reminder that $R^2$ measures explained variance, not correctness, and that there is an irreducible noise floor no model can beat (see [Bias–Variance](bias_variance.qmd)).
+
+```{ojs}
+//| echo: false
+//| label: fig-ols-fit
+//| fig-cap: "Least squares on synthetic data (y = 0.27 + 0.68x + noise). Blue points are observations; the line is the fitted OLS model; green segments are residuals — OLS chooses the line that minimizes the sum of their squares. Reload to see a new noise draw: the line barely moves (low variance), the points scatter (the noise floor)."
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+olsData = {
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296}}
+  const r = mulberry32(7);
+  const gauss = () => { let u=0,v=0; while(!u)u=r(); while(!v)v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+  return Array.from({length: 60}, () => { const x = r(); return {x, y: 0.27 + 0.68*x + 0.2*gauss()}; });
+}
+olsFit = {
+  const xs = olsData.map(d=>d.x), ys = olsData.map(d=>d.y);
+  const mx = d3.mean(xs), my = d3.mean(ys);
+  const b1 = d3.sum(xs.map((x,i)=>(x-mx)*(ys[i]-my))) / d3.sum(xs.map(x=>(x-mx)**2));
+  return {b0: my - b1*mx, b1};
+}
+Plot.plot({
+  height: 300, marginLeft: 50, grid: true,
+  x: {label: "x"}, y: {label: "y"},
+  marks: [
+    Plot.ruleY([0], {stroke: "#ddd"}),
+    Plot.link(olsData, {x1: "x", x2: "x", y1: "y", y2: d => olsFit.b0 + olsFit.b1*d.x, stroke: "#2e8b57", strokeDasharray: "2,2", strokeOpacity: 0.7}),
+    Plot.dot(olsData, {x: "x", y: "y", fill: famLinear, fillOpacity: 0.75, r: 3}),
+    Plot.line([[0, olsFit.b0], [1, olsFit.b0 + olsFit.b1]], {stroke: famLinear, strokeWidth: 2.5})
+  ]
+})
+```
+
+### Example 2 — OLS as a regression baseline on Hitters {#sec-ols-hitters}
+
+The Spring-2025 exam's first task is regression on **`Hitters.csv`** (263 players after dropping missing salaries, predicting `Salary` in \$1000s). OLS is the natural baseline. Using the 16 numeric predictors with a 75/25 split (`random_state=1`):
+
+```python
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_squared_error
+
+df = pd.read_csv("Hitters.csv").dropna(subset=["Salary"])   # 322 → 263 rows
+X = df.select_dtypes("number").drop(columns=["Salary"])      # 16 numeric features
+y = df["Salary"]
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.25, random_state=1)
+
+ols = LinearRegression().fit(Xtr, ytr)
+print(r2_score(ytr, ols.predict(Xtr)), r2_score(yte, ols.predict(Xte)))
+```
+
+This yields **train $R^2 = 0.55$ but test $R^2 = 0.36$** (test RMSE ≈ \$377k). The gap between training and test performance is the fingerprint of **variance**: with 16 partly-redundant predictors (career totals like `CAtBat`, `CHits`, `CRuns` move together), OLS fits the training sample's noise. The largest coefficients — `Hits` (+7.7), `HmRun` (−5.0), `Walks` (+4.7) — are also unstable (note `HmRun` coming out *negative* once `Hits`/`RBI` are in the model, a classic multicollinearity artifact, not a claim that home runs lower salary).
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+This is precisely the setup where [**Ridge and Lasso**](regularization.qmd) earn their keep, and why the exam pairs OLS with them: shrink the correlated coefficients to close the train–test gap. See the [regression showdown](../cross_method/showdowns.qmd) for OLS vs Ridge vs Lasso vs Tree vs RF on this same dataset.
+:::
+
+## 5. Visualization
+
+The figure in §4 (Example 1) is the one visualization that earns its place for OLS: it makes the *objective itself* visible — the green residual segments are exactly the quantities OLS squares and sums, so you can see why the fitted line sits where it does and why a single outlier (a very long green segment) would tug the line toward itself. Static prose can state "minimize squared residuals"; only the picture shows the line balancing them.
+
+## 6. Diagnostics & interpretation
+
+What to report and look at to decide whether an OLS model is working:
+
+- **$R^2$ and adjusted $R^2$** — fraction of variance explained; adjusted $R^2$ penalizes adding useless predictors. Compare **train vs test** $R^2$: a large gap (as in Hitters: 0.55 vs 0.36) signals overfitting/variance.
+- **Residual plots** — residuals vs fitted values should look like structureless noise around zero. A funnel shape ⇒ heteroscedasticity (a Gauss–Markov violation); curvature ⇒ the linear form is wrong (consider transforms, or a non-linear model).
+- **Coefficient signs and magnitudes** — read them for inference, but only after checking scale: unscaled coefficients aren't comparable across predictors on different units. A coefficient with a "wrong" sign (Hitters' negative `HmRun`) is usually a **multicollinearity** symptom.
+- **Multicollinearity** — correlated predictors inflate coefficient variance (check a correlation matrix or VIF). This is the cue to move to [Ridge](regularization.qmd).
+
+::: {.callout-bigpicture}
+Comparative diagnostic vs siblings: OLS gives you *coefficients with standard errors* (great for inference) where a [Random Forest](random_forests.qmd) gives you *feature importances* (great for ranking drivers, useless for "+1 unit ⇒ +β"). Choose the diagnostic that matches the question you're answering.
+:::
+
+## 7. Past-exam lens
+
+::: {.callout-exam}
+**How OLS shows up.** In the **Spring-2025 take-home (Assignment 1, on `Hitters.csv`)**, OLS is the **baseline** against which regularized regressions are compared: fit it, report in/out-of-sample error, then introduce Ridge/Lasso with cross-validated `alpha` and **interpret the change in coefficients and the bias–variance trade-off** (`phase0/exam_spring2025_notebook.md`). The grade rests on the *justification* — explaining why shrinkage helps here — at least as much as on the code. Expect to (i) write the `LinearRegression` idiom from §3, (ii) report and *interpret* $R^2$/MSE in and out of sample, and (iii) connect the train–test gap to variance. OLS itself has not appeared as a stand-alone derivation question; it appears as the regression starting point.
+:::
+
+## 8. Math {#sec-ols-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the least-squares objective $\arg\min_\beta \sum_i (y_i - \beta^\top x_i)^2$ and the closed-form solution $\hat\beta = (X^\top X)^{-1}X^\top y$ (notebook `02_OLS (1).ipynb`, cell 7), with the interpretation of each term. See the [math appendix](../appendix/math_appendix.qmd#sec-linalg).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — derivation from $\nabla_\beta\lVert y-X\beta\rVert_2^2 = 0$, the Gauss–Markov theorem (BLUE), geometry of the orthogonal projection onto the column space of $X$, and the SVD view. Anchored to ESL §3.2.
+:::
 :::

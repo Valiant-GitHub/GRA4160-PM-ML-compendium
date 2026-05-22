@@ -3,6 +3,201 @@ title: "Ensemble Methods"
 body-classes: fam-tree
 ---
 
+[**Tree family**]{.fam-badge} · combine many models so the crowd beats any single member. Two big ideas dominate: **bagging** (train models in parallel on bootstrap samples and average — kills *variance*) and **boosting** (train models in sequence, each fixing the last one's mistakes — kills *bias*). A single [Decision Tree](decision_trees.qmd) is the high-variance learner these methods most often wrap; [Random Forests](random_forests.qmd) are a specific bagging ensemble (bagging *plus* feature randomness) important enough to get [their own page](random_forests.qmd). The trade you make everywhere here: more accuracy, less interpretability (Lecture 7, slide 3/21).
+
+## 1. Essence
+
+An ensemble trains **multiple models** and combines their predictions to get a more accurate, more robust result than any single model could deliver. It is not one algorithm but a *family of strategies* — and crucially it is **base-model-agnostic**: you can ensemble linear models, decision trees, or neural networks, though shallow/large decision trees are the workhorse base learner in this course (Lecture 7, slide 3/21). The combination step usually **reduces variance and boosts performance**; the price is interpretability — a forest of 500 trees has no single "coefficient with a sign" to read the way [OLS](ols.qmd) does (Lecture 7, slide 3/21).
+
+The course names **four families** (Lecture 7, slide 4/21):
+
+- **Bagging** (*Bootstrap AGGregatING*) — train many instances of a base model *in parallel*, each on a different **bootstrap sample** (sampled with replacement), then combine by **majority vote** (classification) or **averaging** (regression). It is the cure for **variance**: averaging many noisy-but-unbiased models cancels their independent errors. [Random Forests](random_forests.qmd) and Extra Trees are bagging instances (Lecture 7, slides 6/21, 9/21).
+- **Boosting** (*sequential learning*) — train models *one after another*, each new model focusing on the examples its predecessors got wrong (by **reweighting** the misclassified up), then combine as a weighted sum. It is the cure for **bias**: a sequence of weak learners is incrementally sharpened into a strong one. A **learning rate $\eta$** scales each weak learner's contribution. AdaBoost, Gradient Boosting, and XGBoost are the named instances (Lecture 7, slides 11/21, 12/21, 13/21).
+- **Bayesian Model Averaging (BMA)** — train multiple models and weight them by their **posterior probabilities**, so the weights can be updated as new data arrives; the right tool when model *uncertainty* must be made explicit (Lecture 7, slide 4/21).
+- **Stacking** (*stacked generalization*) — train a **meta-model on the outputs of diverse base models** (e.g. a neural network learning to combine the predictions of a logistic regression, an SVM, and a random forest), letting the meta-learner decide whom to trust when (Lecture 7, slide 4/21).
+
+The **bootstrap** underpins bagging: resample the data *with replacement* to make new datasets of the same size; some points repeat, some are left out. **About 63% of the unique original samples appear in any one bootstrap sample** (Lecture 7, slide 7/21) — the exact limit is $1-e^{-1}\approx 0.632$ ([§8](#sec-ens-math); [disagreements R9-6]). The ~37% left out of each draw form a free hold-out, the basis of the **out-of-bag (OOB) error** estimate.
+
+The two dominant families are best understood as opposites on the [bias–variance](bias_variance.qmd) axis: **bagging attacks variance** (parallel, independent, averaged), **boosting attacks bias** (sequential, dependent, reweighted). Keep that contrast in mind — it drives every "which one?" decision below.
+
+## 2. When to use / when *not* to use
+
+::: {.callout-intuition}
+**Reach for an ensemble when…**
+
+- **A single [Decision Tree](decision_trees.qmd) overfits** — it has low bias but high variance, the textbook case for **bagging** (or its specialised cousin the [Random Forest](random_forests.qmd)) to average the variance away (Lecture 7, slide 6/21).
+- **You need maximum predictive accuracy** and can spend interpretability to get it — ensembles routinely top single models on structured/tabular data (Lecture 7, slide 3/21).
+- **A weak, biased learner (a shallow tree, a "stump") underfits** → **boosting** sharpens a sequence of weak learners into a strong one, reducing bias (Lecture 7, slide 11/21).
+- **You already have several good, *diverse* models** and want to combine their strengths → **stacking** trains a meta-model on their outputs (Lecture 7, slide 4/21).
+- **Model uncertainty itself matters** (you want to weight models by how plausible they are, updating with new data) → **Bayesian Model Averaging** (Lecture 7, slide 4/21).
+:::
+
+::: {.callout-pitfall}
+**Reach for something else — or a *different* ensemble — when…**
+
+- **You need an interpretable model** ("how does feature X move the outcome?") → a single [Decision Tree](decision_trees.qmd) or [OLS](ols.qmd)/[logistic regression](logistic.qmd). Ensembles trade the readable model for performance (Lecture 7, slide 3/21); you get [feature importances](random_forests.qmd), not signed coefficients.
+- **Your base learner is already low-variance and stable** (e.g. a well-regularized linear model) → bagging buys little, because there is little variance to average out. Bagging helps *high-variance* learners most (Lecture 7, slide 6/21).
+- **The data is very noisy and you boost too hard** → **boosting can overfit** if not regularized, precisely because it keeps chasing the hard (often noisy) examples; control it with a small **learning rate $\eta$** and shallow trees (Lecture 7, slide 11/21).
+- **Bagging vs boosting:** if the symptom is a *train–test gap* (variance) use **bagging / [Random Forests](random_forests.qmd)**; if the symptom is *underfitting both train and test* (bias) use **boosting**. This is the single most important fork on this page.
+- **Voting vs stacking:** **voting** combines base models with a *fixed* rule (majority or averaged probabilities); **stacking** *learns* the combination with a meta-model — more flexible, more prone to overfit, needs careful held-out predictions to train the meta-learner.
+:::
+
+## 3. Code idiom {#sec-ens-code}
+
+The canonical course idioms are all from `sklearn.ensemble`: `VotingClassifier`, `BaggingClassifier`, and `GradientBoostingClassifier`. There is **no from-scratch implementation** in the ensembles notebook — bagging, boosting and the bootstrap are taught as markdown theory and demonstrated with sklearn (notebook `12_Introducing_ensemble_methods.ipynb`, cells 2–7).
+
+**Voting ensemble** — *(notebook `12_...`, cell 4)*. Combine a [logistic regression](logistic.qmd) and a [decision tree](decision_trees.qmd), averaging their predicted probabilities:
+
+```python
+from sklearn.ensemble import VotingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+
+clf1 = LogisticRegression(random_state=10, solver='lbfgs', max_iter=1000)
+clf2 = DecisionTreeClassifier(random_state=42)
+voting_clf = VotingClassifier(estimators=[('lr', clf1), ('dt', clf2)], voting='soft')
+voting_clf.fit(X_train, y_train)
+```
+
+::: {.callout-pitfall}
+**Read the code, not the comment.** In this exact cell the comment says *"Define the VotingClassifier with hard voting"* — but the call uses **`voting='soft'`** (average the predicted *probabilities*, then take the argmax), not hard voting (majority vote on labels). A second comment in the same cell mislabels the decision-tree base learner as a `RandomForestClassifier`. Trust the code: the model is **soft voting** over a logistic regression and a *decision tree* ([disagreements NB-5]). The `voting` argument is the one hyperparameter that changes the combination rule: `'hard'` = majority vote on labels, `'soft'` = argmax of averaged probabilities (needs base learners with `predict_proba`).
+:::
+
+**Bagging ensemble** — *(notebook `12_...`, cell 11)*. Wrap a decision tree in `BaggingClassifier`:
+
+```python
+from sklearn.ensemble import BaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+tree_clf = DecisionTreeClassifier(random_state=42)
+bag_clf = BaggingClassifier(estimator=tree_clf, n_estimators=500, max_samples=100,
+                            bootstrap=True, n_jobs=-1, random_state=42)
+bag_clf.fit(X_train, y_train)
+```
+
+Every hyperparameter, annotated: `estimator` is the base learner to bag (here a tree); `n_estimators` is how many copies to train (more ⇒ lower variance, diminishing returns); `max_samples` is how many points each bootstrap draw contains; `bootstrap=True` is what makes it *bagging* (sample with replacement — set `False` and it becomes pasting); `n_jobs=-1` parallelises across cores (legitimate because bagging is embarrassingly parallel); `random_state` fixes the seed. Note the keyword is **`estimator=`** (scikit-learn ≥ 1.2; older versions used `base_estimator=`) — the course `.venv` runs sklearn 1.8.0, so `estimator=` is correct (computed).
+
+**Gradient boosting** — *(notebook `07_Predicting_income.ipynb`, cells 2, 5)*. The income notebook is a **setup/exercise scaffold**: it describes `GradientBoostingClassifier` and its hyperparameters in markdown and prepares the Adult data, but **does not instantiate or fit any model** — fitting is left to the student (see [§4 Example 3](#sec-ens-income)). The idiom the exercise points to:
+
+```python
+from sklearn.ensemble import GradientBoostingClassifier
+
+gb = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3)
+gb.fit(X_train, y_train)          # NOT in the notebook — this is the exercise
+```
+
+The hyperparameters the notebook lists *(cell 2)*: `n_estimators` (number of sequential trees), **`learning_rate`** (the step size $\eta$ — the boosting learning rate; smaller ⇒ each tree contributes less, usually needs more trees), `max_depth` (depth of each weak learner, kept shallow), `min_samples_split`, `min_samples_leaf`.
+
+## 4. Worked examples
+
+### Example 1 — soft voting on Iris {#sec-ens-voting}
+
+The first ensemble in the course is a **soft `VotingClassifier`** combining a [logistic regression](logistic.qmd) and a [decision tree](decision_trees.qmd) on Iris, with a 50/50 split (`random_state=2`) *(notebook `12_...`, cell 4)*. The notebook stores no execution outputs, so the accuracies below are **computed via the course `.venv`** (sklearn 1.8.0, the notebook's fixed seeds):
+
+| Model | Test accuracy *(computed)* |
+|---|---|
+| Logistic regression | 0.947 |
+| Decision tree | 0.960 |
+| **Soft voting (lr + dt)** | **0.960** |
+
+The voting ensemble matches the better of its two members (0.960) and beats the weaker one (0.947) — a small, honest result on an easy dataset: combining diverse learners gives you the *robustness* of not having to pick the right base model in advance, even when the headline accuracy barely moves (computed). Note this is the cell whose comment wrongly says "hard voting" — the code is **soft** ([§3](#sec-ens-code), [disagreements NB-5]).
+
+### Example 2 — bagging on breast cancer, swept over `n_estimators` {#sec-ens-bagging}
+
+The notebook bags a [decision tree](decision_trees.qmd) on the **breast-cancer** dataset (60/40 split, `random_state=42`) and sweeps four configurations *(notebook `12_...`, cells 9, 11, 13)*. Again no outputs are stored, so all figures are **computed via the course `.venv`** with the notebook's seeds. The single-tree baseline is the thing bagging is meant to beat:
+
+| Configuration | `n_estimators` | `max_samples` | Test accuracy *(computed)* |
+|---|---|---|---|
+| Single decision tree | — | — | 0.9386 |
+| `bag_clf1` | 100 | 10 | **0.9605** |
+| `bag_clf2` | 200 | 50 | 0.9430 |
+| `bag_clf3` | 500 | 100 | 0.9518 |
+| `bag_clf4` | 1000 | 200 | 0.9518 |
+
+Every bagged configuration beats the single tree (0.9386) — bagging's promised **variance reduction** made concrete. But the relationship is **not** "more trees ⇒ more accuracy": the best config here (0.9605) uses only `n_estimators=100` with tiny `max_samples=10`, while 1000 trees lands lower (0.9518) (computed). The reason is that the notebook **changes `n_estimators` and `max_samples` together**, so the sweep confounds two effects — a teaching scaffold, not a clean ablation. The honest reading is: *bagging reliably beats the single tree; the exact ranking among bagged configs is noise on this small dataset*, and a clean "accuracy vs `n_estimators`" study would hold `max_samples` fixed. (The notebook also plots the *single* tree's `feature_importances_`, not the ensemble's, cell 14.)
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 2/3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+This is the bagging mechanism in one table: a high-variance base learner (the single tree, 0.9386) is averaged over many bootstrap resamples and the variance — not the bias — is what shrinks, lifting test accuracy. A [Random Forest](random_forests.qmd) goes one step further by *also* randomising the features at each split to decorrelate the trees (Lecture 7, slides 18–19/21).
+:::
+
+### Example 3 — gradient boosting on Adult/Census income (a scaffold, honestly) {#sec-ens-income}
+
+The income notebook targets **boosting** but is, by design, **incomplete**: it loads and cleans the UCI **Adult ("Census Income")** dataset, label-encodes the categoricals, binarises the target (`1` if income `>50K` else `0`), and makes an 80/20 split (`random_state=42`) — then **stops**. *No `GradientBoostingClassifier` is ever instantiated or fitted in code*; the entire fit/evaluate workflow is set as **exercises** *(notebook `07_Predicting_income.ipynb`, cells 4, 5)*. The data-prep idiom that *is* present:
+
+```python
+df = df.replace('?', pd.NaT)                         # mark missing
+df = df.dropna()
+encoder = LabelEncoder()
+for feature in categorical_features:                 # one shared encoder, re-fit per column
+    df[feature] = encoder.fit_transform(df[feature])
+df['income'] = df['income'].apply(lambda x: 1 if x.strip() == '>50K' else 0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+```
+
+The exercises *(cell 5)* ask the student to (1) fit a `GradientBoostingClassifier` and evaluate with **ROC AUC**, (2) tune `n_estimators` / `learning_rate` / `max_depth` and observe the effect, (3) fit an **AdaBoost** classifier and compare to gradient boosting (optionally XGBoost), and (4) do feature selection via gradient boosting and re-fit on the top-5 features. Because no model is fitted in the notebook, **no accuracy or AUC is reported here** — fabricating one would violate the source-fidelity rule. This is exactly the gradient-boosting workflow the exam asks for on a *different* dataset (see [§7](#sec-ens-exam)). *(One non-canonical idiom worth flagging: a single shared `LabelEncoder` is re-`fit_transform`'d across every categorical column; it works but a separate encoder per column is the cleaner pattern — [VERIFY: behaviour relies on `pd.NaT` being treated as NA across object columns].)*
+
+## 5. Visualization {#sec-ens-viz}
+
+The figure that earns its place is the **bagging sweep** from [Example 2](#sec-ens-bagging): test accuracy of each bagged configuration against the single-tree baseline. It makes the family's defining behaviour visible — *every* bagged ensemble clears the single tree (the variance-reduction win), while the configurations sit close together (the ranking among them is noise, because the notebook varies `n_estimators` and `max_samples` together). Data is the §4 table, transcribed verbatim; the baseline is drawn as a reference rule.
+
+```{ojs}
+//| echo: false
+//| label: fig-ens-bagging
+//| fig-cap: "Bagging on breast cancer (nb12, cells 11/13; accuracies computed via the course .venv, sklearn 1.8.0). Bars are the four bagged configurations; the dashed rule is the single decision-tree baseline (0.9386). Every bagged ensemble beats the single tree — bagging's variance-reduction win — but they cluster together because the notebook changes n_estimators and max_samples together, so this is not a clean 'accuracy vs n_estimators' ablation. x-axis labels show (n_estimators, max_samples)."
+famTree = (getComputedStyle(document.documentElement).getPropertyValue('--family-tree').trim() || "#06A77D")
+singleTree = 0.9386
+bagData = [
+  {config: "100 / 10",   n_estimators: 100,  max_samples: 10,  acc: 0.9605},
+  {config: "200 / 50",   n_estimators: 200,  max_samples: 50,  acc: 0.9430},
+  {config: "500 / 100",  n_estimators: 500,  max_samples: 100, acc: 0.9518},
+  {config: "1000 / 200", n_estimators: 1000, max_samples: 200, acc: 0.9518}
+]
+Plot.plot({
+  height: 320, marginLeft: 60, marginBottom: 50, grid: true,
+  x: {label: "Bagging config  (n_estimators / max_samples)", domain: bagData.map(d => d.config)},
+  y: {label: "Test accuracy", domain: [0.90, 0.97]},
+  marks: [
+    Plot.barY(bagData, {x: "config", y: "acc", fill: famTree, fillOpacity: 0.85}),
+    Plot.text(bagData, {x: "config", y: "acc", text: d => d.acc.toFixed(4), dy: -8, fontSize: 11}),
+    Plot.ruleY([singleTree], {stroke: "#c0392b", strokeDasharray: "5,4", strokeWidth: 2}),
+    Plot.text([{config: bagData[3].config, acc: singleTree}],
+      {x: "config", y: "acc", text: ["single tree 0.9386"], dy: 12, dx: -8, fontSize: 11, fill: "#c0392b", textAnchor: "end"})
+  ]
+})
+```
+
+## 6. Diagnostics & interpretation {#sec-ens-diag}
+
+What to report and inspect to judge an ensemble:
+
+- **Ensemble vs base-learner accuracy** — always report the single base model alongside the ensemble (single tree 0.9386 vs bagged ≥ 0.943 above). If the ensemble does not beat its base learner, it is not earning its complexity.
+- **Out-of-bag (OOB) error** — bagging gives a free hold-out: each model never saw ~37% of the data (the ~63% bootstrap fact, [§8](#sec-ens-math)), so the OOB predictions estimate test error without a separate split. (`BaggingClassifier(oob_score=True)`.)
+- **The `n_estimators` curve** — for bagging, test error should fall then *plateau* as you add models (more trees rarely hurt); for **boosting**, it can fall then *rise* (boosting can overfit), so the curve is a genuine stopping-criterion diagnostic, tuned together with the **learning rate $\eta$** (Lecture 7, slides 11–12/21).
+- **Feature importances** — ensembles of trees expose `feature_importances_` for *ranking* drivers — but note the notebook plots the *single* tree's importances (cell 14), not the ensemble's. Importances rank features; unlike [OLS](ols.qmd) coefficients they give no signed "+1 unit ⇒ +β" reading.
+- **ROC AUC** — the metric the income exercise specifies for the boosted model (cell 5); appropriate for the imbalanced income target.
+
+::: {.callout-bigpicture}
+**Bagging vs boosting vs stacking — the choice in one breath.** **Bagging** (parallel, bootstrap, average) attacks **variance** — use it when a high-variance learner like a deep tree overfits; [Random Forests](random_forests.qmd) are the go-to instance. **Boosting** (sequential, reweight the misclassified, learning rate $\eta$) attacks **bias** — use it to turn weak learners into a strong one, watching for overfitting. **Stacking** *learns* a meta-model over diverse base models — the most flexible and the most prone to overfit. Across all three you are spending **interpretability** for **performance** (Lecture 7, slide 3/21): the gain is real, but you lose the single readable model that [OLS](ols.qmd) or a lone [decision tree](decision_trees.qmd) gives you. Decision rule: *train–test gap* ⇒ bagging; *underfitting* ⇒ boosting; *several good diverse models to fuse* ⇒ stacking.
+:::
+
+## 7. Past-exam lens {#sec-ens-exam}
+
+::: {.callout-exam}
+**How ensembles show up.** In the take-home **Assignment 3 (on WDBC / breast cancer)**, ensembles are central: the assignment uses **gradient boosting** and explicitly asks you to **compare a [Random Forest](random_forests.qmd) against gradient boosting** (task 3.8) — i.e. **bagging vs boosting** on the same data. Expect to (i) write the `GradientBoostingClassifier` idiom from [§3](#sec-ens-code), (ii) tune `n_estimators` / `learning_rate` ($\eta$) / `max_depth` and **justify** the values, (iii) report and interpret performance (the income exercise's ROC AUC is the same skill on a different dataset, [§4 Example 3](#sec-ens-income)), and (iv) **explain the RF-vs-GB difference in terms of variance reduction vs bias reduction** — the [§6 big-picture callout](#sec-ens-diag) is the answer template. The grade rests on the *reasoning* (why one ensemble suits the data) at least as much as the code. The classic slip: confusing the boosting **learning rate $\eta$** (`learning_rate`) with the number of trees — they trade off (smaller $\eta$ ⇒ more trees).
+:::
+
+## 8. Math {#sec-ens-math}
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is off. Use the **Math** toggle in the top bar to show the course-level derivation (and "full" for the rigorous version).*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** *(written in Phase 3)* — the two combination rules and the bootstrap fact. **Bagging:** train $B$ base models $\hat f_1,\dots,\hat f_B$ on bootstrap resamples and combine by **averaging** (regression) $\hat f_{\text{bag}}(x)=\tfrac1B\sum_{b}\hat f_b(x)$ or **majority vote** (classification) (Lecture 7, slides 6/21, 9/21). **Boosting procedure** (Lecture 7, slide 12/21): initialise equal example weights; repeat — train a weak learner on the weighted data, **increase the weights of misclassified examples** and decrease the rest, until a stopping criterion; the final prediction is a **weighted combination** of all weak learners, each scaled by the **learning rate $\eta$**. **Bootstrap:** sampling $n$ points with replacement from $n$ leaves out any given point with probability $(1-1/n)^n$, so **~63% of unique samples appear** in each draw (Lecture 7, slide 7/21; [disagreements R9-6]). The ~37% omitted give the OOB estimate. See the [math appendix](../appendix/math_appendix.qmd).
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** *(written in Phase 3)* — **supplemental (ESL §10.1)**, *not on the Lecture 7 slides* ([disagreements R9-8]). The **AdaBoost** stage weight $\alpha_m=\tfrac12\ln\!\big(\tfrac{1-\text{err}_m}{\text{err}_m}\big)$ (a more accurate stage gets more vote; $\text{err}_m$ is the weighted error of weak learner $m$), with the exponential-loss reweighting that produces it. The **gradient-boosting additive / forward-stagewise model** $F_m(x)=F_{m-1}(x)+\eta\,h_m(x)$, where each new weak learner $h_m$ is fit to the negative gradient (the residuals, for squared loss) of the loss at the current ensemble — boosting as gradient descent in function space, with $\eta$ the step size. The **0.632 bootstrap** limit: $1-(1-1/N)^N\to 1-e^{-1}\approx 0.632$ as $N\to\infty$ (ESL §7.11; [disagreements R9-6]) — the exact form of the slide's "~63%". Anchored to ESL §10.1 (boosting) and §7.11 (bootstrap). See the [math appendix](../appendix/math_appendix.qmd).
+:::
 :::
