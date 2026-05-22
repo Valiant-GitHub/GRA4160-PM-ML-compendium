@@ -196,10 +196,44 @@ Comparative diagnostic vs siblings: logistic regression gives you *coefficients 
 :::
 
 ::: {.callout-math-a}
-**Mode A — course level.** *(written in Phase 3)* — the log-odds linear form $\log\!\big(\pi/(1-\pi)\big) = \beta_0 + \sum_j \beta_j x_j$ and its inversion to the sigmoid $\pi = \sigma(z) = 1/(1+e^{-z})$ (Lecture 4, slides 6–8/11; notebook 06, cell 1); the binary **cross-entropy** loss $L = -\tfrac1n\sum_i [\,y_i\log\sigma(z_i) + (1-y_i)\log(1-\sigma(z_i))\,]$ (Lecture 8, slide 25/29); and the **gradient-descent update** $w_j \leftarrow w_j + \eta\cdot\tfrac1n\sum_i (y_i - \sigma(z_i))\,x_{ij}$ (Lecture 8, slide 28/29; notebook 15, cell id `a342d4e2`), with the interpretation of each term. See the [math appendix](../appendix/math_appendix.qmd#sec-gd).
+**Mode A — course level.** The course builds logistic regression in three steps *(Lecture 4, slides 6–8/11; Lecture 8, slides 23–28/29; notebooks 06 cell 1 and 15 cell id `a342d4e2`)*.
+
+**1. From log-odds to the sigmoid.** The model assumes the **log-odds** (logit) of the positive class are linear in the predictors *(Lecture 4, slide 6/11)*:
+$$\log\!\frac{\pi}{1-\pi} = z = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p ,$$
+where $\pi$ is the probability of the positive class and $z$ the **net input** *(the slides write $\pi$ as $p$ and use $x_1\dots x_k$; here $\pi$ avoids colliding with $p$ = #predictors — see the [notation table](../appendix/notation_table.qmd))*. Solving for $\pi$ exponentiates the odds, $\pi/(1-\pi)=e^{z}$, and rearranges to the **logistic sigmoid** *(Lecture 4, slides 7–8/11; Lecture 8, slide 23/29)*:
+$$\pi = \sigma(z) = \frac{e^{z}}{1+e^{z}} = \frac{1}{1+e^{-z}} ,$$
+which squashes any real $z$ into $(0,1)$ — flat in the tails, with $\sigma(0)=0.5$. **Reading it:** because the logit is linear, a one-unit rise in $z$ adds $1$ to the log-odds and so **multiplies the odds $\pi/(1-\pi)$ by $e\approx 2.718$** *(Lecture 4, slide 8/11)*; each $e^{\beta_j}$ is the odds multiplier per unit of $x_j$.
+
+**2. The loss — binary cross-entropy.** Fitting maximizes likelihood, equivalently *minimizes* the negative log-likelihood, the **cross-entropy** loss *(Lecture 8, slide 25/29)*:
+$$L = \sum_{i=1}^{n}\Bigl[-y_i\log\sigma(z_i) - (1-y_i)\log\bigl(1-\sigma(z_i)\bigr)\Bigr],$$
+reported per-sample as $L/n$ in the notebook. For a single point this is $-\log\sigma(z_i)$ when $y_i=1$ and $-\log(1-\sigma(z_i))$ when $y_i=0$ — zero for a confident correct call, growing without bound as the prediction goes confidently wrong *(Lecture 8, slide 26/29)*.
+
+**3. The gradient-descent update.** There is **no closed form** (unlike [OLS](ols.qmd)), so the course fits by gradient descent. Differentiating the cross-entropy through the sigmoid collapses to the same clean form as least squares *(Lecture 8, slide 28/29; notebook 15, cell id `a342d4e2`)*:
+$$\frac{\partial L}{\partial w_j} = -\frac1n\sum_{i=1}^{n}\bigl(y_i - \sigma(z_i)\bigr)\,x_{ij},
+\qquad w_j \leftarrow w_j + \eta\cdot\frac1n\sum_{i=1}^{n}\bigl(y_i - \sigma(z_i)\bigr)\,x_{ij},$$
+with learning rate $\eta$ (the course uses $\eta=0.3$). The bias updates the same way with $x_{ij}\equiv 1$. The key course point: this is **structurally identical to [Adaline](adaline.qmd)'s** update — Adaline uses MSE with a *linear* activation $z$, logistic uses cross-entropy with the *sigmoid* $\sigma(z)$, but both reduce to $-\tfrac1n\sum_i(y_i-\text{activation}_i)\,x_{ij}$; only the activation inside differs *(Lecture 8, slides 27–28/29; [disagreements R9-11])*. See the [gradient-descent appendix](../appendix/math_appendix.qmd#sec-gd).
 :::
 
 ::: {.callout-math-b}
-**Mode B — full rigor.** *(written in Phase 3)* — the **maximum-likelihood** derivation (Bernoulli likelihood ⇒ negative log-likelihood = cross-entropy ⇒ no closed form, hence iterative optimization), and the proof that the [Adaline](adaline.qmd)→logistic **gradient step is identical** despite the change of activation and loss [disagreements R9-11] (Lecture 8, slides 27–28/29, the course's "optional home exercise"). Anchored to ESL §4.4 (logistic regression / cross-entropy) and the [maximum-likelihood appendix](../appendix/math_appendix.qmd#sec-mle).
+**Mode B — full rigor.** *(Anchored to ESL §4.4 "Logistic Regression", eqs 4.17–4.26, with ISL §4.3, eqs 4.4–4.5.)* ESL derives the model from the desire to make the posterior class probabilities linear in $x$ on the logit scale while keeping them in $[0,1]$. For two classes the model is the single logit
+$$\log\frac{\Pr(G=1\mid X=x)}{\Pr(G=2\mid X=x)} = \beta_0 + \beta^\top x \qquad \text{(ESL 4.17, two-class case)},$$
+which inverts to $\Pr(G=1\mid X=x) = e^{\beta_0+\beta^\top x}/\bigl(1+e^{\beta_0+\beta^\top x}\bigr)$ (ESL 4.18; ISL 4.2) — the sigmoid. ISL gives the same logit and odds relations directly: $p(X)/(1-p(X)) = e^{\beta_0+\beta^\top x}$ (ISL 4.3) and $\log\bigl(p(X)/(1-p(X))\bigr)=\beta_0+\beta^\top x$ (ISL 4.4).
+
+**Maximum likelihood (Bernoulli).** Code the two-class response as $y_i\in\{0,1\}$ and write $p(x_i;\beta)=\Pr(G=1\mid x_i)$. Each observation is **Bernoulli**, so the conditional log-likelihood for $N$ points is
+$$\ell(\beta) = \sum_{i=1}^{N}\Bigl\{ y_i\log p(x_i;\beta) + (1-y_i)\log\bigl(1-p(x_i;\beta)\bigr)\Bigr\}
+= \sum_{i=1}^{N}\Bigl\{ y_i\,\beta^\top x_i - \log\bigl(1+e^{\beta^\top x_i}\bigr)\Bigr\} \qquad \text{(ESL 4.20)},$$
+where $x_i$ absorbs a leading $1$ for the intercept. This is exactly the **negative cross-entropy** of Mode A — maximizing $\ell$ minimizes the course's loss — and ISL writes the same object as the likelihood $\ell(\beta_0,\beta_1)=\prod_{i:y_i=1}p(x_i)\prod_{i':y_{i'}=0}(1-p(x_{i'}))$ (ISL 4.5).
+
+**Score equations and no closed form.** Setting $\partial\ell/\partial\beta=0$ gives the $p+1$ **score equations**
+$$\frac{\partial\ell(\beta)}{\partial\beta} = \sum_{i=1}^{N} x_i\bigl(y_i - p(x_i;\beta)\bigr) = 0 \qquad \text{(ESL 4.21)},$$
+which are **nonlinear** in $\beta$ (since $p$ depends on $\beta$ through the sigmoid) — hence, unlike OLS's normal equations, there is no closed form. The first component (the intercept's) forces $\sum_i p(x_i;\beta)=\sum_i y_i$: the mean fitted probability matches the observed positive rate.
+
+**Newton–Raphson / IRLS.** ESL solves the score equations with **Newton–Raphson**, using the Hessian
+$$\frac{\partial^2\ell(\beta)}{\partial\beta\,\partial\beta^\top} = -\sum_{i=1}^{N} x_i x_i^\top\,p(x_i;\beta)\bigl(1-p(x_i;\beta)\bigr) \qquad \text{(ESL 4.22)},$$
+which is **negative definite**, so $\ell$ is **concave** and the maximizer is unique (when it exists). In matrix form, with $\mathbf{p}$ the fitted-probability vector and $\mathbf{W}=\mathrm{diag}\bigl(p_i(1-p_i)\bigr)$, the gradient is $\mathbf{X}^\top(\mathbf{y}-\mathbf{p})$ (ESL 4.24) and the Newton step rearranges into a **weighted least squares** solve
+$$\beta^{\text{new}} = (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{W}\mathbf{z}, \qquad \mathbf{z} = \mathbf{X}\beta^{\text{old}} + \mathbf{W}^{-1}(\mathbf{y}-\mathbf{p}) \qquad \text{(ESL 4.26–4.27)},$$
+on the **adjusted response** $\mathbf{z}$. Because $\mathbf{W}$ and $\mathbf{z}$ change each iteration, this is **iteratively reweighted least squares (IRLS)** (ESL 4.28). (sklearn's default `lbfgs` solver from §3 is a quasi-Newton method targeting this same concave objective.) Convergence is typical but not guaranteed; $\beta=0$ is a good start. On perfectly separable data the MLE diverges to $\pm\infty$ — the motivation for the L2/L1 penalties of §2–3 (ESL §4.4.4).
+
+**The Adaline→logistic equivalence, proved.** The course claims the gradient step is identical to [Adaline](adaline.qmd)'s [R9-11]. The score (ESL 4.24) is $\mathbf{X}^\top(\mathbf{y}-\mathbf{p})$, i.e. $\partial L/\partial w_j = -\sum_i(y_i-\sigma(z_i))x_{ij}$ for the negative log-likelihood. Adaline minimizes $L=\tfrac{1}{2n}\sum_i(y_i-z_i)^2$ with *linear* activation $a_i=z_i$, whose gradient is $\partial L/\partial w_j = -\tfrac1n\sum_i(y_i-z_i)x_{ij}$ *(Lecture 8, slide 20/29)*. Both have the form $-\tfrac1n\sum_i(y_i-a_i)x_{ij}$; the only difference is $a_i=z_i$ (Adaline) versus $a_i=\sigma(z_i)$ (logistic) — so swapping MSE→cross-entropy and linear→sigmoid leaves the *update template* unchanged, which is why the slide labels the derivation an "optional home exercise" *(Lecture 8, slides 27–28/29)*. The non-trivial step is that the sigmoid's derivative $\sigma'(z)=\sigma(z)(1-\sigma(z))$ cancels exactly against the cross-entropy denominators, leaving the bare residual $y_i-\sigma(z_i)$. See the [maximum-likelihood appendix](../appendix/math_appendix.qmd#sec-mle).
 :::
 :::

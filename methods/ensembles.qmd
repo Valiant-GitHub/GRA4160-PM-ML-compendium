@@ -194,10 +194,38 @@ What to report and inspect to judge an ensemble:
 :::
 
 ::: {.callout-math-a}
-**Mode A — course level.** *(written in Phase 3)* — the two combination rules and the bootstrap fact. **Bagging:** train $B$ base models $\hat f_1,\dots,\hat f_B$ on bootstrap resamples and combine by **averaging** (regression) $\hat f_{\text{bag}}(x)=\tfrac1B\sum_{b}\hat f_b(x)$ or **majority vote** (classification) (Lecture 7, slides 6/21, 9/21). **Boosting procedure** (Lecture 7, slide 12/21): initialise equal example weights; repeat — train a weak learner on the weighted data, **increase the weights of misclassified examples** and decrease the rest, until a stopping criterion; the final prediction is a **weighted combination** of all weak learners, each scaled by the **learning rate $\eta$**. **Bootstrap:** sampling $n$ points with replacement from $n$ leaves out any given point with probability $(1-1/n)^n$, so **~63% of unique samples appear** in each draw (Lecture 7, slide 7/21; [disagreements R9-6]). The ~37% omitted give the OOB estimate. See the [math appendix](../appendix/math_appendix.qmd).
+**Mode A — course level.** The course states the two combination rules and the bootstrap fact procedurally — there are no boosting *formulas* on the Lecture 7 slides (see Mode B for those). *(Symbols: $B$ = number of base models, $n$ = sample size, $\eta$ = boosting learning rate — `notation_table` η.)*
+
+**Bagging.** Train $B$ base models $\hat f_1,\dots,\hat f_B$, each on a separate bootstrap resample, then combine. For **regression**, average them,
+$$\hat f_{\text{bag}}(x)=\frac1B\sum_{b=1}^{B}\hat f_b(x);$$
+for **classification**, take the **majority vote** of the $B$ predicted labels (Lecture 7, slides 6/21, 9/21; notebook `12_...`, cells 5–6). Averaging many noisy-but-unbiased models cancels their independent errors, so bagging **reduces variance** (Lecture 7, slide 6/21).
+
+**Boosting.** The slides give the procedure, not an equation (Lecture 7, slide 12/21): (1) initialise equal example weights $w_i=\tfrac1n$; (2) train a weak learner on the weighted data; (3) evaluate it; (4) **increase the weights of misclassified examples** and decrease the rest; (5) repeat to a stopping criterion; (6) the final prediction is a **weighted combination** of all weak learners, with the **learning rate $\eta$** scaling each one's contribution (smaller $\eta$ ⇒ each tree counts for less, usually needing more trees). Concentrating successive learners on the hard cases **reduces bias** (Lecture 7, slide 11/21).
+
+**Bootstrap.** Resampling $n$ points with replacement from $n$, any one point is missed by a single draw with probability $(1-1/n)^n$, so **about 63% of the unique original samples appear** in each bootstrap sample (Lecture 7, slide 7/21). The ~37% omitted form a free hold-out — the out-of-bag (OOB) estimate. The exact $0.632$ limit is derived in Mode B ([disagreements R9-6]). See the [math appendix](../appendix/math_appendix.qmd).
 :::
 
 ::: {.callout-math-b}
-**Mode B — full rigor.** *(written in Phase 3)* — **supplemental (ESL §10.1)**, *not on the Lecture 7 slides* ([disagreements R9-8]). The **AdaBoost** stage weight $\alpha_m=\tfrac12\ln\!\big(\tfrac{1-\text{err}_m}{\text{err}_m}\big)$ (a more accurate stage gets more vote; $\text{err}_m$ is the weighted error of weak learner $m$), with the exponential-loss reweighting that produces it. The **gradient-boosting additive / forward-stagewise model** $F_m(x)=F_{m-1}(x)+\eta\,h_m(x)$, where each new weak learner $h_m$ is fit to the negative gradient (the residuals, for squared loss) of the loss at the current ensemble — boosting as gradient descent in function space, with $\eta$ the step size. The **0.632 bootstrap** limit: $1-(1-1/N)^N\to 1-e^{-1}\approx 0.632$ as $N\to\infty$ (ESL §7.11; [disagreements R9-6]) — the exact form of the slide's "~63%". Anchored to ESL §10.1 (boosting) and §7.11 (bootstrap). See the [math appendix](../appendix/math_appendix.qmd).
+**Mode B — full rigor.** Everything below is **supplemental**: it is *not on the Lecture 7 slides*, which describe boosting and the bootstrap only procedurally ([disagreements R9-8, R9-6]). It is anchored to **ESL §10.1–10.4** (AdaBoost) and **§7.11** (bootstrap), with equation numbers read directly from the text.
+
+**AdaBoost.M1 (ESL Algorithm 10.1, §10.1).** For a two-class target $y_i\in\{-1,1\}$ and weak classifiers $G_m(x)\in\{-1,1\}$: initialise weights $w_i=1/N$; for $m=1,\dots,M$, fit $G_m$ to the data weighted by $w_i$, compute the weighted error
+$$\mathrm{err}_m=\frac{\sum_{i=1}^{N} w_i\,I\big(y_i\neq G_m(x_i)\big)}{\sum_{i=1}^{N} w_i},$$
+set the **stage weight**
+$$\alpha_m=\log\frac{1-\mathrm{err}_m}{\mathrm{err}_m}\qquad\text{(ESL Alg. 10.1, line 2c — note }\log,\text{ no }\tfrac12),$$
+and reweight $w_i\leftarrow w_i\cdot\exp\!\big[\alpha_m\,I(y_i\neq G_m(x_i))\big]$. The final classifier is the weighted vote $G(x)=\operatorname{sign}\!\big[\sum_{m=1}^{M}\alpha_m G_m(x)\big]$ (ESL 10.1). A more accurate stage (small $\mathrm{err}_m$) earns a larger $\alpha_m$, hence more vote.
+
+**Why the $\tfrac12$ sometimes appears.** AdaBoost.M1 is equivalent to **forward stagewise additive modeling** (ESL Algorithm 10.2, §10.3) — building $f_m(x)=f_{m-1}(x)+\beta_m b(x;\gamma_m)$ one basis function at a time — on the **exponential loss** $L(y,f)=\exp(-y\,f(x))$ (ESL 10.8, §10.4). Minimising that loss at step $m$ first selects $G_m$ as the weighted-error minimiser (ESL 10.10–10.11), then solves for the coefficient
+$$\beta_m=\tfrac12\log\frac{1-\mathrm{err}_m}{\mathrm{err}_m}\qquad\text{(ESL 10.12).}$$
+The algorithm's stage weight is exactly $\alpha_m=2\beta_m$ (ESL §10.4, after eq 10.15) — the $\tfrac12$ is absorbed because the $\{-1,1\}$ reweighting only depends on $\alpha_m$. So the **½ belongs to the exponential-loss derivation**, while the **plain $\log$ is the form used inside the AdaBoost.M1 algorithm itself**.
+
+**Gradient / least-squares boosting (ESL §10.3–10.4).** With squared-error loss $L(y,f)=(y-f)^2$ (ESL 10.6), the forward-stagewise subproblem reduces to fitting each new basis function to the **current residuals**: with $r_{im}=y_i-f_{m-1}(x_i)$,
+$$L\big(y_i,\,f_{m-1}(x_i)+\beta\,b(x_i;\gamma)\big)=\big(r_{im}-\beta\,b(x_i;\gamma)\big)^2\qquad\text{(ESL 10.7),}$$
+so $\beta_m b(x;\gamma_m)$ best fits the residuals at each step. Generalising, each new learner is fit to the **negative gradient** of the loss at the current ensemble — boosting as gradient descent in function space — and the update $f_m=f_{m-1}+\eta\,\beta_m b(x;\gamma_m)$ carries the same **learning rate $\eta$** ("slow learning"/shrinkage, ESL §10.12) as Mode A's slides.
+
+**The 0.632 bootstrap (ESL §7.11).** The probability that observation $i$ is included in a given bootstrap sample is
+$$\Pr\{i\in \text{bootstrap sample}\}=1-\Big(1-\tfrac1N\Big)^{N}\;\xrightarrow{\,N\to\infty\,}\;1-e^{-1}\approx 0.632\qquad\text{(ESL 7.55),}$$
+so the expected number of **distinct** observations per draw is about $0.632\,N$ — the exact form of the slide's "~63%" ([disagreements R9-6]). This constant names the **".632" estimator** that corrects the optimism of training error, $\widehat{\mathrm{Err}}^{(.632)}=.368\cdot\overline{\mathrm{err}}+.632\cdot\widehat{\mathrm{Err}}^{(1)}$ (ESL 7.57), where $\widehat{\mathrm{Err}}^{(1)}$ is the leave-one-out bootstrap error.
+
+**Bias–variance link.** Bagging targets the **variance** term and boosting the **bias** term of the prediction-error decomposition; rather than re-derive it here, see the [bias–variance decomposition in the math appendix](../appendix/math_appendix.qmd#sec-biasvar). See also the [math appendix](../appendix/math_appendix.qmd).
 :::
 :::

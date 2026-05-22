@@ -4,7 +4,7 @@ body-classes: fam-cross
 ---
 
 ::: {.callout-bigpicture}
-**How to read this appendix.** Each foundation below has a **Mode A — course level** block (what the course teaches and grades) and a **Mode B — full rigor** block (complete derivations, anchored to ESL). Use the top-bar **Math** toggle to reveal them. Method pages link into the relevant section. *Scaffolding — the derivations are written in Phase 3.A; section headers and the two-mode structure are in place now.*
+**How to read this appendix.** Each foundation below has a **Mode A — course level** block (what the course teaches and grades) and a **Mode B — full rigor** block (complete derivations, anchored to ESL). Use the top-bar **Math** toggle to reveal them. Method pages link into the relevant section. Two foundations — [bias–variance](#sec-biasvar) and [information criteria](#sec-infocrit) — have full method pages of their own, so this appendix states the key result and links out to them; the other five are derived here.
 :::
 
 This appendix collects the shared mathematical machinery the method pages depend on, so each method page can link here instead of re-deriving foundations.
@@ -13,10 +13,27 @@ This appendix collects the shared mathematical machinery the method pages depend
 
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** Vectors, matrices, the design matrix $X\in\mathbb{R}^{n\times p}$, inner products, norms $\lVert\cdot\rVert_2$, projections; the normal-equations solution $(X^\top X)^{-1}X^\top y$. *(Phase 3.A)*
+**Mode A — course level.** The course *assumes* this layer rather than teaching it: Lecture 1 (slide 16/17) names "the math" as a prerequisite you must be able to justify, and from Lecture 2 onward every linear model is written directly in matrix form. So the working vocabulary is taken as given:
+
+- **Vectors and matrices.** A feature vector is $x=(x_1,\dots,x_p)^\top\in\mathbb{R}^{p}$; stacking $n$ of them as rows gives the **design matrix** $X\in\mathbb{R}^{n\times p}$ (a leading column of ones absorbs the intercept), and the target is the $n$-vector $y$ *(notebook `02_OLS (1).ipynb`, cell 7; Lecture 2, slide 7/10)*.
+- **Inner product and norm.** The inner product $a^\top b=\sum_j a_j b_j$ measures alignment; the squared **Euclidean (L2) norm** is $\lVert a\rVert_2^2 = a^\top a = \sum_j a_j^2$. Squared error is just a squared norm: $\mathrm{RSS}(\beta)=\lVert y - X\beta\rVert_2^2$. The course also uses the **L1 norm** $\lVert\beta\rVert_1=\sum_j|\beta_j|$ (Lasso) and the squared-L2 $\lVert\beta\rVert_2^2$ (Ridge) as penalties (Lecture 3, slides 14–15).
+- **Projection.** Fitting OLS means projecting $y$ onto the span of the columns of $X$: $\hat y = X\hat\beta$ is the point in that subspace closest to $y$, and the residual $y-\hat y$ is orthogonal to it. The closed form is the **normal-equations** solution $\hat\beta = (X^\top X)^{-1}X^\top y$ *(notebook `02_OLS (1).ipynb`, cell 8)*.
+
+This is enough to read every linear-model page. The eigen/SVD machinery the course leans on implicitly — for [PCA](../methods/pca.qmd) (which the slides give only conceptually, [R9-5]) and for understanding [Ridge](../methods/regularization.qmd) — is supplied in Mode B from ESL.
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** Rank, column space and orthogonal projection, eigendecomposition and the spectral theorem, positive-(semi)definiteness, the SVD $X=UDV^\top$ and its role in PCA and least squares. *(Phase 3.A — anchored to ESL App./§3.)*
+**Mode B — full rigor.** *(Anchored to ESL §3.4.1, eqs 3.45–3.49, PDF p84–85; the OLS projection geometry is ESL §3.2, eqs 3.6–3.7.)*
+
+**Rank, column space, projection.** For $X\in\mathbb{R}^{n\times p}$ the column space $\mathrm{col}(X)$ is the subspace of $\mathbb{R}^{n}$ spanned by its columns; $X$ has **full column rank** when those columns are linearly independent. The OLS fit is the **orthogonal projection** of $y$ onto $\mathrm{col}(X)$: $\hat y = X(X^\top X)^{-1}X^\top y = Hy$ with the symmetric idempotent **hat matrix** $H=X(X^\top X)^{-1}X^\top$ ($H^2=H$, ESL 3.7). When $X$ is rank-deficient $X^\top X$ is singular and $\hat\beta$ is **not unique** (though $\hat y$ still is) — the failure mode that motivates Ridge.
+
+**Eigendecomposition and the spectral theorem.** Any symmetric matrix $S=S^\top\in\mathbb{R}^{p\times p}$ admits a real **eigendecomposition** $S = V\Lambda V^\top$ with $V$ orthogonal ($V^\top V=I$, columns the eigenvectors) and $\Lambda=\mathrm{diag}(\lambda_1,\dots,\lambda_p)$ the real eigenvalues — the **spectral theorem**. $S$ is **positive semidefinite** ($S\succeq 0$, i.e. $a^\top S a\ge 0$ for all $a$) iff all $\lambda_j\ge 0$, and **positive definite** ($S\succ 0$) iff all $\lambda_j>0$. The Gram matrix $X^\top X$ is always PSD, and PD exactly when $X$ has full column rank — which is why $(X^\top X)^{-1}$ exists precisely then, and why the OLS Hessian $2X^\top X\succeq 0$ makes $\mathrm{RSS}$ convex (cf. [OLS §8](../methods/ols.qmd#sec-ols-math)).
+
+**Singular value decomposition.** The SVD of the (centered) $N\times p$ matrix $X$ is
+$$X = UDV^\top \qquad \text{(ESL 3.45),}$$
+where $U$ ($N\times p$) and $V$ ($p\times p$) have orthonormal columns and $D=\mathrm{diag}(d_1\ge\cdots\ge d_p\ge 0)$ holds the **singular values**; $d_j=0$ signals singularity. Two roles make the SVD the workhorse of this course:
+
+1. **Least squares.** Substituting the SVD, the fitted vector is $X\hat\beta^{\mathrm{ls}} = UU^\top y$ (ESL 3.46) — the projection of $y$ onto the orthonormal basis $U$ for $\mathrm{col}(X)$. Ridge instead computes $X\hat\beta^{\mathrm{ridge}}=\sum_{j=1}^{p}u_j\frac{d_j^2}{d_j^2+\lambda}u_j^\top y$ (ESL 3.47): it keeps the same basis but **shrinks** each coordinate by $d_j^2/(d_j^2+\lambda)\le 1$, shrinking the directions of *small* $d_j$ (near-collinear directions) the most.
+2. **PCA.** Since $X^\top X = VD^2V^\top$ (ESL 3.48) is the eigendecomposition of (a multiple of) the sample covariance $S=X^\top X/N$, the columns $v_j$ of $V$ are the **principal-component directions** and the derived variables $z_j=Xv_j=u_jd_j$ are the principal components, with $\mathrm{Var}(z_1)=d_1^2/N$ the largest possible (ESL 3.49). This is the eigen/SVD foundation the [PCA page](../methods/pca.qmd) builds on (its §8 links here), supplied because the course slides give PCA conceptually only [R9-5].
 :::
 :::
 
@@ -24,10 +41,28 @@ This appendix collects the shared mathematical machinery the method pages depend
 
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** The update $\theta \leftarrow \theta - \eta\,\nabla_\theta L$; batch vs stochastic vs mini-batch; the role of the learning rate $\eta$. *(Phase 3.A)*
+**Mode A — course level.** Gradient descent is the course's general-purpose optimizer, introduced from first principles in Lecture 8 *(slides 3–5/29)*. It minimizes a loss $L(\theta)$ by repeatedly stepping **opposite the gradient** — the direction of steepest descent:
+$$\theta \leftarrow \theta - \eta\,\nabla_\theta L,$$
+where the **gradient** $\nabla_\theta L=(\partial L/\partial\theta_1,\dots)^\top$ points in the direction of steepest *ascent* (slide 4/29), so the minus sign turns it into descent, and the **learning rate** $\eta>0$ (step size) scales how far each step moves (slide 3/29). Too small $\eta$ ⇒ slow convergence; too large ⇒ overshooting / divergence. The three **variants** differ only in how much data is used per gradient estimate *(slide 5/29)*:
+
+- **Batch GD** — average the gradient over the *entire* training set before each update: stable, but one slow update per epoch.
+- **Stochastic GD (SGD)** — update from a *single* example at a time: fast and noisy.
+- **Mini-batch GD** — gradient over a small batch (the course's practical default, e.g. 32 or 64): a compromise that is vectorizable and more stable than pure SGD.
+
+This same update drives [logistic regression](../methods/logistic.qmd), [ADALINE](../methods/adaline.qmd), and neural-network training ([NN basics](../methods/nn_basics.qmd), [build a NN](../methods/build_a_nn.qmd)) — in the NN setting the per-parameter gradients come from [backpropagation](#sec-backprop). *(Notation: Lecture 8 also writes the learning rate as $\alpha$ in its generic backprop section; this site standardizes on $\eta$ — see the [notation table](notation_table.qmd).)* The course does not treat convergence theory or step-size conditions formally; those are in Mode B.
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** Convexity and convergence, conditions on $\eta$, momentum, and the geometry of steepest descent. *(Phase 3.A — anchored to ESL §11.4.)*
+**Mode B — full rigor.** *(Anchored to ESL §11.4, PDF p414–417: GD update eq 11.13, and the step-size / stochastic-approximation conditions on p417.)* ESL presents gradient descent as the engine for fitting neural networks. With a sum-of-squares loss $R(\theta)=\sum_{i=1}^{N}R_i$, the **batch update** at iteration $r{+}1$ is
+$$\theta^{(r+1)} = \theta^{(r)} - \gamma_r\sum_{i=1}^{N}\frac{\partial R_i}{\partial \theta}\Big|_{\theta^{(r)}} \qquad \text{(ESL 11.13),}$$
+with $\gamma_r$ the learning rate ($\eta$ in the course's notation).
+
+**Batch vs online (SGD).** "The updates in (11.13) are a kind of *batch learning*, with the parameter updates being a sum over all of the training cases" (ESL §11.4); **online / stochastic** learning replaces that sum with "a single summand" — one training case at a time, cycling through the data over many epochs — which "allows the network to handle very large training sets" (ESL §11.4, p417). Mini-batch is the intermediate case.
+
+**Step-size conditions and convergence.** For *batch* learning ESL notes the rate "is usually taken to be a constant, and can also be optimized by a line search that minimizes the error function at each update." For *online* learning $\gamma_r$ "should decrease to zero as the iteration $r\to\infty$"; this is **stochastic approximation** (Robbins & Munro, 1951), whose convergence is guaranteed when
+$$\gamma_r\to 0,\qquad \textstyle\sum_r \gamma_r=\infty,\qquad \sum_r \gamma_r^2<\infty$$
+"(satisfied, for example, by $\gamma_r=1/r$)" (ESL §11.4, p417). The first divergent-sum condition lets the iterates travel any finite distance; the second square-summable condition damps the gradient noise to zero so the iterates settle.
+
+**Convexity, the quadratic case, and momentum.** When $R$ is **convex** every stationary point is a global minimum, so a small enough constant step converges; the OLS objective is the canonical convex (in fact quadratic) example — its Hessian $2X^\top X\succeq 0$ ([§sec-linalg](#sec-linalg); [OLS §8](../methods/ols.qmd#sec-ols-math)), and on a quadratic the convergence rate is governed by the **condition number** (ratio of largest to smallest eigenvalue $d_1^2/d_p^2$ of $X^\top X$): ill-conditioned (near-collinear) problems force a small $\eta$ and crawl, the same small-$d_j$ directions the [SVD](#sec-linalg) flags. Neural-net objectives are **non-convex**, so GD finds only local minima and "back-propagation can be very slow" (ESL §11.4, p417); ESL recommends conjugate gradients and variable-metric (quasi-Newton) methods as faster alternatives that avoid forming the Hessian. Momentum — accumulating a running average of past gradients to accelerate along consistent directions and damp oscillation across a narrow valley — is the standard practical fix for this ill-conditioning (a deep-learning staple beyond the course/ESL §11.4 scope, noted here for completeness).
 :::
 :::
 
@@ -35,32 +70,61 @@ This appendix collects the shared mathematical machinery the method pages depend
 
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** Likelihood, log-likelihood, MLE; logistic regression and least squares as MLE. *(Phase 3.A)*
+**Mode A — course level.** The **likelihood** $\mathcal{L}(\theta)=\prod_{i=1}^{n}p(y_i\mid x_i;\theta)$ is the probability the model assigns to the observed data as a function of the parameters; **maximum-likelihood estimation (MLE)** picks the $\theta$ that maximizes it. Because products are awkward, one maximizes the **log-likelihood** $\ell(\theta)=\sum_i\log p(y_i\mid x_i;\theta)$ instead (same maximizer, sums not products). The course uses MLE as the unifying justification for two of its core models:
+
+- **Least squares = MLE under Gaussian noise.** If $y_i=\beta^\top x_i+\varepsilon_i$ with $\varepsilon_i\sim N(0,\sigma^2)$, maximizing the log-likelihood is *identical* to minimizing the residual sum of squares — so OLS is the MLE (Lecture 2, slide 7/10; [OLS §8 Mode A](../methods/ols.qmd#sec-ols-math)).
+- **Logistic regression = MLE under Bernoulli.** Modelling $y_i\in\{0,1\}$ as Bernoulli with $\pi_i=\sigma(\beta^\top x_i)$, the log-likelihood is the negative **cross-entropy**, so "maximize likelihood ≡ minimize cross-entropy loss" (Lecture 8, slide 25/29; Lecture 4, slide 6/11 — "often fit by maximum likelihood"). There is no closed form, so it is fit by [gradient descent](#sec-gd) / Newton's method.
+
+The course treats MLE concretely (these two cases) and does **not** cover the exponential family or the MAP/penalized-MLE bridge formally — those are supplied in Mode B from ESL, where they explain *why* [Ridge and Lasso](../methods/regularization.qmd) penalties have the form they do.
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** The exponential family, MAP as penalized MLE (Ridge = Gaussian prior, Lasso = Laplace prior), and the link to AIC/BIC. *(Phase 3.A — ESL §4.4, §3.4.)*
+**Mode B — full rigor.** *(Anchored to ESL §4.4 logistic MLE, eqs 4.19–4.21, PDF p139–140; and ESL §3.4.1 priors / MAP, the posterior-mode result on PDF p84.)*
+
+**Logistic MLE in full.** Coding the two-class response as $y_i\in\{0,1\}$ with $p(x_i;\beta)=\Pr(y_i{=}1\mid x_i)$, the log-likelihood (ESL 4.19–4.20) is
+$$\ell(\beta)=\sum_{i=1}^{N}\Bigl\{y_i\log p(x_i;\beta)+(1-y_i)\log\bigl(1-p(x_i;\beta)\bigr)\Bigr\}=\sum_{i=1}^{N}\Bigl\{y_i\beta^\top x_i-\log\bigl(1+e^{\beta^\top x_i}\bigr)\Bigr\}.$$
+Setting the gradient to zero gives the **score equations** $\partial\ell/\partial\beta=\sum_i x_i\bigl(y_i-p(x_i;\beta)\bigr)=0$ (ESL 4.21) — nonlinear in $\beta$, solved by Newton–Raphson, which ESL shows is **iteratively reweighted least squares** (IRLS), $\beta^{\mathrm{new}}=(X^\top WX)^{-1}X^\top Wz$ (ESL 4.26). Note the score has the *same form* $\sum_i x_i(y_i-\text{prediction})$ as the course's gradient $\partial L/\partial w_j=-\tfrac1n\sum_i(y_i-\sigma(z_i))x_{ij}$ (Lecture 8, slide 28) — the link the course makes between ADALINE and logistic GD [R9-11].
+
+**Exponential family.** Both Gaussian and Bernoulli belong to the **exponential family** $p(y\mid\eta)=h(y)\exp\!\bigl(\eta^\top T(y)-A(\eta)\bigr)$, whose log-likelihood is concave in the natural parameter $\eta$ — the structural reason the logistic log-likelihood is concave and the MLE unique (ESL §4.4 notes "the log-likelihood is concave"). Generalized linear models set $\eta=\beta^\top x$, recovering linear and logistic regression as special cases.
+
+**MAP = penalized MLE.** Place a prior $p(\beta)$ on the parameters; the **maximum a posteriori (MAP)** estimate maximizes the posterior $\log p(\beta\mid y)=\ell(\beta)+\log p(\beta)+\text{const}$ — i.e. log-likelihood *plus* a log-prior penalty. ESL makes this explicit for Ridge: "Ridge regression can also be derived as the mean or mode of a posterior distribution… suppose $y_i\sim N(\beta_0+x_i^\top\beta,\sigma^2)$ and the parameters $\beta_j$ are each distributed as $N(0,\tau^2)$… then the (negative) log-posterior density of $\beta$ is equal to the [penalized RSS], with $\lambda=\sigma^2/\tau^2$. Thus the ridge estimate is the mode of the posterior distribution" (ESL §3.4.1, PDF p84). Hence:
+$$\underbrace{\textstyle\sum_i(y_i-\beta^\top x_i)^2 + \lambda\lVert\beta\rVert_2^2}_{\text{Ridge}}\;\Longleftrightarrow\;\text{Gaussian prior }N(0,\tau^2),\qquad \underbrace{\cdots + \lambda\lVert\beta\rVert_1}_{\text{Lasso}}\;\Longleftrightarrow\;\text{Laplace (double-exponential) prior.}$$
+The L2 penalty is the log of a Gaussian prior ($\log e^{-\beta^2/2\tau^2}\propto-\beta^2$); the L1 penalty is the log of a **Laplace** prior ($\log e^{-|\beta|/b}\propto-|\beta|$), whose sharp peak at zero is what produces Lasso's exact zeros — see [KKT §sec-kkt](#sec-kkt) and the [regularization page](../methods/regularization.qmd). This same likelihood-with-parameter-penalty structure underlies AIC/BIC ([§sec-infocrit](#sec-infocrit)), which trade fit ($-2\ln\mathcal{L}$) against a parameter count.
 :::
 :::
 
 ## Bias–variance decomposition {#sec-biasvar}
 
+::: {.callout-bigpicture}
+**This foundation has a full method page.** The bias–variance trade-off is derived in detail on the [Bias–Variance page](../methods/bias_variance.qmd) — see its [§8 Math](../methods/bias_variance.qmd#sec-bv-math) for the complete derivation (the add-and-subtract expansion, the kNN and linear-model special cases). This section states only the key result and points there.
+:::
+
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** $\text{Total error} = \text{Bias}^2 + \text{Variance}$ as taught in L5. *(Phase 3.A)*
+**Mode A — course level.** The course states the trade-off as a **two-term** decomposition (Lecture 5, slide 10/11):
+$$\text{Total Error} = \text{Bias}^2 + \text{Variance}.$$
+*Bias* is systematic error from over-simple assumptions (underfitting); *variance* is sensitivity to the particular training set (overfitting). More complexity lowers bias but raises variance; the goal is the sum-minimizing sweet spot. Full treatment and the polynomial-degree demo: [Bias–Variance §8 Mode A](../methods/bias_variance.qmd#sec-bv-math).
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** The full decomposition with irreducible error, $\mathbb{E}[(y-\hat f(x))^2] = \sigma^2 + \text{Bias}^2[\hat f(x)] + \text{Var}[\hat f(x)]$ (ESL §7.3) — note the course slide omits $\sigma^2$ (see [disagreements R9-2]). *(Phase 3.A)*
+**Mode B — full rigor.** *(ESL §7.3, eq 7.9.)* The full expected prediction error at a point $x_0$ under squared-error loss adds the **irreducible error** $\sigma^2$ the course slide drops [R9-2]:
+$$\mathbb{E}\bigl[(y-\hat f(x_0))^2\bigr]=\underbrace{\sigma^2}_{\text{irreducible}}+\underbrace{\bigl[\mathbb{E}\hat f(x_0)-f(x_0)\bigr]^2}_{\text{Bias}^2}+\underbrace{\mathbb{E}\bigl[\hat f(x_0)-\mathbb{E}\hat f(x_0)\bigr]^2}_{\text{Var}}\qquad\text{(ESL 7.9).}$$
+$\sigma^2$ is the noise floor no model can beat. The derivation, plus the kNN form (ESL 7.10) and the linear-model $\tfrac{p}{N}\sigma_\varepsilon^2$ variance term (ESL 7.12), is the **primary home**: [Bias–Variance §8 Mode B](../methods/bias_variance.qmd#sec-bv-math).
 :::
 :::
 
 ## Information criteria {#sec-infocrit}
 
+::: {.callout-bigpicture}
+**This foundation has a full method page.** Information criteria and cross-validation are derived in detail on the [CV & Information Criteria page](../methods/cv_info_criteria.qmd) — see its [§8 Math](../methods/cv_info_criteria.qmd#sec-cv-math) for the AIC optimism/Kullback–Leibler argument, the BIC Laplace approximation, the ISL linear-model forms, and the CV equations. This section states only the key results and points there.
+:::
+
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** $\text{AIC} = 2k - 2\ln L$, $\text{BIC} = \ln(n)\,k - 2\ln L$; lower is better, compare on the same data. *(Phase 3.A)*
+**Mode A — course level.** Both information criteria score a model by its maximized likelihood $\mathcal{L}$ minus a penalty for its number of parameters $d$ (Lecture 5, slide 6/11; the slide writes $d$ as $k$ and the likelihood as $L$ — relabelled per the [notation table](notation_table.qmd) to free $k$ for folds):
+$$\mathrm{AIC}=2d-2\ln(\mathcal{L}),\qquad \mathrm{BIC}=\ln(n)\,d-2\ln(\mathcal{L}).$$
+Same fit term $-2\ln(\mathcal{L})$; BIC's per-parameter price $\ln(n)$ exceeds AIC's $2$ once $n>e^2\approx 7.4$, so BIC favours simpler models. *Lower is better, comparable only on the same data.* **k-fold cross-validation** is the model-agnostic alternative: split into $V$ folds, train on $V{-}1$, score on the held-out one, rotate, and average. Full treatment: [CV & Info Criteria §8 Mode A](../methods/cv_info_criteria.qmd#sec-cv-math).
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** Derivation of AIC (Kullback–Leibler) and BIC (Laplace approximation to the marginal likelihood); the ISL linear-model forms vs the general likelihood forms (see [disagreements R9-3]). *(Phase 3.A — ESL §7.5, §7.7.)*
+**Mode B — full rigor.** *(ESL §7.5 (AIC), §7.7 (BIC), §7.10 (CV); ISL §6.1.3 linear-model forms.)* AIC is the optimism / Kullback–Leibler bias correction $\mathrm{AIC}=-\tfrac{2}{N}\,\mathrm{loglik}+2\tfrac{d}{N}$ (ESL 7.29–7.30); BIC is the **Schwarz criterion** $-2\,\mathrm{loglik}+(\log N)d$ (ESL 7.35) derived from a Laplace approximation to the marginal likelihood (ESL 7.40). ISL's linear-model forms differ only by scaling/constants and select the same model [R9-3]. The CV estimate is $\mathrm{CV}(\hat f)=\tfrac1N\sum_i L(y_i,\hat f^{-\kappa(i)}(x_i))$ (ESL 7.48), with the choice of fold count $K$ itself a bias–variance trade-off of the *estimator*. The complete derivations are the **primary home**: [CV & Info Criteria §8 Mode B](../methods/cv_info_criteria.qmd#sec-cv-math).
 :::
 :::
 
@@ -68,10 +132,32 @@ This appendix collects the shared mathematical machinery the method pages depend
 
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** Forward pass, then the chain-rule gradients $\partial L_i/\partial \beta_k = -(y_i-f_i)A_{ik}$ and $\partial L_i/\partial w_{kj} = -(y_i-f_i)\beta_k\,g'(z_{ik})x_{ij}$ (L8/L9). *(Phase 3.A)*
+**Mode A — course level.** The course derives backpropagation for a single-hidden-layer network from the chain rule, link by link (Lecture 8, slides 11–12; Lecture 9, slides 13–14). For a network $f(x)=\beta_0+\sum_{k=1}^{K}\beta_k\,A_k$ with hidden activations $A_{ik}=g(z_{ik})$ and pre-activations $z_{ik}=w_{k0}+\sum_{j=1}^{p}w_{kj}x_{ij}$, and squared-error loss $L_i=\tfrac12(y_i-f_i)^2$:
+
+**1. Forward pass** — compute and store $z_{ik}$, $A_{ik}$, and the output $f_i$ for each observation (Lecture 9, slide 13/17).
+
+**2. Backward pass (chain rule)** — starting from the loss and working back (Lecture 9, slide 14/17):
+$$\frac{\partial L_i}{\partial f_i}=-(y_i-f_i),\qquad \boxed{\frac{\partial L_i}{\partial \beta_k}=-(y_i-f_i)\,A_{ik}},\qquad \boxed{\frac{\partial L_i}{\partial w_{kj}}=-(y_i-f_i)\,\beta_k\,g'(z_{ik})\,x_{ij}}.$$
+The output-weight gradient has two chained links ($\partial L_i/\partial f_i$ then $\partial f_i/\partial\beta_k=A_{ik}$); the hidden-weight gradient has four ($-(y_i-f_i)$, $\beta_k$, $g'(z_{ik})$, $x_{ij}$). "Each parameter receives a fraction of the residual $(y_i-f_i)$ propagated back — hence *backpropagation*" (Lecture 9, slide 14/17).
+
+**3. Update** by [gradient descent](#sec-gd): $\theta\leftarrow\theta-\eta\,\nabla_\theta L$ (Lecture 8, slide 13/29), summing gradients over a batch / mini-batch / single example. This is the exact derivation reused on the [neural-network basics](../methods/nn_basics.qmd), [autodiff](../methods/autodiff.qmd), [PyTorch](../methods/nn_pytorch.qmd), and [build-a-NN](../methods/build_a_nn.qmd) pages. Mode B gives the general-depth $\delta$-recursion and the reverse-mode AD view.
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** The $\delta$-recursion for arbitrary depth (ESL §11.4, eqs 11.12–11.13), matrix form, and weight decay. *(Phase 3.A)*
+**Mode B — full rigor.** *(Anchored to ESL §11.3–11.4, PDF p411–417: model eqs 11.5–11.6, loss 11.9, derivatives 11.12, GD update 11.13, $\delta$-recursion 11.14–11.15; weight decay §11.5.2, eq 11.16.)*
+
+**The model and loss.** ESL's single-hidden-layer network is $Z_m=\sigma(\alpha_{0m}+\alpha_m^\top X)$, $T_k=\beta_{0k}+\beta_k^\top Z$, $f_k(X)=g_k(T)$ (ESL 11.5), with sigmoid $\sigma(v)=1/(1+e^{-v})$ and, for $K$-class output, softmax $g_k(T)=e^{T_k}/\sum_\ell e^{T_\ell}$ (ESL 11.6). Regression uses sum-of-squares $R(\theta)=\sum_{k}\sum_{i}(y_{ik}-f_k(x_i))^2$ (ESL 11.9); classification uses cross-entropy/deviance (ESL 11.10).
+
+**The two-pass derivatives.** Writing $z_{mi}=\sigma(\alpha_{0m}+\alpha_m^\top x_i)$, ESL gives (eq 11.12)
+$$\frac{\partial R_i}{\partial \beta_{km}}=-2(y_{ik}-f_k(x_i))\,g_k'(\beta_k^\top z_i)\,z_{mi},\qquad \frac{\partial R_i}{\partial \alpha_{m\ell}}=-\sum_{k=1}^{K}2(y_{ik}-f_k(x_i))\,g_k'(\beta_k^\top z_i)\,\beta_{km}\,\sigma'(\alpha_m^\top x_i)\,x_{i\ell},$$
+and the gradient-descent update $\beta_{km}^{(r+1)}=\beta_{km}^{(r)}-\gamma_r\sum_i\partial R_i/\partial\beta_{km}^{(r)}$, likewise for $\alpha$ (ESL 11.13). These match the course's boxed Mode-A gradients exactly (the course takes $K{=}1$, $g_k=$ identity on the output, and drops the factor 2 into the loss).
+
+**The $\delta$-recursion.** Define the **error signals** by rewriting (11.12) as $\partial R_i/\partial\beta_{km}=\delta_{ki}z_{mi}$ and $\partial R_i/\partial\alpha_{m\ell}=s_{mi}x_{i\ell}$ (ESL 11.14). Then the hidden-layer errors satisfy the **back-propagation equation**
+$$s_{mi}=\sigma'(\alpha_m^\top x_i)\sum_{k=1}^{K}\beta_{km}\,\delta_{ki}\qquad\text{(ESL 11.15),}$$
+expressing each hidden unit's error as the $\sigma'$-weighted sum of the output errors it feeds — the rule that generalizes to **arbitrary depth**: errors at layer $\ell$ are computed from errors at layer $\ell{+}1$ via the transpose of that layer's weights, scaled by the local activation derivative. ESL's **two-pass algorithm** (p416): a *forward pass* fixes the weights and computes all $\hat f_k(x_i)$ from (11.5); a *backward pass* computes the output errors $\delta_{ki}$, back-propagates them via (11.15) to the hidden errors $s_{mi}$, and both sets give the gradients via (11.14). Mapping to the course's notation, ESL's $\delta_{ki}\equiv -(y_i-f_i)$ at the output (with identity $g$) and $s_{mi}\equiv -(y_i-f_i)\beta_k\sigma'(z_k)$ at the hidden layer [R9-10].
+
+**Matrix form and reverse-mode AD.** With layers as matrix multiplies $A=g(\mathbf 1_n w_0^\top+XW^\top)$, $f=\beta_0\mathbf 1_n+A\beta$ (Lecture 9, slide 7/17), the forward pass is a chain of matmul-then-activation and the backward pass propagates a gradient matrix back through the transposed weights — exactly **reverse-mode automatic differentiation**: backprop *is* reverse-mode AD applied to the network's computational graph, traversing it once forward to cache intermediates, once backward to accumulate $\partial L/\partial(\cdot)$ via the chain rule (the view the course's [autodiff page](../methods/autodiff.qmd) and live-coded engine make concrete; Lecture 8, slides 8–10). "The advantages of back-propagation are its simple, local nature" — each unit exchanges information only with units it connects to (ESL §11.4, p417). ESL also calls it the **delta rule** (Widrow–Hoff, 1960).
+
+**Weight decay (regularization).** To avoid overfitting the global minimizer of $R$, ESL adds a penalty $R(\theta)+\lambda J(\theta)$ with $J(\theta)=\sum_{km}\beta_{km}^2+\sum_{m\ell}\alpha_{m\ell}^2$ (ESL 11.16), "analogous to ridge regression"; its only effect on backprop is to add $2\beta_{km}$ and $2\alpha_{m\ell}$ to the respective gradients. (The course's Lecture 9 slide 16 penalizes only the hidden weights $w_{kj}$, whereas ESL — and the course's own notebook 19 — penalize all weights [R9-9].)
 :::
 :::
 
@@ -79,9 +165,21 @@ This appendix collects the shared mathematical machinery the method pages depend
 
 ::: {.math-section}
 ::: {.callout-math-a}
-**Mode A — course level.** Constrained optimization intuition behind the Lasso/Ridge constraint regions (the geometry from L3 slide 16). *(Phase 3.A)*
+**Mode A — course level.** **Constrained optimization and the KKT conditions are not covered in the course lectures.** What the course *does* show is the geometric *picture* it sits behind: the Ridge (circular L2) and Lasso (diamond L1) constraint regions, with Lasso's corners forcing coefficients to exactly zero — and the slide explicitly attributes that figure to "Hastie, Tibshirani & Friedman (2009)," i.e. ESL (Lecture 3, slide 16/20). The course states the constrained↔penalized link only informally ($\lambda=0\Rightarrow$ OLS, $\lambda\to\infty\Rightarrow$ all coefficients $\to 0$; Lecture 3, slide 19/20). For the actual constrained-optimization machinery — Lagrangian duality, the KKT conditions, and *why* the diamond's corners produce exact zeros — see **Mode B**, supplied from ESL §3.4.
 :::
 ::: {.callout-math-b}
-**Mode B — full rigor.** Lagrangian duality and the Karush–Kuhn–Tucker conditions; the constrained ($\lVert\beta\rVert\le t$) vs penalized ($+\lambda\lVert\beta\rVert$) equivalence for Ridge/Lasso. *(Phase 3.A — ESL §3.4.)*
+**Mode B — full rigor.** *(Anchored to ESL §3.4, PDF p83–90: the constrained/penalized ridge forms eqs 3.41–3.44, the lasso constrained form, and the orthonormal soft-threshold solution Table 3.4 / Fig 3.11.)*
+
+**The constrained ⇔ penalized equivalence.** ESL writes Ridge in *both* a penalized (Lagrangian) form and a constrained form:
+$$\hat\beta^{\mathrm{ridge}}=\arg\min_\beta\Bigl\{\textstyle\sum_i(y_i-\beta_0-\sum_j x_{ij}\beta_j)^2+\lambda\sum_j\beta_j^2\Bigr\}\ \text{(ESL 3.41)}\quad\Longleftrightarrow\quad \arg\min_\beta\textstyle\sum_i(\cdots)^2\ \text{s.t. }\sum_j\beta_j^2\le t\ \text{(ESL 3.42),}$$
+and states there is "a one-to-one correspondence between the parameters $\lambda$ in (3.41) and $t$ in (3.42)." This is **Lagrangian duality**: the penalized objective is the Lagrangian of the constrained problem, with $\lambda\ge 0$ the **Lagrange multiplier** on the constraint $\sum_j\beta_j^2\le t$. The same holds for Lasso with the constraint $\sum_j|\beta_j|\le t$ ($\lVert\beta\rVert_q\le t$ in general). Larger $\lambda$ ⇔ smaller budget $t$.
+
+**The KKT conditions.** For $\min_\beta R(\beta)$ subject to $c(\beta)=\lVert\beta\rVert_q-t\le 0$, the **Karush–Kuhn–Tucker** conditions characterize the optimum $(\beta^\star,\lambda^\star)$:
+$$\nabla R(\beta^\star)+\lambda^\star\nabla c(\beta^\star)=0\ \text{(stationarity)},\quad c(\beta^\star)\le 0\ \text{(feasibility)},\quad \lambda^\star\ge 0\ \text{(dual feasibility)},\quad \lambda^\star\,c(\beta^\star)=0\ \text{(complementary slackness)}.$$
+**Complementary slackness** is the load-bearing one: either the constraint is slack ($\lVert\beta^\star\rVert_q<t$) and then $\lambda^\star=0$ (the OLS solution, if it already satisfies the budget), or the constraint binds ($\lVert\beta^\star\rVert_q=t$) and $\lambda^\star>0$.
+
+**Why Lasso gives exact zeros.** For an **orthonormal** design ($X^\top X=I$) the KKT conditions solve in closed form, and ESL's Table 3.4 (PDF p90) gives the three estimators explicitly:
+$$\hat\beta_j^{\mathrm{ridge}}=\frac{\hat\beta_j}{1+\lambda},\qquad \hat\beta_j^{\mathrm{lasso}}=\operatorname{sign}(\hat\beta_j)\bigl(|\hat\beta_j|-\lambda\bigr)_+\ \text{(soft-thresholding)},$$
+where $\hat\beta_j$ is the OLS estimate and $(\cdot)_+$ the positive part. Ridge's penalty is **smooth** ($\nabla\sum\beta_j^2=2\beta$), so its stationarity equation only *scales* coefficients — they shrink but stay nonzero. Lasso's L1 penalty is **non-differentiable at $\beta_j=0$**; its KKT stationarity uses the **subgradient** of $|\beta_j|$ (the interval $[-1,1]$ at zero), and whenever the unpenalized gradient $|\hat\beta_j|\le\lambda$ falls inside that interval, $\beta_j=0$ satisfies the optimality conditions exactly — the coefficient is set to zero, not merely shrunk. Geometrically (ESL Fig 3.11, PDF p90), the elliptical RSS contours first touch the L1 **diamond** at a **corner** (where some coordinates vanish), whereas they touch the L2 **ball** generically on its smooth surface (no zeros). This is the exact-sparsity mechanism the [regularization page](../methods/regularization.qmd) relies on (its §8 links here), and it is the optimization-side counterpart of the **Laplace-prior MAP** view in [§sec-mle](#sec-mle).
 :::
 :::

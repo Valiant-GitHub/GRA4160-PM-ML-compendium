@@ -163,10 +163,24 @@ Comparative diagnostic vs siblings: OLS gives you *coefficients with standard er
 :::
 
 ::: {.callout-math-a}
-**Mode A — course level.** *(written in Phase 3)* — the least-squares objective $\arg\min_\beta \sum_i (y_i - \beta^\top x_i)^2$ and the closed-form solution $\hat\beta = (X^\top X)^{-1}X^\top y$ (notebook `02_OLS (1).ipynb`, cell 7), with the interpretation of each term. See the [math appendix](../appendix/math_appendix.qmd#sec-linalg).
+**Mode A — course level.** The course states OLS as an optimization problem and a closed-form solution *(notebook `02_OLS (1).ipynb`, cell 7; Lecture 2, slide 7/10)*. We pick the coefficient vector $\beta$ that minimizes the residual sum of squares:
+$$\hat\beta = \arg\min_{\beta} \sum_{i=1}^n \bigl(y_i - \beta^\top x_i\bigr)^2 .$$
+Setting the derivative of this objective to zero and solving gives the closed form
+$$\hat\beta = (X^\top X)^{-1} X^\top y,$$
+where $X$ is the $n\times p$ design matrix (a leading column of ones absorbs the intercept) and $y$ the $n$-vector of targets. **Reading it:** each $\hat\beta_j$ is the expected change in $y$ per one-unit change in $x_j$ with the other predictors held fixed; geometrically, $X\hat\beta$ is the linear combination of the predictor columns closest to $y$. Minimizing squared error is also the **maximum-likelihood** estimate under Gaussian noise (see [MLE in the math appendix](../appendix/math_appendix.qmd#sec-mle)), and under the Gauss–Markov assumptions this estimator is **BLUE** (Lecture 2, slide 7/10). Foundations: [linear algebra essentials](../appendix/math_appendix.qmd#sec-linalg).
 :::
 
 ::: {.callout-math-b}
-**Mode B — full rigor.** *(written in Phase 3)* — derivation from $\nabla_\beta\lVert y-X\beta\rVert_2^2 = 0$, the Gauss–Markov theorem (BLUE), geometry of the orthogonal projection onto the column space of $X$, and the SVD view. Anchored to ESL §3.2.
+**Mode B — full rigor.** *(Anchored to ESL §3.2, eqs 3.3–3.11.)* Write the residual sum of squares in matrix form and minimize it directly:
+$$\mathrm{RSS}(\beta) = (y - X\beta)^\top (y - X\beta) \qquad \text{(ESL 3.3).}$$
+Differentiating,
+$$\frac{\partial \mathrm{RSS}}{\partial \beta} = -2X^\top (y - X\beta), \qquad \frac{\partial^2 \mathrm{RSS}}{\partial \beta\,\partial \beta^\top} = 2X^\top X \qquad \text{(ESL 3.4).}$$
+The Hessian $2X^\top X$ is positive semidefinite, so $\mathrm{RSS}$ is **convex**; when $X$ has full column rank $X^\top X \succ 0$ and the stationary point is the unique global minimum. Setting the gradient to zero gives the **normal equations** $X^\top(y - X\beta) = 0$ (ESL 3.5), hence
+$$\hat\beta = (X^\top X)^{-1} X^\top y \qquad \text{(ESL 3.6).}$$
+The fitted values are $\hat y = X\hat\beta = X(X^\top X)^{-1}X^\top y = Hy$, where $H$ is the **"hat" / projection matrix** (ESL 3.7). **Geometry:** $\hat y$ is the *orthogonal projection* of $y$ onto the column space of $X$; the residual $y-\hat y$ is orthogonal to that subspace (ESL Fig 3.2). If $X$ is rank-deficient (e.g. perfectly collinear predictors) $X^\top X$ is singular and $\hat\beta$ is **not unique** — although $\hat y$ still is. This is the failure mode that motivates [Ridge](regularization.qmd), whose $(X^\top X + \lambda I)^{-1}$ is always invertible.
+
+**Inference.** Assuming the $y_i$ are uncorrelated with constant variance $\sigma^2$ and $X$ fixed,
+$$\mathrm{Var}(\hat\beta) = (X^\top X)^{-1}\sigma^2 \quad \text{(ESL 3.8)}, \qquad \hat\sigma^2 = \tfrac{1}{N-p-1}\textstyle\sum_i (y_i-\hat y_i)^2 ,$$
+the $N-p-1$ denominator making $\hat\sigma^2$ unbiased. Adding Gaussian errors $\varepsilon \sim N(0,\sigma^2)$ gives $\hat\beta \sim N\!\bigl(\beta,\,(X^\top X)^{-1}\sigma^2\bigr)$ (ESL 3.10) and $(N-p-1)\hat\sigma^2 \sim \sigma^2\chi^2_{N-p-1}$ (ESL 3.11) — the basis for the coefficient $t$/$z$-tests in §6. The **Gauss–Markov theorem** (ESL §3.2.2) makes "BLUE" precise: among all linear unbiased estimators of any $a^\top\beta$, OLS has the smallest variance. Via the **SVD** $X = UDV^\top$, $\hat y = UU^\top y$ (projection onto the column space), and small singular values — near-collinearity — inflate $\mathrm{Var}(\hat\beta)$, the bridge to ESL §3.4's ridge treatment. See the [linear-algebra appendix](../appendix/math_appendix.qmd#sec-linalg).
 :::
 :::

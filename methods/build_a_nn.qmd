@@ -225,10 +225,39 @@ What to look at to judge whether the network is working, and which knob to turn:
 :::
 
 ::: {.callout-math-a}
-**Mode A — course level.** *(written in Phase 3)* — the layer composition `A_k = g(w_{k0} + Σ_j w_{kj} X_j)`, `f(X) = β₀ + Σ_k β_k A_k` (Lecture 9, slides 4–7/17, with ReLU `g(z)=max(0,z)`); the **cross-entropy** classification loss with softmax (the regression loss `½Σ(y−f)²` of slide 10 becomes cross-entropy for the 10-class MNIST head, matching `nn.CrossEntropyLoss`); the **SGD** update `θ ← θ − η∇L(θ)` on mini-batches (slides 11–12, 15); the **L2 penalty** `+ λ Σ w²` (slide 16 writes `λ Σ_{k,j} w_{kj}²` over hidden weights only — note the notebook sums all params, [R9-9]); and **dropout** as a train-only random mask with rate `p` (slide 17, rates 0.2–0.5), rescaled `1/(1−p)` for inverted dropout. See the [backprop math appendix](../appendix/math_appendix.qmd#sec-backprop).
+**Mode A — course level.** *(Lecture 9, slides 4–17/17; notebook `19_Build_a_NN.ipynb`, cells 19, 24.)* **Architecture.** Each hidden unit applies an activation $g$ to a weighted sum of the inputs, and the output layer takes a linear combination of those activations (Lecture 9, slides 4–6/17):
+$$A_k = g\!\Bigl(w_{k0} + \textstyle\sum_{j=1}^{p} w_{kj}\,X_j\Bigr), \qquad f(X) = \beta_0 + \sum_{k=1}^{K} \beta_k A_k ,$$
+where $K$ is the number of hidden units, $w_{kj}$ the input→hidden weights, $\beta_k$ the hidden→output weights, and $g$ the activation — here **ReLU** $g(z)=\max(0,z)$ (slide 8/17). The MNIST net stacks this twice ($784\to128\to64\to10$).
+
+**Loss + update.** Lecture 9 fits a *regression* net by minimizing squared error $L(\theta)=\tfrac12\sum_{i=1}^n (y_i-f_\theta(x_i))^2$ (slide 10/17). For the 10-class MNIST head this becomes the **cross-entropy** loss with a softmax output $g(z_i)=e^{z_i}/\sum_j e^{z_j}$ (slide 8/17), which is exactly what `nn.CrossEntropyLoss` computes from raw logits. Either way the parameters $\theta$ (all $w$'s and $\beta$'s stacked) are trained by **gradient descent** with learning rate $\eta$ (slides 11–12/17),
+$$\theta \leftarrow \theta - \eta\,\nabla L(\theta),$$
+evaluated on mini-batches rather than the full dataset — **stochastic gradient descent** (slide 15/17). The gradients themselves come from backprop; see the [backprop appendix](../appendix/math_appendix.qmd#sec-backprop) and the [gradient-descent appendix](../appendix/math_appendix.qmd#sec-gd).
+
+**L2 regularization.** Add a penalty proportional to the sum of squared weights (slide 16/17):
+$$L_{\text{reg}}(\theta) = \tfrac12\sum_{i=1}^n (y_i-f_\theta(x_i))^2 + \lambda \sum_{k,j} w_{kj}^2 ,$$
+where $\lambda$ trades fit against complexity. The slide sums **only over the hidden weights $w_{kj}$**; the notebook's manual L2 instead sums `p.pow(2)` over **all** parameters — output weights $\beta_k$ and biases included (cell 19) — the two disagree on scope (see [R9-9] and §3).
+
+**Dropout.** During training only, randomly zero each hidden activation with probability $p$ and rescale the survivors by $1/(1-p)$ so the expected activation is unchanged (**inverted dropout**, notebook cell 24); at inference dropout is off (slide 17/17, typical rates $0.2$–$0.5$). With keep-mask $m_k\sim\text{Bernoulli}(1-p)$,
+$$\tilde A_k = \frac{m_k}{1-p}\,A_k \quad (\text{train}), \qquad \tilde A_k = A_k \quad (\text{eval}).$$
 :::
 
 ::: {.callout-math-b}
-**Mode B — full rigor.** *(written in Phase 3)* — **weight decay** as the MAP estimate under a Gaussian weight prior and its scope question [R9-9] (slide penalizes `w_{kj}` only; ESL §11.5 penalizes all weights); **dropout as model averaging** — the precise sense in which inverted dropout approximates a geometric-mean ensemble over `2^(#units)` thinned sub-networks; and the backprop equations for this two-layer ReLU net mapped to ESL δ-notation. Anchored to ESL §11.5.
+**Mode B — full rigor.** *(Anchored to ESL §11.5 "Some Issues in Training Neural Networks", eqs 11.16–11.17, with the fitting machinery of §11.4, eqs 11.9–11.15. ESL uses $\alpha$ for input→hidden weights and $\beta$ for hidden→output weights; the course's $w_{kj}$ are ESL's $\alpha_{m\ell}$.)*
+
+**Weight decay.** ESL §11.5.2 regularizes the network by minimizing $R(\theta) + \lambda J(\theta)$ with the L2 (ridge-style) penalty
+$$J(\theta) = \sum_{km}\beta_{km}^2 + \sum_{m\ell}\alpha_{m\ell}^2 \qquad \text{(ESL 11.16),}$$
+"analogous to ridge regression used for linear models" (§3.4.1), with $\lambda\ge 0$ a tuning parameter chosen by cross-validation. Crucially **the sum runs over *all* weights in both layers** — output weights $\beta$ included — which is exactly the convention the notebook's `sum(p.pow(2) for p in model.parameters())` follows, and which **diverges from Lecture 9 slide 16**, where the written penalty $\lambda\sum_{k,j}w_{kj}^2$ covers the hidden weights only ([R9-9]). ESL also offers the *weight-elimination* penalty $J(\theta)=\sum\frac{\beta_{km}^2}{1+\beta_{km}^2}+\sum\frac{\alpha_{m\ell}^2}{1+\alpha_{m\ell}^2}$ (ESL 11.17), which shrinks small weights more aggressively.
+
+**The "decay" effect.** ESL notes the penalty's only effect on training is "to simply add terms $2\beta_{km}$ and $2\alpha_{m\ell}$ to the respective gradient expressions" (§11.5.2, following 11.16). Concretely the gradient of $\lambda\sum\theta^2$ is $2\lambda\theta$, so each gradient-descent step becomes
+$$\theta \leftarrow \theta - \eta\bigl(\nabla R(\theta) + 2\lambda\theta\bigr) = (1 - 2\eta\lambda)\,\theta - \eta\,\nabla R(\theta),$$
+i.e. every weight is multiplicatively shrunk toward zero by the factor $(1-2\eta\lambda)$ each step before the data-gradient is applied — hence the name **weight decay**. (PyTorch's `weight_decay=` optimizer argument implements precisely this; with the $\tfrac12\lambda$ convention the factor is $(1-\eta\lambda)$.) ESL Fig 11.4 shows weight decay halving the test error on the mixture example (0.259 → 0.223, near the 0.210 Bayes rate). Foundations: this is the **MAP estimate under a Gaussian prior** on the weights (the same Ridge = Gaussian-prior link in the [MLE/MAP appendix](../appendix/math_appendix.qmd#sec-mle)).
+
+**Backprop foundation.** The gradients fed to that update are the ESL back-propagation equations: with output errors $\delta_{ki}$ and hidden errors $s_{mi}$,
+$$\frac{\partial R_i}{\partial \beta_{km}} = \delta_{ki}\,z_{mi}, \qquad \frac{\partial R_i}{\partial \alpha_{m\ell}} = s_{mi}\,x_{i\ell}, \qquad s_{mi} = g'(\alpha_m^\top x_i)\sum_{k=1}^K \beta_{km}\,\delta_{ki} \quad \text{(ESL 11.14–11.15),}$$
+where $z_{mi}$ is ESL's *hidden-unit activation* (the course's $A_{ik}$, not the course's pre-activation $z_{ik}$), the hidden error $s_{mi}$ being a backward-propagated, $g'$-gated combination of the output errors $\delta_{ki}$ — the course's link-by-link chain rule (slide 14/17) is the $K=2$-layer special case. Full derivation and the GD convergence conditions on $\eta$ (ESL: $\sum_r\gamma_r=\infty$, $\sum_r\gamma_r^2<\infty$) are in the [backprop](../appendix/math_appendix.qmd#sec-backprop) and [gradient-descent](../appendix/math_appendix.qmd#sec-gd) appendices.
+
+::: {.callout-note}
+**Dropout is beyond ESL.** ESL (2nd ed., 2009) predates dropout (Srivastava et al., 2014), so its §11.5 covers weight decay, weight elimination, and early stopping but **not dropout** — the account here is the *standard* interpretation, not an ESL result. The standard view: applying an independent Bernoulli keep-mask each step trains a different *thinned sub-network* every batch, all sharing one set of weights, so a network of $n$ droppable units is implicitly an ensemble of up to $2^n$ sub-networks. At test time the inverted-dropout scaling $1/(1-p)$ makes the single full-network forward pass approximate the **geometric-mean prediction over that ensemble** — dropout as cheap, weight-shared *model averaging*, the same variance-reduction logic that makes a [random forest](random_forests.qmd) beat a single tree.
+:::
 :::
 :::

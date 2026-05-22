@@ -1,0 +1,314 @@
+# ISL — Table of Contents
+# file: An Introduction to Statistical Learning Python.pdf
+# pages: 613
+# Use these page numbers with Read(pages=...) to reach a section, then read the derivation.
+
+- p3: Preface
+- p5: Contents
+- p12: 1 Introduction
+  - p12: An Overview of Statistical Learning
+    - p12: Wage Data
+    - p13: Stock Market Data
+    - p14: Gene Expression Data
+  - p16: A Brief History of Statistical Learning
+  - p17: This Book
+  - p19: Who Should Read This Book?
+  - p19: Notation and Simple Matrix Algebra
+  - p22: Organization of This Book
+  - p23: Data Sets Used in Labs and Exercises
+  - p24: Book Website
+  - p24: Acknowledgements
+- p25: 2 Statistical Learning
+  - p25: 2.1 What Is Statistical Learning?
+    - p27: 2.1.1 Why Estimate f?
+    - p30: 2.1.2 How Do We Estimate f?
+    - p33: 2.1.3 The Trade-Off Between Prediction Accuracy and Model Interpretability
+    - p35: 2.1.4 Supervised Versus Unsupervised Learning
+    - p37: 2.1.5 Regression Versus Classification Problems
+  - p37: 2.2 Assessing Model Accuracy
+    - p38: 2.2.1 Measuring the Quality of Fit
+    - p41: 2.2.2 The Bias-Variance Trade-Off
+    - p44: 2.2.3 The Classification Setting
+  - p50: 2.3 Lab: Introduction to Python
+    - p50: 2.3.1 Getting Started
+    - p50: 2.3.2 Basic Commands
+    - p52: 2.3.3 Introduction to Numerical Python
+    - p58: 2.3.4 Graphics
+    - p61: 2.3.5 Sequences and Slice Notation
+    - p61: 2.3.6 Indexing Data
+    - p65: 2.3.7 Loading Data
+    - p69: 2.3.8 For Loops
+    - p71: 2.3.9 Additional Graphical and Numerical Summaries
+  - p73: 2.4 Exercises
+    - p73: Conceptual
+    - p75: Applied
+- p78: 3 Linear Regression
+  - p79: 3.1 Simple Linear Regression
+    - p80: 3.1.1 Estimating the Coefficients
+    - p81: 3.1.2 Assessing the Accuracy of the Coefficient Estimates
+    - p86: 3.1.3 Assessing the Accuracy of the Model
+  - p89: 3.2 Multiple Linear Regression
+    - p90: 3.2.1 Estimating the Regression Coefficients
+    - p92: 3.2.2 Some Important Questions
+  - p100: 3.3 Other Considerations in the Regression Model
+    - p100: 3.3.1 Qualitative Predictors
+    - p103: 3.3.2 Extensions of the Linear Model
+    - p109: 3.3.3 Potential Problems
+  - p118: 3.4 The Marketing Plan
+  - p120: 3.5 Comparison of Linear Regression with K-Nearest Neighbors
+  - p125: 3.6 Lab: Linear Regression
+    - p125: 3.6.1 Importing packages
+    - p126: 3.6.2 Simple Linear Regression
+    - p131: 3.6.3 Multiple Linear Regression
+    - p132: 3.6.4 Multivariate Goodness of Fit
+    - p133: 3.6.5 Interaction Terms
+    - p134: 3.6.6 Non-linear Transformations of the Predictors
+    - p135: 3.6.7 Qualitative Predictors
+  - p136: 3.7 Exercises
+    - p136: Conceptual
+    - p138: Applied
+- p144: 4 Classification
+  - p144: 4.1 An Overview of Classification
+  - p145: 4.2 Why Not Linear Regression?
+  - p147: 4.3 Logistic Regression
+    - p148: 4.3.1 The Logistic Model
+    - p149: 4.3.2 Estimating the Regression Coefficients
+    - p150: 4.3.3 Making Predictions
+    - p151: 4.3.4 Multiple Logistic Regression
+    - p153: 4.3.5 Multinomial Logistic Regression
+  - p155: 4.4 Generative Models for Classification
+    - p156: 4.4.1 Linear Discriminant Analysis for p = 1
+    - p159: 4.4.2 Linear Discriminant Analysis for p >1
+    - p165: 4.4.3 Quadratic Discriminant Analysis
+    - p167: 4.4.4 Naive Bayes
+  - p170: 4.5 A Comparison of Classification Methods
+    - p170: 4.5.1 An Analytical Comparison
+    - p173: 4.5.2 An Empirical Comparison
+  - p176: 4.6 Generalized Linear Models
+    - p176: 4.6.1 Linear Regression on the Bikeshare Data
+    - p178: 4.6.2 Poisson Regression on the Bikeshare Data
+    - p181: 4.6.3 Generalized Linear Models in Greater Generality
+  - p182: 4.7 Lab: Logistic Regression, LDA, QDA, and KNN
+    - p182: 4.7.1 The Stock Market Data
+    - p183: 4.7.2 Logistic Regression
+    - p188: 4.7.3 Linear Discriminant Analysis
+    - p190: 4.7.4 Quadratic Discriminant Analysis
+    - p191: 4.7.5 Naive Bayes
+    - p192: 4.7.6 K-Nearest Neighbors
+    - p197: 4.7.7 Linear and Poisson Regression on the Bikeshare Data
+  - p202: 4.8 Exercises
+    - p202: Conceptual
+    - p205: Applied
+- p209: 5 Resampling Methods
+  - p210: 5.1 Cross-Validation
+    - p210: 5.1.1 The Validation Set Approach
+    - p212: 5.1.2 Leave-One-Out Cross-Validation
+    - p214: 5.1.3 k-Fold Cross-Validation
+    - p216: 5.1.4 Bias-Variance Trade-Off for k-Fold Cross-Validation
+    - p217: 5.1.5 Cross-Validation on Classification Problems
+  - p220: 5.2 The Bootstrap
+  - p223: 5.3 Lab: Cross-Validation and the Bootstrap
+    - p224: 5.3.1 The Validation Set Approach
+    - p225: 5.3.2 Cross-Validation
+    - p228: 5.3.3 The Bootstrap
+  - p232: 5.4 Exercises
+    - p232: Conceptual
+    - p233: Applied
+- p237: 6 Linear Model Selection and Regularization
+  - p239: 6.1 Subset Selection
+    - p239: 6.1.1 Best Subset Selection
+    - p241: 6.1.2 Stepwise Selection
+    - p243: 6.1.3 Choosing the Optimal Model
+  - p248: 6.2 Shrinkage Methods
+    - p248: 6.2.1 Ridge Regression
+    - p252: 6.2.2 The Lasso
+    - p260: 6.2.3 Selecting the Tuning Parameter
+  - p261: 6.3 Dimension Reduction Methods
+    - p262: 6.3.1 Principal Components Regression
+    - p268: 6.3.2 Partial Least Squares
+  - p270: 6.4 Considerations in High Dimensions
+    - p270: 6.4.1 High-Dimensional Data
+    - p271: 6.4.2 What Goes Wrong in High Dimensions?
+    - p273: 6.4.3 Regression in High Dimensions
+    - p274: 6.4.4 Interpreting Results in High Dimensions
+  - p275: 6.5 Lab: Linear Models and Regularization Methods
+    - p276: 6.5.1 Subset Selection Methods
+    - p281: 6.5.2 Ridge Regression and the Lasso
+    - p288: 6.5.3 PCR and PLS Regression
+  - p291: 6.6 Exercises
+    - p291: Conceptual
+    - p294: Applied
+- p297: 7 Moving Beyond Linearity
+  - p298: 7.1 Polynomial Regression
+  - p300: 7.2 Step Functions
+  - p301: 7.3 Basis Functions
+  - p302: 7.4 Regression Splines
+    - p302: 7.4.1 Piecewise Polynomials
+    - p304: 7.4.2 Constraints and Splines
+    - p304: 7.4.3 The Spline Basis Representation
+    - p305: 7.4.4 Choosing the Number and Locations of the Knots
+    - p307: 7.4.5 Comparison to Polynomial Regression
+  - p308: 7.5 Smoothing Splines
+    - p308: 7.5.1 An Overview of Smoothing Splines
+    - p309: 7.5.2 Choosing the Smoothing Parameter λ 
+  - p311: 7.6 Local Regression
+  - p313: 7.7 Generalized Additive Models
+    - p314: 7.7.1 GAMs for Regression Problems
+    - p316: 7.7.2 GAMs for Classification Problems
+  - p317: 7.8 Lab: Non-Linear Modeling
+    - p318: 7.8.1 Polynomial Regression and Step Functions
+    - p323: 7.8.2 Splines
+    - p325: 7.8.3 Smoothing Splines and GAMs
+    - p332: 7.8.4 Local Regression
+  - p333: 7.9 Exercises
+    - p333: Conceptual
+    - p335: Applied
+- p338: 8 Tree-Based Methods
+  - p338: 8.1 The Basics of Decision Trees
+    - p338: 8.1.1 Regression Trees
+    - p344: 8.1.2 Classification Trees
+    - p348: 8.1.3 Trees Versus Linear Models
+    - p348: 8.1.4 Advantages and Disadvantages of Trees
+  - p350: 8.2 Bagging, Random Forests, Boosting, and Bayesian Additive Regression Trees
+    - p350: 8.2.1 Bagging
+    - p353: 8.2.2 Random Forests
+    - p354: 8.2.3 Boosting
+    - p357: 8.2.4 Bayesian Additive Regression Trees
+    - p360: 8.2.5 Summary of Tree Ensemble Methods
+  - p361: 8.3 Lab: Tree-Based Methods
+    - p362: 8.3.1 Fitting Classification Trees
+    - p365: 8.3.2 Fitting Regression Trees
+    - p367: 8.3.3 Bagging and Random Forests
+    - p368: 8.3.4 Boosting
+    - p369: 8.3.5 Bayesian Additive Regression Trees
+  - p370: 8.4 Exercises
+    - p370: Conceptual
+    - p371: Applied
+- p374: 9 Support Vector Machines
+  - p374: 9.1 Maximal Margin Classifier
+    - p375: 9.1.1 What Is a Hyperplane?
+    - p375: 9.1.2 Classification Using a Separating Hyperplane
+    - p377: 9.1.3 The Maximal Margin Classifier
+    - p379: 9.1.4 Construction of the Maximal Margin Classifier
+    - p379: 9.1.5 The Non-separable Case
+  - p380: 9.2 Support Vector Classifiers
+    - p380: 9.2.1 Overview of the Support Vector Classifier
+    - p381: 9.2.2 Details of the Support Vector Classifier
+  - p384: 9.3 Support Vector Machines
+    - p385: 9.3.1 Classification with Non-Linear Decision Boundaries
+    - p386: 9.3.2 The Support Vector Machine
+    - p389: 9.3.3 An Application to the Heart Disease Data
+  - p390: 9.4 SVMs with More than Two Classes
+    - p391: 9.4.1 One-Versus-One Classification
+    - p391: 9.4.2 One-Versus-All Classification
+  - p391: 9.5 Relationship to Logistic Regression
+  - p394: 9.6 Lab: Support Vector Machines
+    - p394: 9.6.1 Support Vector Classifier
+    - p397: 9.6.2 Support Vector Machine
+    - p399: 9.6.3 ROC Curves
+    - p400: 9.6.4 SVM with Multiple Classes
+    - p401: 9.6.5 Application to Gene Expression Data
+  - p402: 9.7 Exercises
+    - p402: Conceptual
+    - p403: Applied
+- p406: 10 Deep Learning
+  - p407: 10.1 Single Layer Neural Networks
+  - p409: 10.2 Multilayer Neural Networks
+  - p413: 10.3 Convolutional Neural Networks
+    - p414: 10.3.1 Convolution Layers
+    - p417: 10.3.2 Pooling Layers
+    - p417: 10.3.3 Architecture of a Convolutional Neural Network
+    - p418: 10.3.4 Data Augmentation
+    - p419: 10.3.5 Results Using a Pretrained Classifier
+  - p420: 10.4 Document Classification
+  - p423: 10.5 Recurrent Neural Networks
+    - p425: 10.5.1 Sequential Models for Document Classification
+    - p427: 10.5.2 Time Series Forecasting
+    - p431: 10.5.3 Summary of RNNs
+  - p432: 10.6 When to Use Deep Learning
+  - p434: 10.7 Fitting a Neural Network
+    - p435: 10.7.1 Backpropagation
+    - p436: 10.7.2 Regularization and Stochastic Gradient Descent
+    - p438: 10.7.3 Dropout Learning
+    - p438: 10.7.4 Network Tuning
+  - p439: 10.8 Interpolation and Double Descent
+  - p442: 10.9 Lab: Deep Learning
+    - p444: 10.9.1 Single Layer Network on Hitters Data
+    - p451: 10.9.2 Multilayer Network on the MNIST Digit Data
+    - p455: 10.9.3 Convolutional Neural Networks
+    - p459: 10.9.4 Using Pretrained CNN Models
+    - p461: 10.9.5 IMDB Document Classification
+    - p465: 10.9.6 Recurrent Neural Networks
+  - p472: 10.10 Exercises
+    - p472: Conceptual
+    - p473: Applied
+- p475: 11 Survival Analysis and Censored Data
+  - p476: 11.1 Survival and Censoring Times
+  - p476: 11.2 A Closer Look at Censoring
+  - p478: 11.3 The Kaplan–Meier Survival Curve
+  - p480: 11.4 The Log-Rank Test
+  - p482: 11.5 Regression Models With a Survival Response
+    - p482: 11.5.1 The Hazard Function
+    - p484: 11.5.2 Proportional Hazards
+    - p488: 11.5.3 Example: Brain Cancer Data
+    - p488: 11.5.4 Example: Publication Data
+  - p490: 11.6 Shrinkage for the Cox Model
+  - p492: 11.7 Additional Topics
+    - p492: 11.7.1 Area Under the Curve for Survival Analysis
+    - p493: 11.7.2 Choice of Time Scale
+    - p494: 11.7.3 Time-Dependent Covariates
+    - p494: 11.7.4 Checking the Proportional Hazards Assumption
+    - p494: 11.7.5 Survival Trees
+  - p495: 11.8 Lab: Survival Analysis
+    - p495: 11.8.1 Brain Cancer Data
+    - p499: 11.8.2 Publication Data
+    - p500: 11.8.3 Call Center Data
+  - p504: 11.9 Exercises
+    - p504: Conceptual
+    - p508: Applied
+- p509: 12 Unsupervised Learning
+  - p509: 12.1 The Challenge of Unsupervised Learning
+  - p510: 12.2 Principal Components Analysis
+    - p511: 12.2.1 What Are Principal Components?
+    - p514: 12.2.2 Another Interpretation of Principal Components
+    - p516: 12.2.3 The Proportion of Variance Explained
+    - p518: 12.2.4 More on PCA
+    - p521: 12.2.5 Other Uses for Principal Components
+  - p521: 12.3 Missing Values and Matrix Completion
+  - p526: 12.4 Clustering Methods
+    - p527: 12.4.1 K-Means Clustering
+    - p531: 12.4.2 Hierarchical Clustering
+    - p538: 12.4.3 Practical Issues in Clustering
+  - p541: 12.5 Lab: Unsupervised Learning
+    - p541: 12.5.1 Principal Components Analysis
+    - p545: 12.5.2 Matrix Completion
+    - p548: 12.5.3 Clustering
+    - p552: 12.5.4 NCI60 Data Example
+  - p558: 12.6 Exercises
+    - p558: Conceptual
+    - p560: Applied
+- p563: 13 Multiple Testing
+  - p564: 13.1 A Quick Review of Hypothesis Testing
+    - p564: 13.1.1 Testing a Hypothesis
+    - p568: 13.1.2 Type I and Type II Errors
+  - p569: 13.2 The Challenge of Multiple Testing
+  - p571: 13.3 The Family-Wise Error Rate
+    - p571: 13.3.1 What is the Family-Wise Error Rate?
+    - p573: 13.3.2 Approaches to Control the Family-Wise Error Rate
+    - p578: 13.3.3 Trade-Off Between the FWER and Power
+  - p579: 13.4 The False Discovery Rate
+    - p579: 13.4.1 Intuition for the False Discovery Rate
+    - p581: 13.4.2 The Benjamini–Hochberg Procedure
+  - p583: 13.5 A Re-Sampling Approach to p-Values and False Discovery Rates
+    - p584: 13.5.1 A Re-Sampling Approach to the p-Value
+    - p585: 13.5.2 A Re-Sampling Approach to the False Discovery Rate
+    - p587: 13.5.3 When Are Re-Sampling Approaches Useful?
+  - p589: 13.6 Lab: Multiple Testing
+    - p589: 13.6.1 Review of Hypothesis Tests
+    - p591: 13.6.2 Family-Wise Error Rate
+    - p594: 13.6.3 False Discovery Rate
+    - p596: 13.6.4 A Re-Sampling Approach
+  - p599: 13.7 Exercises
+    - p599: Conceptual
+    - p601: Applied
+- p603: Index
