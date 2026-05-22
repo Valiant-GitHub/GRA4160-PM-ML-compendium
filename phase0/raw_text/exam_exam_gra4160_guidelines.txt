@@ -1,0 +1,427 @@
+# SOURCE: Exam_GRA4160_Guidelines.pdf
+# PAGES: 12
+
+===== [PAGE 1] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 1 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Exam in GRA 4160 (Spring 2024)
+Predictive modelling with machine learning
+30-hour take-home exam
+29.05.2024 09:00 - 30.05.2024 15:00
+Instructions
+Attached to this exam are the following files:
+1. Exam_GRA4160_Spring2024.ipynb  (this file)
+2. diabetes.csv
+3. Sales-Win-Loss.csv
+The assignments are divided into four sections:
+1. Predict diabetes
+2. Synthetic Data Generation and Ensemble Methods
+3. Predicting Sales Performance Using a Neural Network
+4. Reflection on Your Mini Project
+Before starting, thoroughly read through all assignments. At the beginning of each
+added cell, explicitly state the exercise you are addressing. Ensure the cells are
+arranged logically and that all code cells execute error-free.
+Ensure you document your code with comprehensive comments and explanations to
+keep it clean and readable. Additionally, strive to make your non-code responses
+as concise and short as possible. Long responses with irrelevant information can
+lead to a deduction of points. Preferably, put your non-code responses in markdown
+cells.
+If you need further clarification on any assignments, please email Vegard H. Larsen at
+vegard.h.larsen@bi.no .
+Remember to save and back up the notebook periodically.
+Allowed Aids
+All course material and your notes.
+
+===== [PAGE 2] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 2 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+You can use the 3rd party Python libraries we used in class without any
+explanations (e.g., NumPy, Pandas, Scikit-learn, and Keras).
+Any other 3rd party Python libraries, but you must explain what they do and why
+you choose to use them.
+Resources on the Internet, but if you include code pieces you find on-line you
+must list the URLs of these resources in the corresponding resources' cell at the
+end of each section.
+You are NOT allowed to receive help from other people in solving the
+assignments.
+Use of generative AI
+You are allowed to use generative AI tools to generate code snippets, but you must
+explain the code snippets in your own words. Furthermore, you can use generative AI
+as an aid for all exercises, but you must explain why you chose to use generative AI
+tools and how you used them. If you use generative AI tools, you must list the tools
+you used in the corresponding resources' cell at the end of each section.
+Submission
+Submit your completed notebook (the .ipynb  file) via WISEflow before the
+deadline. Be aware that the deadline is strict, so do not wait until the very last minute
+to submit.
+Fill out your student ID at the designated area below.
+Suggested grade boundaries (out of 100 points):
+0 - 40 points: F
+41 - 60 points: E
+61 - 70 points: D
+71 - 80 points: C
+81 - 90 points: B
+91 - 100 points: A
+
+===== [PAGE 3] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 3 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Assignment 1: Predict diabetes
+This assignment is based on the Pima Indians Diabetes Database. The objective of
+the dataset is to diagnostically predict whether a patient has diabetes, based on
+certain diagnostic measurements.
+The dataset is stored in the file diabetes.csv  attached to the exam. The data can
+also be downloaded from Kaggle.
+This dataset is originally from the National Institute of Diabetes and Digestive and
+Kidney Diseases. Several constraints were placed on the selection of these instances
+from a larger database. In particular, all patients here are females at least 21 years old
+of Pima Indian heritage.
+The dataset consist of several medical predictor variables and one target variable.
+Predictor variables include the number of pregnancies the patient has had, their BMI,
+insulin level, age, and so on.
+Exercise 1.1: Load the dataset from the file diabetes.csv  and display the first five
+rows of the dataset. Comment on the structure and the completeness of the dataset.
+Check for missing values in the dataset. If there are any missing values, find a way to
+handle them. Briefly explain your approach.
+Exercise 1.2: Explore the dataset by calculating the mean, median, standard
+deviation, and range of the numerical variables. Calculate the frequency of the
+categorical variables. Which variables do you think are most likely to be important for
+predicting diabetes?
+Exercise 1.3: Choose two machine learning models for predicting diabetes. Discuss
+the reasons for choosing these models, including their strengths and weaknesses in
+the context of this specific problem.
+Exercise 1.4: Split the data into training and testing sets. Train your models (the two
+models you selected in 1.3) on the training data and validate them using the testing
+data. Apply cross-validation and explain its importance in model validation.
+Exercise 1.5: Evaluate the performance of each model using appropriate metrics.
+Present the results in a comparative format and discuss which model performs best
+and why.
+Exercise 1.6: Interpret the results of your best-performing model. Discuss which
+features are most influential in predicting diabetes and why. Reflect on any limitations
+or biases in your model and how they could impact the results.
+
+===== [PAGE 4] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 4 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Guidelines
+This assignment counts for 25% of the total grade.
+Guidelines 1.1 (3 points)
+Check that the dataset is correctly loaded from diabetes.csv  and the first
+five rows are displayed. Award points for correct use of the data loading function
+and accurate display.
+In this dataset missing values appear as zeros. Award points for identifying and
+handling missing values correctly.
+Evaluate the method used for handling missing values, including justification of
+the chosen method. Points should be awarded based on the appropriateness and
+implementation of the method (e.g., imputation, removal of missing data).
+Guidelines 1.2 (4 points)
+Confirm calculations of mean, median, standard deviation, and range for
+numerical variables are correct. Evaluate the clarity and accuracy of the
+frequency analysis for categorical variables.
+Look for a thoughtful analysis or hypothesis about which variables might be
+important for predicting diabetes based on the statistics provided.
+Award points for clear presentation of statistics and insightful interpretation that
+supports subsequent analysis steps.
+Guidelines 1.3 (4 points)
+Evaluate the choice of two machine learning models based on their suitability for
+the dataset and problem. The reasons should include the models' advantages
+and disadvantages.
+Look for a well-reasoned justification, including how each model's strengths and
+weaknesses align with the characteristics of this specific dataset.
+Award points for demonstrating understanding of the chosen models and their
+mechanisms.
+
+===== [PAGE 5] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 5 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Guidelines 1.4 (4 points)
+Check for correct methodology in splitting the dataset into training and testing
+sets, including the use of appropriate functions and parameters.
+Evaluate the implementation of cross-validation, ensuring it's applied correctly
+and effectively to both models. Assess the explanation of its importance in model
+validation.
+Check the validation process and clarity in the explanation of the methods used.
+Guidelines 1.5 (5 points)
+Check that appropriate metrics (e.g., accuracy, precision, recall, F1-score) are
+used to evaluate each model.
+Points should be given for a comparative presentation of results that is clear and
+informative.
+Look for a thoughtful discussion on which model performs best and the reasons
+why, incorporating insights from the performance metrics.
+Guidelines 1.6 (5 points)
+Evaluate how well the results and influence of different features in predicting
+diabetes are interpreted and explained.
+Give points for reflections on any limitations or biases in the model or data that
+could impact results.
+Grade the depth and critical analysis in discussing the model's performance and
+potential real-world implications.
+Assignment 2: Synthetic Data Generation and
+Ensemble Methods
+In this assignment, you will generate a synthetic dataset designed to simulate a real-
+world e-commerce scenario. You will then apply various tree-based machine learning
+models to this dataset to understand their characteristics and performance
+differences.
+Part 1: Synthetic Data Generation
+Use Python libraries such as numpy , pandas, and scikit-learn  to generate a
+dataset of at least 10,000 instances. By instance, we mean a row in the dataset
+representing a customer and their behavior on an e-commerce website. Each
+instance should have an outcome variable indicating whether the customer made a
+
+===== [PAGE 6] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 6 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+purchase. Consider the following guidelines when creating the dataset:
+Create features typical for an e-commerce setting:
+Age: Numeric, range between 18-70.
+Gender: Categorical, Male or Female.
+Income: Numeric, based on a normal distribution scaled to the economy of
+the scenario.
+Number of website visits in the past month: Integer, consider a realistic
+range (e.g., 0-30).
+Average spending per visit: Numeric, should correlate positively with income.
+Time spent on website per visit: Numeric, in minutes.
+Number of purchases in the last year: Integer, likely correlated with the
+number of visits.
+Define the target variable:
+Purchased: Binary (Yes/No), could be influenced by the above features with
+added randomness for unpredictability.
+You should make some assumptions about the willingness to purchase a product
+based on features defined above. Ensure your data includes realistic distributions
+when creating relationships between the features (e.g., higher income might
+correlate with higher spending per visit). Provide a brief explanation of your data
+generation strategy, especially how you ensure the realism of the data and the
+relationships between features.
+Importantly, create some relationships between features that are not entirely linear.
+This will allow us to test the models' ability (in Part 2) to capture non-linear patterns
+in the data. Visualize the relationships between features using scatter plots or other
+appropriate visualizations.
+Part 2: Tree-Based Models
+In this part, you will train three different tree-based models on the synthetic dataset
+you created in Part 1.
+Train three different models of the following types:
+Decision Tree
+Random Forest
+One additional ensemble model of your choice (e.g., XGBoost, or Bagging
+Classifier)
+Configure basic parameters for each model and document your choices.
+Discuss why each model might be appropriate for the dataset.
+Evaluate each model on the test set using your choice of metrics (e.g., accuracy,
+
+===== [PAGE 7] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 7 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+precision, recall, F1 score, ROC-AUC). Briefly explain the reasons for choosing
+these metrics.
+Comment on the different models' ability to capture the non-linear relationships
+you introduced in the data.
+Guidelines
+This assignment counts for 25% of the total grade.
+Guidelines 1 (10 points)
+Evaluate the creation of the dataset with at least 10,000 instances, assessing the
+presence and correct implementation of features typical for an e-commerce
+scenario. Check for the correct range and type (e.g., numeric, categorical) for
+each feature like Age, Gender, Income, etc.
+Assess how realistically the relationships between features are modeled (e.g.,
+income correlating with average spending). The guidelines should check for
+logical assumptions and their implementation in the data generation process.
+Award points for effective visualizations that clearly demonstrate the
+relationships between features. Specifically look for the creation and
+visualization of non-linear relationships between features, which are crucial for
+testing the models in Part 2.
+Guidelines 2 (15 points)
+Check for correct implementation and training of three different tree-based
+models: Decision Tree, Random Forest, and a third model of the student's choice
+(e.g., XGBoost, Bagging Classifier). Evaluate whether the basic parameters for
+each model are appropriately configured and documented.
+Grade based on the explanation provided for choosing each model, focusing on
+the appropriateness of each model for the dataset. This includes discussing the
+strengths of each model in handling complex data structures like those
+introduced in Part 1.
+Evaluate the choice and application of performance metrics (e.g., accuracy,
+precision, recall, F1 score, ROC-AUC). Look for a clear justification for each
+metric chosen and a thorough analysis of the models' performance on these
+metrics. Analysis of Non-Linear Performance: Grade based on the commentary
+on each model's ability to capture non-linear relationships. This should include a
+detailed discussion linking model performance back to the synthetic data
+features and the non-linear relationships that were visualized in Part 1.
+
+===== [PAGE 8] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 8 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Assignment 3: Predicting Sales Performance Using
+a Neural Network
+This assignment is based on the Sales_Win_Loss.csv  dataset attached to the
+exam. The dataset is from IBM, and is also available on Kaggle. Each record in the
+dataset represents an opportunity for a sales team and includes various attributes
+related to the sales process and the final outcome (win or loss).
+The dataset contains attributes such as the type of client, size of the client, deal size,
+region, and whether the sales opportunity was won or lost. These features can be
+leveraged to understand patterns and predict future sales outcomes.
+Exercise 3.1: Load the Sales_Win_Loss dataset. Familiarize yourself with its structure
+and the variables it includes. Conduct necessary data cleaning and preprocessing
+steps, such as dealing with missing values, encoding categorical features, and
+scaling numerical values. Divide the dataset into a training set and a testing set.
+Exercise 3.2: Design a neural network with one hidden layer for predicting the 'win'
+or 'loss' outcome of sales opportunities. Describe the network architecture, including
+your choice of activation functions and the number of neurons in the hidden layer.
+Explain why these choices are appropriate.
+Exercise 3.3: Train your neural network on the training data. Outline the training
+process, specifying the optimizer used, number of epochs, batch size, and
+performance metrics monitored during training. Explain why the chosen metrics are
+suitable for assessing the performance of a model in this application.
+Exercise 3.4: Evaluate your model's performance on the test set using appropriate
+metrics (e.g., accuracy, precision, recall, F1-score). Present and interpret the
+evaluation results, highlighting the neural network’s ability to predict sales outcomes
+effectively.
+Exercise 3.5: Reflect on the performance of your neural network. Discuss potential
+improvements or alternative modeling techniques that could enhance prediction
+accuracy. Consider whether a neural network is the optimal model for this type of
+prediction problem. If not, suggest other models that might be more effective,
+providing reasons for your choices.
+Guidelines
+This assignment counts for 25% of the total grade.
+
+===== [PAGE 9] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 9 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Guideline 3.1 (5 points)
+Check for correct loading of the Sales_Win_Loss.csv dataset and an initial
+analysis of its structure. Evaluate the completeness of the description of the
+dataset's variables and their types.
+Assess the implementation of necessary data preprocessing steps, such as
+handling missing values, encoding categorical features, and scaling numerical
+values. Award points based on the appropriateness of the methods used and
+their justification.
+Grade the method used to divide the dataset into training and testing sets,
+ensuring the split is rational and justified, with appropriate proportions.
+Guidelines 3.2 (5 points)
+Evaluate the design of the neural network, particularly the choice of the number
+of neurons in the hidden layer and the activation functions used. Points should
+be given based on the appropriateness and explanation of these choices.
+Look for clear reasoning behind each design choice, including how these choices
+are expected to influence the model's performance on this specific problem.
+Award points for how clearly and deeply the student explains the neural network
+architecture, showing an understanding of how the architecture impacts learning
+and performance.
+Guideline 3.3 (5 points)
+Check for a clear outline of the neural network training process, including the
+optimizer used, number of epochs, batch size, and the rationale behind these
+choices. Performance Metrics: Evaluate the choice of performance metrics
+monitored during training. Points should be given for selecting suitable metrics
+and providing a rationale that aligns with the goals of a sales prediction model.
+Explanation and Justification: Grade the depth of explanation regarding how the
+training process and metrics are optimized to achieve effective learning and
+prediction accuracy.
+
+===== [PAGE 10] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 10 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Guideline 3.4 (5 points)
+Assess the application and explanation of metrics such as accuracy, precision,
+recall, and F1-score for evaluating the model on the test set.
+Look for a clear presentation and thoughtful interpretation of the evaluation
+results. Points should be awarded for insights into how well the neural network
+predicts sales outcomes, highlighting strengths and potential weaknesses.
+Grade the depth of analysis in discussing how the model's performance metrics
+relate to its ability to predict real-world sales scenarios.
+Guidelines 3.5 (5 points)
+Evaluate the reflection on the neural network's performance, including potential
+reasons for any limitations observed.
+Look for thoughtful suggestions on how to improve the model's performance,
+including consideration of alternative modeling techniques.
+Grade the discussion on whether a neural network is the optimal choice for this
+prediction problem. Points should be given for well-reasoned arguments for or
+against the use of neural networks, including suggestions of other models that
+might be more effective and why.
+Assignment 4: Reflection on Your Mini Project
+For each of the following 5 questions, write a response of no more than 300 words.
+Exercise 4.1: Briefly describe the problem or research question you tackled in your
+mini project. Why did you choose this particular problem?
+Exercise 4.2: Discuss the process of data collection and preprocessing. Reflect on
+how the quality and nature of data influenced your project results.
+Exercise 4.3: Which machine learning algorithm(s) did you choose for your project,
+and why? Describe the process of implementing the algorithm and any difficulties you
+encountered.
+Exercise 4.4: Were you able to effectively address the problem identified? What
+insights did you gain from the analysis?
+Exercise 4.5: If you were to continue this project, what aspects would you focus on
+improving? Discuss any additional experiments or changes in methodology you would
+consider for improving your project.
+
+===== [PAGE 11] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 11 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Guidelines
+This assignment counts for 25% of the total grade.
+The responses should provide details of the mini project presented in class.
+Guidelines 4.1 (5 points)
+Evaluate the clarity with which the student describes the problem or research
+question tackled in their mini project. Award points for a concise yet
+comprehensive explanation of the project's scope.
+Grade based on the depth of reasoning provided for choosing the specific
+problem or research question. Look for personal or academic motivations,
+relevance to current issues, or potential impact.
+Guidelines 4.2 (5 points)
+Assess how well the student describes the data collection and preprocessing
+steps. Points should be awarded for detailed explanations of the methods used
+and the rationale behind them.
+Grade the reflection on how the quality and nature of the data influenced the
+results of the project. Look for insights into challenges faced due to data quality
+and how they were addressed.
+Evaluate the depth of analysis regarding the impact of data on the project's
+outcomes. Reward responses that show a clear understanding of the connection
+between data quality and project success.
+Guidelines 4.3 (5 points)
+Check for a clear explanation of the machine learning algorithm(s) chosen for the
+project. Points should be awarded for justifying why specific algorithms were
+suitable for addressing the project's problem.
+Assess the description of the algorithm implementation process, including any
+difficulties encountered. Grade the thoroughness and honesty in discussing
+challenges and how they were overcome.
+Reward depth of understanding and ability to communicate complex machine
+learning concepts clearly.
+
+===== [PAGE 12] =====
+17/06/2024, 09:21
+Exam_GRA4160_Guidelines
+Page 12 of 12
+file:///Users/vegard/Downloads/Exam_GRA4160_Guidelines.html
+Guidelines 4.4 (5 points)
+Evaluate how well the student articulates whether and how they were able to
+address the identified problem. Points should be based on the clarity and
+specificity of the outcomes discussed.
+Grade the quality and depth of the insights gained from the analysis. Look for
+detailed examples of findings and their implications on the problem studied.
+Check for analytical depth in linking project results to broader concepts or
+potential real-world applications.
+Guidelines 4.5 (5 points)
+Assess the student's ability to critically identify areas of their project that could
+be improved. Points should be awarded for specific, actionable suggestions.
+Evaluate the feasibility and creativity of proposed additional experiments or
+changes in methodology. Reward clear, innovative ideas that could realistically
+enhance the project.
+Grade the overall reflective quality of the response, rewarding responses that
+demonstrate a thoughtful consideration of the project's future potential and
+areas for growth.

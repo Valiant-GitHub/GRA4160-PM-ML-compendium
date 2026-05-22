@@ -1,0 +1,213 @@
+# SOURCE: lecture10 (1).pdf
+# PAGES: 15
+
+===== [PAGE 1] =====
+Lecture 10:
+Traditional ML vs Deep Learning
+Vegard Høghaug Larsen
+GRA4160: Predictive modelling with machine learning
+March 11th 2026
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+1/15
+
+===== [PAGE 2] =====
+Plan for today:
+▶Traditional ML vs Deep Learning - Overview
+▶Practical applications and model comparisons
+▶Tools used in practice
+▶Emerging trends in machine learning
+▶Feedback and queestions on mini project
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+2/15
+
+===== [PAGE 3] =====
+Traditional ML vs Deep Learning
+Traditional ML Models:
+▶Algorithms: k-NN, decision trees, logistic regression, SVMs
+▶Manual feature selection required
+▶Interpretable, good for structured data, smaller datasets
+▶Example: Decision trees as a ﬂowchart
+Deep Learning:
+▶Multi-layer neural networks
+▶Automatic feature learning from data
+▶Excellent with large datasets, images, text, audio
+▶High accuracy, high computational cost, low interpretability
+▶Often "black-box" models
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+3/15
+
+===== [PAGE 4] =====
+Performance vs Dataset Size
+▶Traditional ML models plateau quickly — adding more data beyond a threshold yields
+diminishing returns
+▶Deep learning models scale better with data: performance continues to improve with
+larger datasets
+▶With small data, traditional ML often outperforms deep learning due to fewer
+parameters and less overﬁtting
+▶With large data, deep learning leverages its capacity to learn richer representations
+▶Key insight: the crossover point depends on task complexity and feature quality
+“More data beats a cleverer algorithm, but only if the algorithm can exploit it.”
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+4/15
+
+===== [PAGE 5] =====
+When to Choose Which?
+▶Traditional ML:
+▶Limited data
+▶Interpretability critical (e.g., credit decisions)
+▶Deep Learning:
+▶Large datasets available
+▶Complex, perceptual tasks (vision, NLP)
+▶Computational resources available
+▶Practice: Start simple (Logistic, Random Forest) then move to DL if needed
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+5/15
+
+===== [PAGE 6] =====
+k-NN vs Neural Networks (Recommenders)
+k-NN:
+▶Simple, memory-based, no explicit training
+▶Good for small-scale recommendations
+▶Slow at scale, limited to direct similarity
+Neural Networks:
+▶Learns embeddings for user-item interactions
+▶Scalable, handles diverse data, highly accurate
+▶Used by Netﬂix, YouTube
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+6/15
+
+===== [PAGE 7] =====
+Logistic Regression vs DL (Text Classiﬁcation)
+Logistic Regression:
+▶Baseline, simple linear model, interpretable
+▶Eﬀective with engineered features (e.g. TF-IDF)
+▶Limited nuance in complex texts
+Deep Learning (CNNs, LSTMs, Transformers):
+▶Surpassed traditional methods on NLP tasks
+▶Learns word/context embeddings
+▶More data-intensive, computationally demanding
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+7/15
+
+===== [PAGE 8] =====
+Decision Trees vs Neural Networks (Medical)
+Decision Trees/Ensembles:
+▶Highly interpretable, suitable for small datasets
+▶Used for simple diagnostic rules
+▶Easy to validate by clinicians
+Deep Learning:
+▶Human-level accuracy (X-rays, pathology slides)
+▶Harder to interpret, "black-box"
+▶Explainability (XAI) essential in practice
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+8/15
+
+===== [PAGE 9] =====
+Random Forests vs CNNs (Images)
+Random Forests:
+▶Requires extensive feature engineering
+▶Limited scalability and accuracy
+CNNs:
+▶Revolutionized image recognition
+▶Learn hierarchical features directly from pixels
+▶State-of-the-art accuracy, computationally demanding
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+9/15
+
+===== [PAGE 10] =====
+Ensemble Methods vs DL (Finance)
+Ensemble Methods:
+▶Good with structured/tabular ﬁnancial data
+▶Robust with smaller datasets
+▶Interpretable, less tuning required
+Deep Learning:
+▶Powerful with large historical datasets
+▶Captures subtle, complex interactions
+▶Harder to interpret, extensive tuning required
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+10/15
+
+===== [PAGE 11] =====
+Summary: Traditional ML vs Deep Learning
+Aspect
+Traditional ML
+Deep Learning
+Feature engineering
+Manual
+Automatic
+Data requirement
+Small–medium
+Large
+Interpretability
+High
+Low
+Computational cost
+Low
+High
+Structured data
+Excellent
+Good
+Unstructured data
+Limited
+Excellent
+Training time
+Fast
+Slow
+Overﬁtting risk
+Lower
+Higher
+Neither approach dominates — the best choice depends on the data, the task, and the constraints.
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+11/15
+
+===== [PAGE 12] =====
+Tools in Practice
+Scikit-learn:
+▶Traditional ML, quick prototyping, easy to use
+▶CPU-based, integrates with pandas, numpy
+TensorFlow/PyTorch:
+▶Deep learning frameworks, GPU acceleration
+▶TensorFlow: Production deployments
+▶PyTorch: Research, dynamic graphs, HuggingFace integration
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+12/15
+
+===== [PAGE 13] =====
+Emerging Trends in ML
+▶Hybrid Models: Combining DL features with interpretable ML
+▶Transfer/Self-supervised Learning: Leveraging large, pre-trained models
+▶Foundation Models: GPT, Stable Diﬀusion, general-purpose models
+▶AutoML/No-Code ML: Automated model building, increased accessibility
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+13/15
+
+===== [PAGE 14] =====
+Transfer Learning in Practice
+▶Idea: Take a model pre-trained on a large dataset and adapt it to a new, smaller task
+▶Common workﬂow:
+1. Start with a pre-trained model (e.g., ResNet for images, BERT for text)
+2. Freeze early layers that capture general features
+3. Fine-tune later layers on your speciﬁc dataset
+▶Why it works: Early layers learn generic features (edges, textures, word meanings) that
+transfer across tasks
+▶Dramatically reduces data requirements and training time
+▶Example: Fine-tuning a pre-trained BERT model for sentiment analysis can achieve
+strong results with just a few hundred labeled examples
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+14/15
+
+===== [PAGE 15] =====
+Practical Decision Checklist
+When choosing between traditional ML and deep learning, consider:
+1. Data size: <10k samples? Start with traditional ML
+2. Data type: Tabular →tree-based methods; images/text/audio →deep learning
+3. Interpretability: Required by regulation or stakeholders? Prefer traditional ML or add
+XAI methods
+4. Compute budget: Limited GPU access? Traditional ML or smaller DL models
+5. Iteration speed: Need quick experiments? Scikit-learn is faster to prototype
+6. Baseline ﬁrst: Always start with a simple model — you need a benchmark to justify
+complexity
+Rule of thumb: if a gradient boosted tree (XGBoost/LightGBM) works well on your tabular
+data, deep learning will rarely beat it by much.
+Vegard Høghaug Larsen: Lecture 10:, Traditional ML vs Deep Learning
+15/15

@@ -1,0 +1,20 @@
+# SOURCE: GRA41601QP.pdf
+# PAGES: 1
+
+===== [PAGE 1] =====
+Exam in GRA 4160 (Spring 2023)  
+Advanced Regression and Classification 
+Analysis, Ensemble Methods and Neural 
+Networks  
+30-hour take-home exam  
+Attached to this exam are the following files:  
+1. Exam_GRA4160_Spring2023.ipynb   
+2. cleveland.data  
+3. hungarian.data  
+4. long-beach-va.data  
+5. switzerland.data  
+6. Telco-Customer-Churn.csv  
+ 
+Download the provided zip ﬁle and extract its contents, which should include six ﬁles. Then, 
+open the Jupyter notebook included among these ﬁles and follow the instruc@ons contained 
+within it.

@@ -1,0 +1,346 @@
+# SOURCE: lecture4 (2).pdf
+# PAGES: 24
+
+===== [PAGE 1] =====
+Lecture 4:
+Classiﬁcation Analysis
+Vegard Høghaug Larsen
+GRA4160: Predictive Modelling with Machine Learning
+January 28, 2026
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+1/11
+
+===== [PAGE 2] =====
+Plan for Today
+▶Recap from last week: LDA and Regularized Regression
+▶Logistic Regression
+▶Decision Trees
+▶Exercise: Recognizing handwritten digits
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+2/11
+
+===== [PAGE 3] =====
+Recap: Linear Discriminant Analysis (LDA)
+▶Purpose:
+▶Supervised classiﬁcation & dimensionality reduction.
+▶Projects data onto a lower-dimensional space to maximize class separation.
+▶When to Use:
+▶Two or more well-separated classes with similar covariance matrices.
+▶Need for interpretable linear boundaries and reduced dimensionality.
+▶Mathematical Core:
+▶Deﬁnes scatter matrices: SB (between-class) and SW (within-class).
+▶Objective:
+max
+w
+wTSBw
+wTSW w.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+3/11
+
+===== [PAGE 4] =====
+Recap: LDA Assumptions & Practical Tips
+▶Key Assumptions:
+1. Each class follows (approximately) a normal (Gaussian) distribution.
+2. All classes share the same covariance matrix.
+3. Features are ideally uncorrelated, but mild correlations are often acceptable.
+▶Implications:
+▶If covariances diﬀer signiﬁcantly, consider Quadratic Discriminant Analysis (QDA).
+▶LDA can be robust to mild violations of normality.
+▶Practical Tips:
+▶Scale/standardize data to stabilize covariance estimation.
+▶Use cross-validation to evaluate classiﬁcation performance (e.g., confusion matrices).
+▶Works well with moderate-to-large datasets that have reasonable class separation.
+▶Takeaway: A simple, interpretable linear boundary with dimensionality reduction under
+Gaussian assumptions.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+4/11
+
+===== [PAGE 5] =====
+Recap: Regularized Regression (Ridge, Lasso, Elastic Net)
+▶Motivation: Mitigate overﬁtting by penalizing large coeﬃcients.
+▶Methods Overview:
+▶Ridge (L2):
+▶Shrinks coeﬃcients (rarely to exactly zero).
+▶Useful for handling multicollinearity.
+▶Lasso (L1):
+▶Can set some coeﬃcients to zero (feature selection).
+▶Often helpful in high-dimensional settings.
+▶Elastic Net (L1 + L2):
+▶Balances the strengths of Ridge and Lasso.
+▶Two hyperparameters: overall strength (λ) + mixing ratio (α).
+▶Choosing λ:
+▶Use cross-validation to ﬁnd the best bias-variance trade-oﬀ.
+▶Standardize features before applying the penalty terms.
+▶Key Takeaway: Regularization improves generalization, reduces overﬁtting, and can do
+feature selection (Lasso/Elastic Net).
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+5/11
+
+===== [PAGE 6] =====
+Logistic Regression
+▶A binary classiﬁcation model (e.g., yes/no, success/failure).
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+6/11
+
+===== [PAGE 7] =====
+Logistic Regression
+▶A binary classiﬁcation model (e.g., yes/no, success/failure).
+▶Assumes a linear relationship between predictors x and the log-odds of the outcome:
+log
+(
+p
+1−p
+)
+= β0 + β1x1 + · · · + βkxk
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+6/11
+
+===== [PAGE 8] =====
+Logistic Regression
+▶A binary classiﬁcation model (e.g., yes/no, success/failure).
+▶Assumes a linear relationship between predictors x and the log-odds of the outcome:
+log
+(
+p
+1−p
+)
+= β0 + β1x1 + · · · + βkxk
+▶The log-odds transformation (logit) ensures predicted probabilities are always in [0, 1].
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+6/11
+
+===== [PAGE 9] =====
+Logistic Regression
+▶A binary classiﬁcation model (e.g., yes/no, success/failure).
+▶Assumes a linear relationship between predictors x and the log-odds of the outcome:
+log
+(
+p
+1−p
+)
+= β0 + β1x1 + · · · + βkxk
+▶The log-odds transformation (logit) ensures predicted probabilities are always in [0, 1].
+▶Often ﬁt by maximum likelihood (minimizing negative log-likelihood).
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+6/11
+
+===== [PAGE 10] =====
+Logistic Regression
+▶A binary classiﬁcation model (e.g., yes/no, success/failure).
+▶Assumes a linear relationship between predictors x and the log-odds of the outcome:
+log
+(
+p
+1−p
+)
+= β0 + β1x1 + · · · + βkxk
+▶The log-odds transformation (logit) ensures predicted probabilities are always in [0, 1].
+▶Often ﬁt by maximum likelihood (minimizing negative log-likelihood).
+▶Can be extended to multi-class problems (via One-vs-All or Multinomial/Softmax).
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+6/11
+
+===== [PAGE 11] =====
+The Logistic (Sigmoid) Function
+▶Maps R to [0, 1], producing valid probabilities.
+f (z) =
+1
+1 + e−z
+▶As z →∞, f (z) →1; as z →−∞, f (z) →0.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+7/11
+
+===== [PAGE 12] =====
+The Logistic (Sigmoid) Function
+▶Maps R to [0, 1], producing valid probabilities.
+f (z) =
+1
+1 + e−z
+▶As z →∞, f (z) →1; as z →−∞, f (z) →0.
+Relates directly to the log-odds:
+p =
+1
+1 + e−z =
+ez
+1 + ez
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+7/11
+
+===== [PAGE 13] =====
+Relation: Log-odds, Probability, and Sigmoid
+log
+(
+p
+1−p
+)
+= z = β0 + β1x1 + · · · + βkxk
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+8/11
+
+===== [PAGE 14] =====
+Relation: Log-odds, Probability, and Sigmoid
+log
+(
+p
+1−p
+)
+= z = β0 + β1x1 + · · · + βkxk
+p
+1−p = ez
+⇒
+p =
+ez
+1 + ez
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+8/11
+
+===== [PAGE 15] =====
+Relation: Log-odds, Probability, and Sigmoid
+log
+(
+p
+1−p
+)
+= z = β0 + β1x1 + · · · + βkxk
+p
+1−p = ez
+⇒
+p =
+ez
+1 + ez
+p =
+1
+1 + e−z
+(the sigmoid)
+▶Changing z by 1 unit multiplies the odds
+p
+1−p by e1 ≈2.718.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+8/11
+
+===== [PAGE 16] =====
+Decision Trees
+▶A non-parametric method for classiﬁcation and regression.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+9/11
+
+===== [PAGE 17] =====
+Decision Trees
+▶A non-parametric method for classiﬁcation and regression.
+▶The data is repeatedly split into subsets based on feature thresholds, growing a tree
+structure.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+9/11
+
+===== [PAGE 18] =====
+Decision Trees
+▶A non-parametric method for classiﬁcation and regression.
+▶The data is repeatedly split into subsets based on feature thresholds, growing a tree
+structure.
+▶Each split is chosen to maximize the purity of the resulting subsets (minimize impurity).
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+9/11
+
+===== [PAGE 19] =====
+Decision Trees
+▶A non-parametric method for classiﬁcation and regression.
+▶The data is repeatedly split into subsets based on feature thresholds, growing a tree
+structure.
+▶Each split is chosen to maximize the purity of the resulting subsets (minimize impurity).
+▶Advantages: Interpretability, handles mixed feature types, no need for feature scaling.
+▶Drawbacks: Can overﬁt if not pruned, can be unstable (high variance) for small data.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+9/11
+
+===== [PAGE 20] =====
+Training a Decision Tree
+▶Constructed recursively:
+▶Choose a feature + threshold to best split the data (based on impurity).
+▶Split the data into two (or more) subsets.
+▶Repeat the process on each subset until a stopping criterion is met.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+10/11
+
+===== [PAGE 21] =====
+Training a Decision Tree
+▶Constructed recursively:
+▶Choose a feature + threshold to best split the data (based on impurity).
+▶Split the data into two (or more) subsets.
+▶Repeat the process on each subset until a stopping criterion is met.
+▶Stopping criteria:
+▶Maximum depth reached.
+▶Fewer samples in a node than the minimum required for a split.
+▶Impurity improvement is below a certain threshold.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+10/11
+
+===== [PAGE 22] =====
+Impurity Measures: Gini vs. Entropy
+▶Gini Index (G):
+G =
+C
+∑
+i=1
+pi(1 −pi) = 1 −
+C
+∑
+i=1
+p2
+i
+▶Measures the chance of misclassiﬁcation if you pick a label at random.
+▶G = 0 means perfectly pure (all samples in one class).
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+11/11
+
+===== [PAGE 23] =====
+Impurity Measures: Gini vs. Entropy
+▶Gini Index (G):
+G =
+C
+∑
+i=1
+pi(1 −pi) = 1 −
+C
+∑
+i=1
+p2
+i
+▶Measures the chance of misclassiﬁcation if you pick a label at random.
+▶G = 0 means perfectly pure (all samples in one class).
+▶Entropy (H):
+H = −
+C
+∑
+i=1
+pi log2(pi)
+▶Based on the concept of information theory (uncertainty).
+▶H = 0 means a perfectly pure subset.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+11/11
+
+===== [PAGE 24] =====
+Impurity Measures: Gini vs. Entropy
+▶Gini Index (G):
+G =
+C
+∑
+i=1
+pi(1 −pi) = 1 −
+C
+∑
+i=1
+p2
+i
+▶Measures the chance of misclassiﬁcation if you pick a label at random.
+▶G = 0 means perfectly pure (all samples in one class).
+▶Entropy (H):
+H = −
+C
+∑
+i=1
+pi log2(pi)
+▶Based on the concept of information theory (uncertainty).
+▶H = 0 means a perfectly pure subset.
+▶Information Gain: The reduction in impurity from a split.
+Vegard Høghaug Larsen: Lecture 4:, Classiﬁcation Analysis
+11/11

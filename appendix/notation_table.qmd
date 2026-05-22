@@ -1,0 +1,51 @@
+---
+title: "Notation"
+body-classes: fam-cross
+---
+
+::: {.callout-bigpicture}
+**Why this page exists.** The course decks reuse a handful of letters for very different quantities — sometimes *within a single lecture*. This table fixes one convention per concept, anchored to **ESL** (per GR1), and flags the collisions so every method page can say which meaning is in play. Where the course writes a symbol differently, the course form is noted as "see also" — the professor grades by the slide convention.
+:::
+
+## Master symbol table
+
+The **chosen** column is what this site uses consistently. The **course usage** column records the slide/notebook symbol and any collision.
+
+| Symbol | Chosen meaning (ESL anchor) | Course usage & collisions | How it is handled here |
+|---|---|---|---|
+| $n$, $N$ | number of observations (sample size) | $n$ throughout; $N_i$ for class sizes (LDA, L3) | $n$ = sample size; $N_i$ only for LDA class counts |
+| $p$ | number of predictors / features | L7 $\sqrt{p}$, L9 $X=(X_1,\dots,X_p)$; **L4 uses $p$ = P(positive class)** | $p$ = #predictors globally; logistic probability written $\pi$, with note "slides write $p$" |
+| $k$ (lower) | context-set index/count | **overloaded:** #predictors (L4), #parameters (L5), #folds & $k{=}n$ LOOCV (L5), #clusters (L6), #neighbors (kNN), hidden-unit index (L8) | never bare: $K$ neighbors, $d$ parameters, $V$ folds, $K$ clusters, $k{=}1..K$ hidden-unit index — each page states the local meaning |
+| $K$ (upper) | #classes / #clusters / #hidden units | L9 hidden units; L6 clusters; L4 uses $C$ for #classes | $K$ = hidden units (NN) / clusters (K-means); $C$ = #classes (classification). Stated per page. |
+| $\eta$ | learning rate | L7 boosting $\eta$; **L8 uses $\eta$ *and* $\alpha$** for the same role; L9 $\eta$ | standardize on $\eta$; footnote on NN/backprop pages: "L8 also writes $\alpha$" |
+| $\alpha$ | Elastic-Net mixing ratio | L3 EN $\alpha\in[0,1]$; **sklearn `alpha` = penalty strength $\lambda$**; L8 $\alpha$ = learning rate | $\alpha$ = EN mix only; **explicit trap callout: sklearn's `alpha` argument is $\lambda$, not the EN $\alpha$ (which is `l1_ratio`)** |
+| $\lambda$ | regularization strength | L3 $\lambda_r,\lambda_\ell,\lambda_e$; L9 L2 $\lambda$; **also LDA eigenvalue $\lambda$** | $\lambda$ = penalty strength; LDA eigenvalues $\lambda$ only inside the eigenproblem (local scope noted) |
+| $w$ | weight vector | OLS/logistic/ADALINE/NN weights; **LDA projection direction $w$**; $w_{kj}$ hidden weights, $w_{k0}$ bias | $w$ = weights; LDA's $w$ labeled "discriminant direction" locally |
+| $\beta$ | coefficients (ESL) | regression $\beta_j$, intercept $\beta_0$; **NN output-layer weights $\beta_k$** (L9, matches ISL Ch. 10) | $\beta$ = linear-model coefficients AND NN output weights; page states which |
+| $z$ | linear predictor / net input $w^\top x + b$ | L4 logit, L8 net input, $z_k$/$z_{ik}$ NN pre-activation | consistent — kept as $z$ |
+| $\sigma$ | sigmoid $1/(1+e^{-z})$ **and** error SD | L4/L8/L9 sigmoid $\sigma(z)$; ESL irreducible error $\sigma^2$ | $\sigma(\cdot)$ = sigmoid (has argument); $\sigma^2$ = irreducible-error variance (no argument) |
+| $g(\cdot)$ | generic activation | L9 $g(z)$ = sigmoid / ReLU / softmax | kept as $g$ |
+| $\delta$ | backprop **error signal** (ESL §11.4) | **L9 slide 11 uses $\delta$ = the parameter update step** | reserve $\delta$ for ESL's error signal (Mode B); L9's update step renamed $\Delta\theta$ |
+| $L$ | loss function | loss everywhere; **L5 AIC/BIC use $L$ = likelihood** ($\ln L$) | $L$ = loss; likelihood written $\mathcal{L}$ in AIC/BIC, with note "slide writes $L$" |
+| $m$ | (context) | L3 LDA class mean $m_i$; L8 #weights index; ISL RF subset $m\approx\sqrt p$ | LDA mean $m_i$ kept; RF subset size $m$; #weights uses $p$ |
+| $S_B,\,S_W$ | LDA between-/within-class scatter | L3 | kept (ESL §4.3) |
+| $S_i,\,\mu_i$ | K-means cluster set & centroid | L6 | kept; $\mu_i$ is a centroid (distinct from a distribution mean) |
+| $A,\,A_k,\,A_{ik}$ | NN hidden activations | L9 | kept (ISL Ch. 10) |
+| $\theta$ | full parameter vector | L8/L9 | kept |
+| $\mathbf{1}_n$ | length-$n$ ones vector | L9 matrix forward pass | kept |
+
+## The five disambiguations to watch site-wide
+
+1. **$k$ / $K$** — the worst offender. Resolved by role-specific letters: $K$ neighbors, $d$ parameters, $V$ folds, $K$ clusters, $K$ hidden units. Every math header names its local $k$.
+2. **$p$ = probability vs #predictors** — this site uses $\pi$ for probability (slides write $p$).
+3. **sklearn `alpha` = $\lambda$ (penalty strength), *not* the Elastic-Net $\alpha$** (that is `l1_ratio`). The single most common regularization bug — flagged on the [Regularization page](../methods/regularization.qmd).
+4. **$\eta$ vs $\alpha$ for learning rate** — standardized on $\eta$.
+5. **$\delta$: update step vs error signal** — standardized on ESL's error signal $\delta$; the update step is $\Delta\theta$.
+
+## Symbols the course leaves implicit (supplied from ESL/ISL, marked supplemental)
+
+- PCA principal-component vectors / eigenvalues — not symbolized on L6 slides → ESL §14.5 ($v_j$, $d_j$).
+- AdaBoost stage weight $\alpha_m = \tfrac12\ln\frac{1-\text{err}}{\text{err}}$ — not on L7 slides → ESL §10.1.
+- Random-forest regression feature-subset default $m\approx p/3$ — only $\sqrt p$ on slides → ISL §8.2.
+
+*Source: synthesized from `phase0/notation_table.md` (Phase 0.6), built from the lecture extracts. See [Sources](sources.qmd).*

@@ -1,0 +1,139 @@
+/*-- scss:defaults --*/
+// GRA 4160 study companion — theme defaults
+// Typography: a readable serif for body prose (practitioner reading), a crisp
+// sans for headings/UI, monospace for code. Avoids generic Bootstrap defaults.
+$font-family-sans-serif: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif !default;
+$font-family-serif: "Source Serif 4", Georgia, "Times New Roman", serif !default;
+$font-family-monospace: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace !default;
+
+$primary: #2E86AB;        // linear-family blue as the site primary
+$body-color: #1f2430;
+$link-color: #2E86AB;
+$code-color: #b3306b;
+$border-radius: 0.5rem;
+
+// Sidebar / nav
+$sidebar-bg: #f7f8fa;
+
+/*-- scss:rules --*/
+
+// ---------------------------------------------------------------------------
+// COLOR SYSTEM — defined once, consumed everywhere (incl. JS for plots).
+// Dimension A: method family.  Dimension B: content callout.
+// ---------------------------------------------------------------------------
+:root {
+  /* Dimension A — method family */
+  --family-linear:  #2E86AB;
+  --family-tree:    #06A77D;
+  --family-neural:  #7B2CBF;
+  --family-unsup:   #F18F01;
+  --family-cross:   #3D405B;
+
+  /* Dimension B — content callout backgrounds */
+  --cl-intuition-bg: #FFF8DC;
+  --cl-matha-bg:     #E8EEF7;
+  --cl-mathb-bg:     #DCE3F0;
+  --cl-code-bg:      #F0F0F0;
+  --cl-pitfall-bg:   #FCE4E4;
+  --cl-exam-bg:      #E4F4E4;
+  --cl-bigpic-bg:    #EFE4F4;
+
+  /* callout left-border accents (darker shades of the bg) */
+  --cl-intuition-bd: #d9b310;
+  --cl-matha-bd:     #2E86AB;
+  --cl-mathb-bd:     #1c4f7c;
+  --cl-code-bd:      #8a8a8a;
+  --cl-pitfall-bd:   #c0392b;
+  --cl-exam-bd:      #2e8b57;
+  --cl-bigpic-bd:    #7B2CBF;
+
+  /* the active page's family color; overridden per page via .fam-* classes */
+  --page-family: var(--family-cross);
+}
+
+body { font-family: $font-family-serif; font-size: 1.02rem; line-height: 1.65; }
+h1, h2, h3, h4, h5, .navbar, .sidebar, .quarto-title-block { font-family: $font-family-sans-serif; }
+h1, h2, h3 { letter-spacing: -0.01em; }
+
+// ---------------------------------------------------------------------------
+// PER-PAGE FAMILY COLOR — set a wrapper class on the page (front-matter
+// `body-classes:` or a leading fenced div). Colors the title + a top accent bar.
+// ---------------------------------------------------------------------------
+.fam-linear { --page-family: var(--family-linear); }
+.fam-tree   { --page-family: var(--family-tree); }
+.fam-neural { --page-family: var(--family-neural); }
+.fam-unsup  { --page-family: var(--family-unsup); }
+.fam-cross  { --page-family: var(--family-cross); }
+
+.quarto-title-block .quarto-title h1.title,
+h1.title { color: var(--page-family); border-bottom: 3px solid var(--page-family); padding-bottom: .3rem; }
+
+// family badge usable inline (e.g. sidebar/section labels)
+.fam-badge {
+  display: inline-block; font-family: $font-family-sans-serif; font-size: .72rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: #fff; background: var(--page-family); border-radius: 1rem; padding: .12rem .6rem;
+  vertical-align: middle;
+}
+
+// ---------------------------------------------------------------------------
+// CONTENT CALLOUTS (Dimension B). Use as ::: {.callout-intuition} … :::
+// Each gets a soft bg, a colored left border, and an emoji marker.
+// ---------------------------------------------------------------------------
+@mixin callout($bg, $bd, $icon) {
+  background: $bg; border-left: 5px solid $bd; border-radius: $border-radius;
+  padding: .85rem 1rem .85rem 1rem; margin: 1rem 0; position: relative;
+  &::before { content: $icon; font-size: 1.05rem; margin-right: .5rem; }
+  > :last-child { margin-bottom: 0; }
+}
+.callout-intuition  { @include callout(var(--cl-intuition-bg), var(--cl-intuition-bd), "💡"); }
+.callout-math-a     { @include callout(var(--cl-matha-bg),     var(--cl-matha-bd),     "📐"); }
+.callout-math-b     { @include callout(var(--cl-mathb-bg),     var(--cl-mathb-bd),     "📐➕"); }
+.callout-code       { @include callout(var(--cl-code-bg),      var(--cl-code-bd),      "💻"); }
+.callout-pitfall    { @include callout(var(--cl-pitfall-bg),   var(--cl-pitfall-bd),   "⚠️"); }
+.callout-exam       { @include callout(var(--cl-exam-bg),      var(--cl-exam-bd),      "🎯"); }
+.callout-bigpicture { @include callout(var(--cl-bigpic-bg),    var(--cl-bigpic-bd),    "🔗"); }
+
+// give the callout title (first strong line) a little weight
+.callout-intuition strong:first-child,
+.callout-pitfall strong:first-child,
+.callout-exam strong:first-child,
+.callout-bigpicture strong:first-child { font-family: $font-family-sans-serif; }
+
+// ---------------------------------------------------------------------------
+// TWO-MODE MATH VISIBILITY (C9). Body class set by theme/toggle.js from
+// localStorage `gra4160.mathMode` ∈ {off, course, full} → {math-off, math-a, math-b}.
+// Default (no class yet, or math-off): BOTH hidden. Prevents flash of math.
+// ---------------------------------------------------------------------------
+.math-mode-a, .math-mode-b { display: none; }
+body.math-a .math-mode-a { display: block; }
+body.math-b .math-mode-a { display: block; }
+body.math-b .math-mode-b { display: block; }
+
+// A small hint shown when math is off, inside the math section wrapper.
+.math-off-hint { display: none; color: #667; font-style: italic; }
+body.math-off .math-section .math-off-hint,
+body:not(.math-a):not(.math-b) .math-section .math-off-hint { display: block; }
+
+// ---------------------------------------------------------------------------
+// MATH-MODE TOGGLE BUTTON (injected into navbar by toggle.js)
+// ---------------------------------------------------------------------------
+#math-mode-toggle {
+  font-family: $font-family-sans-serif; font-size: .8rem; font-weight: 600;
+  border: 1px solid #ccd; background: #fff; color: #2a2f3a;
+  border-radius: 1rem; padding: .2rem .8rem; cursor: pointer; white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+#math-mode-toggle:hover { background: #eef2f8; }
+#math-mode-toggle .mm-state { color: var(--family-linear); }
+body.math-a #math-mode-toggle { border-color: var(--cl-matha-bd); }
+body.math-b #math-mode-toggle { border-color: var(--cl-mathb-bd); background: var(--cl-matha-bg); }
+
+// decision-dashboard + comparison tables: family-colored cells
+.cmp-table th { font-family: $font-family-sans-serif; }
+.cmp-table td.fam { color: #fff; font-weight: 600; }
+
+// figure captions a touch smaller and muted (R7 caption discipline)
+figure figcaption, .figure-caption, .quarto-figure figcaption {
+  font-size: .9rem; color: #556; font-family: $font-family-sans-serif;
+}

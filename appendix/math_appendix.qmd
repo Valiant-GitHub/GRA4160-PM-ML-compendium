@@ -1,0 +1,87 @@
+---
+title: "Math Appendix"
+body-classes: fam-cross
+---
+
+::: {.callout-bigpicture}
+**How to read this appendix.** Each foundation below has a **Mode A — course level** block (what the course teaches and grades) and a **Mode B — full rigor** block (complete derivations, anchored to ESL). Use the top-bar **Math** toggle to reveal them. Method pages link into the relevant section. *Scaffolding — the derivations are written in Phase 3.A; section headers and the two-mode structure are in place now.*
+:::
+
+This appendix collects the shared mathematical machinery the method pages depend on, so each method page can link here instead of re-deriving foundations.
+
+## Linear algebra essentials {#sec-linalg}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** Vectors, matrices, the design matrix $X\in\mathbb{R}^{n\times p}$, inner products, norms $\lVert\cdot\rVert_2$, projections; the normal-equations solution $(X^\top X)^{-1}X^\top y$. *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** Rank, column space and orthogonal projection, eigendecomposition and the spectral theorem, positive-(semi)definiteness, the SVD $X=UDV^\top$ and its role in PCA and least squares. *(Phase 3.A — anchored to ESL App./§3.)*
+:::
+:::
+
+## Gradient descent {#sec-gd}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** The update $\theta \leftarrow \theta - \eta\,\nabla_\theta L$; batch vs stochastic vs mini-batch; the role of the learning rate $\eta$. *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** Convexity and convergence, conditions on $\eta$, momentum, and the geometry of steepest descent. *(Phase 3.A — anchored to ESL §11.4.)*
+:::
+:::
+
+## Maximum likelihood & MAP {#sec-mle}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** Likelihood, log-likelihood, MLE; logistic regression and least squares as MLE. *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** The exponential family, MAP as penalized MLE (Ridge = Gaussian prior, Lasso = Laplace prior), and the link to AIC/BIC. *(Phase 3.A — ESL §4.4, §3.4.)*
+:::
+:::
+
+## Bias–variance decomposition {#sec-biasvar}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** $\text{Total error} = \text{Bias}^2 + \text{Variance}$ as taught in L5. *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** The full decomposition with irreducible error, $\mathbb{E}[(y-\hat f(x))^2] = \sigma^2 + \text{Bias}^2[\hat f(x)] + \text{Var}[\hat f(x)]$ (ESL §7.3) — note the course slide omits $\sigma^2$ (see [disagreements R9-2]). *(Phase 3.A)*
+:::
+:::
+
+## Information criteria {#sec-infocrit}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** $\text{AIC} = 2k - 2\ln L$, $\text{BIC} = \ln(n)\,k - 2\ln L$; lower is better, compare on the same data. *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** Derivation of AIC (Kullback–Leibler) and BIC (Laplace approximation to the marginal likelihood); the ISL linear-model forms vs the general likelihood forms (see [disagreements R9-3]). *(Phase 3.A — ESL §7.5, §7.7.)*
+:::
+:::
+
+## Backpropagation {#sec-backprop}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** Forward pass, then the chain-rule gradients $\partial L_i/\partial \beta_k = -(y_i-f_i)A_{ik}$ and $\partial L_i/\partial w_{kj} = -(y_i-f_i)\beta_k\,g'(z_{ik})x_{ij}$ (L8/L9). *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** The $\delta$-recursion for arbitrary depth (ESL §11.4, eqs 11.12–11.13), matrix form, and weight decay. *(Phase 3.A)*
+:::
+:::
+
+## KKT conditions {#sec-kkt}
+
+::: {.math-section}
+::: {.callout-math-a}
+**Mode A — course level.** Constrained optimization intuition behind the Lasso/Ridge constraint regions (the geometry from L3 slide 16). *(Phase 3.A)*
+:::
+::: {.callout-math-b}
+**Mode B — full rigor.** Lagrangian duality and the Karush–Kuhn–Tucker conditions; the constrained ($\lVert\beta\rVert\le t$) vs penalized ($+\lambda\lVert\beta\rVert$) equivalence for Ridge/Lasso. *(Phase 3.A — ESL §3.4.)*
+:::
+:::

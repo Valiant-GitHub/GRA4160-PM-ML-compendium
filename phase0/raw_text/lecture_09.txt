@@ -1,0 +1,781 @@
+# SOURCE: lecture9_260521_184938.pdf
+# PAGES: 43
+
+===== [PAGE 1] =====
+Lecture 9:
+Neural networks
+Vegard Høghaug Larsen
+GRA4160: Predictive modelling with machine learning
+March 4th 2026
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+1/17
+
+===== [PAGE 2] =====
+Plan for today:
+▶Introduction to neural networks
+▶Single layer (feed forward) neural networks
+▶Fitting a Neural Network
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+2/17
+
+===== [PAGE 3] =====
+Introduction to neural networks
+▶A neural network is a computational system that is inspired by the structure and
+function of the human brain
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+3/17
+
+===== [PAGE 4] =====
+Introduction to neural networks
+▶A neural network is a computational system that is inspired by the structure and
+function of the human brain
+▶It consists of many interconnected processing units, called neurons, that work together
+to solve complex problems
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+3/17
+
+===== [PAGE 5] =====
+Introduction to neural networks
+▶A neural network is a computational system that is inspired by the structure and
+function of the human brain
+▶It consists of many interconnected processing units, called neurons, that work together
+to solve complex problems
+▶Each neuron receives input from other neurons, processes that input, and then produces
+an output that is sent to other neurons
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+3/17
+
+===== [PAGE 6] =====
+Introduction to neural networks
+▶A neural network is a computational system that is inspired by the structure and
+function of the human brain
+▶It consists of many interconnected processing units, called neurons, that work together
+to solve complex problems
+▶Each neuron receives input from other neurons, processes that input, and then produces
+an output that is sent to other neurons
+▶By combining and processing information in this way, a neural network can learn to
+recognize patterns and make predictions
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+3/17
+
+===== [PAGE 7] =====
+Single layer (feed forward) neural networks
+▶A single layer neural network is a model that takes a set of p input variables
+X = (X1, X2, ..., Xp)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+4/17
+
+===== [PAGE 8] =====
+Single layer (feed forward) neural networks
+▶A single layer neural network is a model that takes a set of p input variables
+X = (X1, X2, ..., Xp)
+▶The NN is a nonlinear function f (X) that maps the input variables to an output variable
+Y
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+4/17
+
+===== [PAGE 9] =====
+Single layer (feed forward) neural networks
+▶A single layer neural network is a model that takes a set of p input variables
+X = (X1, X2, ..., Xp)
+▶The NN is a nonlinear function f (X) that maps the input variables to an output variable
+Y
+▶The weights w1, w2, ..., wp are the parameters of the model, controlling the strength of
+the relationship between the input variables and the output variable
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+4/17
+
+===== [PAGE 10] =====
+Single layer (feed forward) neural networks
+▶A single layer neural network is a model that takes a set of p input variables
+X = (X1, X2, ..., Xp)
+▶The NN is a nonlinear function f (X) that maps the input variables to an output variable
+Y
+▶The weights w1, w2, ..., wp are the parameters of the model, controlling the strength of
+the relationship between the input variables and the output variable
+▶Given a nonlinear activation function g(z), the model can be written as a sum of K
+activation functions
+Y = f (X) = β0 +
+K
+X
+k=1
+βkg
+
+wk0 +
+p
+X
+j=1
+wkjXj
+
+
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+4/17
+
+===== [PAGE 11] =====
+Neural network with a single hidden layer
+X1
+X2
+...
+Xp
++1
+A1
+A2
+...
+AK
++1
+Y
+Input layer
+Hidden layer
+Output
+wkj
+βk
+wk0
+β0
+Ak = g
+ 
+wk0 +
+p
+X
+j=1
+wkjXj
+!
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+5/17
+
+===== [PAGE 12] =====
+Hidden units and the output layer
+The network is built up in two steps:
+1. Specify the number of hidden units K and the activation function g(X) and we can
+calculate K activations in the hidden layer as
+Ak = hk(X) = g
+
+wk0 +
+p
+X
+j=1
+wkjXj
+
+
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+6/17
+
+===== [PAGE 13] =====
+Hidden units and the output layer
+The network is built up in two steps:
+1. Specify the number of hidden units K and the activation function g(X) and we can
+calculate K activations in the hidden layer as
+Ak = hk(X) = g
+
+wk0 +
+p
+X
+j=1
+wkjXj
+
+
+2. The K activations feed into the output layer, which is a linear function of the activations
+f (X) = β0 +
+K
+X
+k=1
+βkAk
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+6/17
+
+===== [PAGE 14] =====
+The forward pass as matrix multiplications
+We can write the forward pass compactly using matrices. Let X be the n × p input matrix
+and deﬁne:
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+7/17
+
+===== [PAGE 15] =====
+The forward pass as matrix multiplications
+We can write the forward pass compactly using matrices. Let X be the n × p input matrix
+and deﬁne:
+1. Hidden layer: Compute the n × K matrix of activations
+Aik = g
+
+wk0 +
+p
+X
+j=1
+wkjXij
+
+
+⇐⇒
+A = g
+
+1nw⊤
+0 + XW⊤
+where W is the K × p weight matrix, w0 is the K × 1 bias vector, and g(·) is applied
+element-wise
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+7/17
+
+===== [PAGE 16] =====
+The forward pass as matrix multiplications
+We can write the forward pass compactly using matrices. Let X be the n × p input matrix
+and deﬁne:
+1. Hidden layer: Compute the n × K matrix of activations
+Aik = g
+
+wk0 +
+p
+X
+j=1
+wkjXij
+
+
+⇐⇒
+A = g
+
+1nw⊤
+0 + XW⊤
+where W is the K × p weight matrix, w0 is the K × 1 bias vector, and g(·) is applied
+element-wise
+2. Output layer: Compute the n × 1 output vector
+Yi = β0 +
+K
+X
+k=1
+βkAik
+⇐⇒
+Y = β01n + Aβ
+where β = (β1, . . . , βK)⊤
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+7/17
+
+===== [PAGE 17] =====
+The forward pass as matrix multiplications
+We can write the forward pass compactly using matrices. Let X be the n × p input matrix
+and deﬁne:
+1. Hidden layer: Compute the n × K matrix of activations
+Aik = g
+
+wk0 +
+p
+X
+j=1
+wkjXij
+
+
+⇐⇒
+A = g
+
+1nw⊤
+0 + XW⊤
+where W is the K × p weight matrix, w0 is the K × 1 bias vector, and g(·) is applied
+element-wise
+2. Output layer: Compute the n × 1 output vector
+Yi = β0 +
+K
+X
+k=1
+βkAik
+⇐⇒
+Y = β01n + Aβ
+where β = (β1, . . . , βK)⊤
+Each layer is a matrix multiplication followed by an activation function — this is what makes
+neural networks eﬃcient to compute on GPUs
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+7/17
+
+===== [PAGE 18] =====
+What does the activation function look like?
+Activation functions are used to introduce non-linearity and enable the network to learn
+complex patterns in the input data. Here are some common activation functions used in
+neural networks:
+1. The sigmoid function (we also used this for logistic regression)
+g(z) =
+1
+1 + e−z
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+8/17
+
+===== [PAGE 19] =====
+What does the activation function look like?
+Activation functions are used to introduce non-linearity and enable the network to learn
+complex patterns in the input data. Here are some common activation functions used in
+neural networks:
+1. The sigmoid function (we also used this for logistic regression)
+g(z) =
+1
+1 + e−z
+2. Rectiﬁed Linear Unit (ReLU)
+g(z) = max(0, z)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+8/17
+
+===== [PAGE 20] =====
+What does the activation function look like?
+Activation functions are used to introduce non-linearity and enable the network to learn
+complex patterns in the input data. Here are some common activation functions used in
+neural networks:
+1. The sigmoid function (we also used this for logistic regression)
+g(z) =
+1
+1 + e−z
+2. Rectiﬁed Linear Unit (ReLU)
+g(z) = max(0, z)
+3. Softmax (typically used in the output layer for multi-class classiﬁcation)
+g(zi) =
+exp(zi)
+PK
+j=1 exp(zj)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+8/17
+
+===== [PAGE 21] =====
+
+
+===== [PAGE 22] =====
+Sigmoid vs ReLU
+Source: An Introduction to Statistical Learning, James, Witten, Hastie and Tibshirani, 2021
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+9/17
+
+===== [PAGE 23] =====
+Fitting a Neural Network
+We can ﬁt the parameters of a neural network by minimizing a cost function (nonlinear least
+squares)
+min
+wk,β
+1
+2
+n
+X
+i=1
+(yi −f (xi))2
+where
+f (X) = β0 +
+K
+X
+k=1
+βkg
+
+wk0 +
+p
+X
+j=1
+wkjXj
+
+
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+10/17
+
+===== [PAGE 24] =====
+Fitting a Neural Network
+We can ﬁt the parameters of a neural network by minimizing a cost function (nonlinear least
+squares)
+min
+wk,β
+1
+2
+n
+X
+i=1
+(yi −f (xi))2
+where
+f (X) = β0 +
+K
+X
+k=1
+βkg
+
+wk0 +
+p
+X
+j=1
+wkjXj
+
+
+This is a nonlinear optimization problem, and it is not straightforward to solve.
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+10/17
+
+===== [PAGE 25] =====
+Gradient descent
+We can use gradient descent to ﬁnd the optimal parameters. Let’s put all the parameters in
+one vector θ and deﬁne the cost function as
+L(θ) = 1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+11/17
+
+===== [PAGE 26] =====
+Gradient descent
+We can use gradient descent to ﬁnd the optimal parameters. Let’s put all the parameters in
+one vector θ and deﬁne the cost function as
+L(θ) = 1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+Then, to ﬁnd the optimal parameters, we can use gradient descent to minimize the cost
+function L(θ) by the following iterative update rule:
+1. Let θt be a vector of all the parameters in the system at iteration t. Start with an initial
+guess θ0
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+11/17
+
+===== [PAGE 27] =====
+Gradient descent
+We can use gradient descent to ﬁnd the optimal parameters. Let’s put all the parameters in
+one vector θ and deﬁne the cost function as
+L(θ) = 1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+Then, to ﬁnd the optimal parameters, we can use gradient descent to minimize the cost
+function L(θ) by the following iterative update rule:
+1. Let θt be a vector of all the parameters in the system at iteration t. Start with an initial
+guess θ0
+2. Update the parameters according to the following rule: θt+1 = θt + δ, where δ is a
+vector that reﬂects a small change in the parameters such that
+L(θt+1) < L(θt)
+3. Repeat until convergence
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+11/17
+
+===== [PAGE 28] =====
+How do we know how to update the parameters (what is δ)?
+We need to calculate the gradient of the cost function L(θ) with respect to the parameters θ:
+∇L(θt) = ∂L(θ)
+∂θ
+
+θ=θt = ∂
+∂θ
+1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+
+θ=θt
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+12/17
+
+===== [PAGE 29] =====
+How do we know how to update the parameters (what is δ)?
+We need to calculate the gradient of the cost function L(θ) with respect to the parameters θ:
+∇L(θt) = ∂L(θ)
+∂θ
+
+θ=θt = ∂
+∂θ
+1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+
+θ=θt
+∇L(θt) gives us the directions to move θ so as to decrease the objective L(θ)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+12/17
+
+===== [PAGE 30] =====
+How do we know how to update the parameters (what is δ)?
+We need to calculate the gradient of the cost function L(θ) with respect to the parameters θ:
+∇L(θt) = ∂L(θ)
+∂θ
+
+θ=θt = ∂
+∂θ
+1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+
+θ=θt
+∇L(θt) gives us the directions to move θ so as to decrease the objective L(θ)
+Given a learning rate η, we can use the gradient to update the parameters as follows:
+θt+1 = θt −η∇L(θt)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+12/17
+
+===== [PAGE 31] =====
+How do we know how to update the parameters (what is δ)?
+We need to calculate the gradient of the cost function L(θ) with respect to the parameters θ:
+∇L(θt) = ∂L(θ)
+∂θ
+
+θ=θt = ∂
+∂θ
+1
+2
+n
+X
+i=1
+(yi −fθ(xi))2
+
+θ=θt
+∇L(θt) gives us the directions to move θ so as to decrease the objective L(θ)
+Given a learning rate η, we can use the gradient to update the parameters as follows:
+θt+1 = θt −η∇L(θt)
+The gradient packs all the partial derivatives into a single vector: ∇L =
+h
+∂L
+∂βk ,
+∂L
+∂wkj
+iT
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+12/17
+
+===== [PAGE 32] =====
+Backpropagation: setup
+Recall the forward pass for observation i. Deﬁne the intermediate quantities:
+zik = wk0 +
+p
+X
+j=1
+wkj xij
+(pre-activation for hidden unit k)
+Aik = g(zik)
+(activation for hidden unit k)
+fi = β0 +
+K
+X
+k=1
+βk Aik
+(network output)
+Li = 1
+2 (yi −fi)2
+(loss for observation i)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+13/17
+
+===== [PAGE 33] =====
+Backpropagation: setup
+Recall the forward pass for observation i. Deﬁne the intermediate quantities:
+zik = wk0 +
+p
+X
+j=1
+wkj xij
+(pre-activation for hidden unit k)
+Aik = g(zik)
+(activation for hidden unit k)
+fi = β0 +
+K
+X
+k=1
+βk Aik
+(network output)
+Li = 1
+2 (yi −fi)2
+(loss for observation i)
+The total loss is L(θ) = Pn
+i=1 Li. We need ∂Li
+∂βk and
+∂Li
+∂wkj .
+The key idea: apply the chain rule layer by layer, working backwards from the loss to the
+parameters.
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+13/17
+
+===== [PAGE 34] =====
+Backpropagation: the chain rule
+Step 1: The common starting point — derivative of the loss w.r.t. the output:
+∂Li
+∂fi
+= −(yi −fi)
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+14/17
+
+===== [PAGE 35] =====
+Backpropagation: the chain rule
+Step 1: The common starting point — derivative of the loss w.r.t. the output:
+∂Li
+∂fi
+= −(yi −fi)
+Step 2: Derivative w.r.t. the output-layer weights βk (one link in the chain):
+∂Li
+∂βk
+=
+∂Li
+∂fi
+|{z}
+−(yi−fi)
+· ∂fi
+∂βk
+|{z}
+Aik
+= −(yi −fi) · Aik
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+14/17
+
+===== [PAGE 36] =====
+Backpropagation: the chain rule
+Step 1: The common starting point — derivative of the loss w.r.t. the output:
+∂Li
+∂fi
+= −(yi −fi)
+Step 2: Derivative w.r.t. the output-layer weights βk (one link in the chain):
+∂Li
+∂βk
+=
+∂Li
+∂fi
+|{z}
+−(yi−fi)
+· ∂fi
+∂βk
+|{z}
+Aik
+= −(yi −fi) · Aik
+Step 3: Derivative w.r.t. the hidden-layer weights wkj (three links in the chain):
+∂Li
+∂wkj
+=
+∂Li
+∂fi
+|{z}
+−(yi−fi)
+· ∂fi
+∂Aik
+| {z }
+βk
+· ∂Aik
+∂zik
+| {z }
+g′(zik)
+· ∂zik
+∂wkj
+| {z }
+xij
+= −(yi −fi) · βk · g′(zik) · xij
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+14/17
+
+===== [PAGE 37] =====
+Backpropagation: the chain rule
+Step 1: The common starting point — derivative of the loss w.r.t. the output:
+∂Li
+∂fi
+= −(yi −fi)
+Step 2: Derivative w.r.t. the output-layer weights βk (one link in the chain):
+∂Li
+∂βk
+=
+∂Li
+∂fi
+|{z}
+−(yi−fi)
+· ∂fi
+∂βk
+|{z}
+Aik
+= −(yi −fi) · Aik
+Step 3: Derivative w.r.t. the hidden-layer weights wkj (three links in the chain):
+∂Li
+∂wkj
+=
+∂Li
+∂fi
+|{z}
+−(yi−fi)
+· ∂fi
+∂Aik
+| {z }
+βk
+· ∂Aik
+∂zik
+| {z }
+g′(zik)
+· ∂zik
+∂wkj
+| {z }
+xij
+= −(yi −fi) · βk · g′(zik) · xij
+Each parameter receives a fraction of the residual (yi −fi) propagated back through the
+network — hence the name backpropagation.
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+14/17
+
+===== [PAGE 38] =====
+Stochastic gradient descent (SGD)
+▶SGD is a method for minimizing a cost function by iteratively moving in the direction of
+steepest descent as deﬁned by the negative of the gradient
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+15/17
+
+===== [PAGE 39] =====
+Stochastic gradient descent (SGD)
+▶SGD is a method for minimizing a cost function by iteratively moving in the direction of
+steepest descent as deﬁned by the negative of the gradient
+▶In contrast to batch gradient descent, which computes the gradient of the cost function
+over the entire dataset, SGD computes the gradient on a single training example at a
+time
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+15/17
+
+===== [PAGE 40] =====
+Stochastic gradient descent (SGD)
+▶SGD is a method for minimizing a cost function by iteratively moving in the direction of
+steepest descent as deﬁned by the negative of the gradient
+▶In contrast to batch gradient descent, which computes the gradient of the cost function
+over the entire dataset, SGD computes the gradient on a single training example at a
+time
+▶This makes SGD much faster than batch gradient descent, but it also means that SGD
+is much noisier
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+15/17
+
+===== [PAGE 41] =====
+Stochastic gradient descent (SGD)
+▶SGD is a method for minimizing a cost function by iteratively moving in the direction of
+steepest descent as deﬁned by the negative of the gradient
+▶In contrast to batch gradient descent, which computes the gradient of the cost function
+over the entire dataset, SGD computes the gradient on a single training example at a
+time
+▶This makes SGD much faster than batch gradient descent, but it also means that SGD
+is much noisier
+▶The noise can be reduced by averaging the gradients over several training examples
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+15/17
+
+===== [PAGE 42] =====
+L2 regularization
+▶L2 regularization adds a penalty term to the cost function to prevent overﬁtting
+▶The penalty term is proportional to the sum of the squares of the weights in the network
+▶The regularized cost function is
+Lreg(θ) = 1
+2
+n
+X
+i=1
+(yi −fθ(xi))2 + λ
+X
+k,j
+w2
+kj
+where λ is the regularization parameter controlling the trade-oﬀbetween ﬁt and complexity
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+16/17
+
+===== [PAGE 43] =====
+Dropout
+▶Dropout is a regularization technique that randomly drops out (sets to zero) some of
+the neurons in the network during training
+▶This helps prevent the network from overﬁtting to the training data
+▶Dropout can be seen as an ensemble of all the networks that can be formed by dropping
+out diﬀerent neurons
+▶Typical dropout rates are between 0.2 and 0.5, and dropout is only applied during
+training, not at inference time
+Vegard Høghaug Larsen: Lecture 9:, Neural networks
+17/17

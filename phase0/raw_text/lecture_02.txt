@@ -1,0 +1,353 @@
+# SOURCE: lecture2 (2).pdf
+# PAGES: 32
+
+===== [PAGE 1] =====
+Lecture 2:
+Machine learning basics and supervised learning
+Vegard Høghaug Larsen
+GRA4160: Predictive Modelling with Machine Learning
+January 14th 2026
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+1/10
+
+===== [PAGE 2] =====
+Plan for today:
+1. Machine learning basics
+2. Linear regression
+3. Supervised learning with k-nearest neighbors
+4. Exercise: Spam ﬁltering with naive Bayes
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+2/10
+
+===== [PAGE 3] =====
+Exploring the Fundamentals of Machine Learning
+▶Machine learning teaches computers to learn from data, much like how a child learns
+from experience.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+3/10
+
+===== [PAGE 4] =====
+Exploring the Fundamentals of Machine Learning
+▶Machine learning teaches computers to learn from data, much like how a child learns
+from experience.
+▶Three main types: Supervised, Unsupervised, and Reinforcement Learning.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+3/10
+
+===== [PAGE 5] =====
+Exploring the Fundamentals of Machine Learning
+▶Machine learning teaches computers to learn from data, much like how a child learns
+from experience.
+▶Three main types: Supervised, Unsupervised, and Reinforcement Learning.
+▶Supervised learning: Trained on labeled data for predictions. Example: Handwritten
+digit recognition.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+3/10
+
+===== [PAGE 6] =====
+Exploring the Fundamentals of Machine Learning
+▶Machine learning teaches computers to learn from data, much like how a child learns
+from experience.
+▶Three main types: Supervised, Unsupervised, and Reinforcement Learning.
+▶Supervised learning: Trained on labeled data for predictions. Example: Handwritten
+digit recognition.
+▶Unsupervised learning: Finds patterns in unlabeled data. Example: Customer
+segmentation.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+3/10
+
+===== [PAGE 7] =====
+Exploring the Fundamentals of Machine Learning
+▶Machine learning teaches computers to learn from data, much like how a child learns
+from experience.
+▶Three main types: Supervised, Unsupervised, and Reinforcement Learning.
+▶Supervised learning: Trained on labeled data for predictions. Example: Handwritten
+digit recognition.
+▶Unsupervised learning: Finds patterns in unlabeled data. Example: Customer
+segmentation.
+▶Reinforcement learning: Training agents to make decisions towards a goal. Example:
+Robot navigation.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+3/10
+
+===== [PAGE 8] =====
+Understanding Supervised Learning
+▶Supervised learning: Like a student learning from a solved exercise, it predicts new
+outcomes based on learned patterns.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+4/10
+
+===== [PAGE 9] =====
+Understanding Supervised Learning
+▶Supervised learning: Like a student learning from a solved exercise, it predicts new
+outcomes based on learned patterns.
+▶It involves input-output pair training, like predicting house prices from their size and
+location.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+4/10
+
+===== [PAGE 10] =====
+Understanding Supervised Learning
+▶Supervised learning: Like a student learning from a solved exercise, it predicts new
+outcomes based on learned patterns.
+▶It involves input-output pair training, like predicting house prices from their size and
+location.
+▶Key algorithms include:
+▶Linear regression: For continuous output prediction.
+▶k-nearest neighbors: Classiﬁes based on similarity.
+▶Decision trees: Maps decisions and their possible consequences.
+▶Neural networks: For complex pattern recognition.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+4/10
+
+===== [PAGE 11] =====
+Bias-Variance Trade-oﬀ
+▶A core concept in ML: Bias is how much your predictions systematically deviate from
+the true values.
+▶Variance is how sensitive your model is to ﬂuctuations in the training set.
+▶High bias models:
+▶Underﬁt the data (oversimpliﬁed).
+▶Have consistent but inaccurate predictions.
+▶High variance models:
+▶Overﬁt the data (too complex).
+▶Perform well on training data but poorly on new data.
+▶Goal: Find a balance that minimizes overall error.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+5/10
+
+===== [PAGE 12] =====
+Three supervised learning algorithms
+We will look closer at three supervised learning algorithms:
+▶Linear regression
+▶k-nearest neighbors
+▶Naive Bayes (exercise)
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+6/10
+
+===== [PAGE 13] =====
+Linear Regression: Prediction & Inference
+▶Predicts continuous values (e.g., estimating house prices based on size and location).
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+7/10
+
+===== [PAGE 14] =====
+Linear Regression: Prediction & Inference
+▶Predicts continuous values (e.g., estimating house prices based on size and location).
+▶Useful for inference: helps understand how diﬀerent features inﬂuence outcomes.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+7/10
+
+===== [PAGE 15] =====
+Linear Regression: Prediction & Inference
+▶Predicts continuous values (e.g., estimating house prices based on size and location).
+▶Useful for inference: helps understand how diﬀerent features inﬂuence outcomes.
+▶A parametric model with ﬁxed parameters (feature weights and intercept).
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+7/10
+
+===== [PAGE 16] =====
+Linear Regression: Prediction & Inference
+▶Predicts continuous values (e.g., estimating house prices based on size and location).
+▶Useful for inference: helps understand how diﬀerent features inﬂuence outcomes.
+▶A parametric model with ﬁxed parameters (feature weights and intercept).
+▶Minimizes the mean squared error (MSE) to achieve the best ﬁt.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+7/10
+
+===== [PAGE 17] =====
+Linear Regression: Prediction & Inference
+▶Predicts continuous values (e.g., estimating house prices based on size and location).
+▶Useful for inference: helps understand how diﬀerent features inﬂuence outcomes.
+▶A parametric model with ﬁxed parameters (feature weights and intercept).
+▶Minimizes the mean squared error (MSE) to achieve the best ﬁt.
+▶Ordinary least squares (OLS) ﬁnds the best-ﬁt line; under the Gauss–Markov
+assumptions (e.g., linearity, no perfect multicollinearity, homoscedastic errors), OLS is
+the best linear unbiased estimator (BLUE).
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+7/10
+
+===== [PAGE 18] =====
+Linear Regression: Prediction & Inference
+▶Predicts continuous values (e.g., estimating house prices based on size and location).
+▶Useful for inference: helps understand how diﬀerent features inﬂuence outcomes.
+▶A parametric model with ﬁxed parameters (feature weights and intercept).
+▶Minimizes the mean squared error (MSE) to achieve the best ﬁt.
+▶Ordinary least squares (OLS) ﬁnds the best-ﬁt line; under the Gauss–Markov
+assumptions (e.g., linearity, no perfect multicollinearity, homoscedastic errors), OLS is
+the best linear unbiased estimator (BLUE).
+▶Be mindful that the linear form might not always capture real-world complexity, so
+model diagnostics are crucial.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+7/10
+
+===== [PAGE 19] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 20] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+▶Core idea: Identify the k closest data points (neighbors) to a new observation and base
+the prediction on them.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 21] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+▶Core idea: Identify the k closest data points (neighbors) to a new observation and base
+the prediction on them.
+▶Choice of k impacts performance:
+▶Too small: Overﬁtting (high variance).
+▶Too large: Underﬁtting (high bias).
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 22] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+▶Core idea: Identify the k closest data points (neighbors) to a new observation and base
+the prediction on them.
+▶Choice of k impacts performance:
+▶Too small: Overﬁtting (high variance).
+▶Too large: Underﬁtting (high bias).
+▶Distance metric (e.g., Euclidean) also matters for determining neighbors.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 23] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+▶Core idea: Identify the k closest data points (neighbors) to a new observation and base
+the prediction on them.
+▶Choice of k impacts performance:
+▶Too small: Overﬁtting (high variance).
+▶Too large: Underﬁtting (high bias).
+▶Distance metric (e.g., Euclidean) also matters for determining neighbors.
+▶Often non-parametric: no assumption of underlying data distribution.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 24] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+▶Core idea: Identify the k closest data points (neighbors) to a new observation and base
+the prediction on them.
+▶Choice of k impacts performance:
+▶Too small: Overﬁtting (high variance).
+▶Too large: Underﬁtting (high bias).
+▶Distance metric (e.g., Euclidean) also matters for determining neighbors.
+▶Often non-parametric: no assumption of underlying data distribution.
+▶Tends to be computationally expensive for large datasets but serves as a good baseline
+model.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 25] =====
+Diving into k-Nearest Neighbors
+▶k-Nearest Neighbors (kNN): Used for both classiﬁcation (label prediction) and
+regression (value prediction).
+▶Core idea: Identify the k closest data points (neighbors) to a new observation and base
+the prediction on them.
+▶Choice of k impacts performance:
+▶Too small: Overﬁtting (high variance).
+▶Too large: Underﬁtting (high bias).
+▶Distance metric (e.g., Euclidean) also matters for determining neighbors.
+▶Often non-parametric: no assumption of underlying data distribution.
+▶Tends to be computationally expensive for large datasets but serves as a good baseline
+model.
+▶Typical practice: Choose k via cross-validation.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+8/10
+
+===== [PAGE 26] =====
+Parametric vs. Non-Parametric Models
+▶Parametric models (e.g., linear regression):
+▶Assume a speciﬁc form for the relationship between features and output.
+▶Have a ﬁxed number of parameters to learn.
+▶Fast to train and interpret but can be misleading if the assumed form is incorrect.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+9/10
+
+===== [PAGE 27] =====
+Parametric vs. Non-Parametric Models
+▶Parametric models (e.g., linear regression):
+▶Assume a speciﬁc form for the relationship between features and output.
+▶Have a ﬁxed number of parameters to learn.
+▶Fast to train and interpret but can be misleading if the assumed form is incorrect.
+▶Non-parametric models (e.g., kNN):
+▶Make fewer assumptions about data distribution.
+▶Number of parameters can grow with the dataset.
+▶Flexible but often more computationally expensive and can overﬁt without careful tuning.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+9/10
+
+===== [PAGE 28] =====
+Naive Bayes: A Fundamental Classiﬁer
+Bayes’ Theorem:
+P(A | B) = P(B | A) × P(A)
+P(B)
+▶Naive Bayes is widely used for spam detection and text classiﬁcation.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+10/10
+
+===== [PAGE 29] =====
+Naive Bayes: A Fundamental Classiﬁer
+Bayes’ Theorem:
+P(A | B) = P(B | A) × P(A)
+P(B)
+▶Naive Bayes is widely used for spam detection and text classiﬁcation.
+▶Relies on the naive assumption that features are conditionally independent given the
+class.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+10/10
+
+===== [PAGE 30] =====
+Naive Bayes: A Fundamental Classiﬁer
+Bayes’ Theorem:
+P(A | B) = P(B | A) × P(A)
+P(B)
+▶Naive Bayes is widely used for spam detection and text classiﬁcation.
+▶Relies on the naive assumption that features are conditionally independent given the
+class.
+▶Despite this strong assumption (often untrue in real data), it performs surprisingly well.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+10/10
+
+===== [PAGE 31] =====
+Naive Bayes: A Fundamental Classiﬁer
+Bayes’ Theorem:
+P(A | B) = P(B | A) × P(A)
+P(B)
+▶Naive Bayes is widely used for spam detection and text classiﬁcation.
+▶Relies on the naive assumption that features are conditionally independent given the
+class.
+▶Despite this strong assumption (often untrue in real data), it performs surprisingly well.
+▶Extremely fast and easy to implement, making it a good ﬁrst model in many
+classiﬁcation tasks.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+10/10
+
+===== [PAGE 32] =====
+Naive Bayes: A Fundamental Classiﬁer
+Bayes’ Theorem:
+P(A | B) = P(B | A) × P(A)
+P(B)
+▶Naive Bayes is widely used for spam detection and text classiﬁcation.
+▶Relies on the naive assumption that features are conditionally independent given the
+class.
+▶Despite this strong assumption (often untrue in real data), it performs surprisingly well.
+▶Extremely fast and easy to implement, making it a good ﬁrst model in many
+classiﬁcation tasks.
+▶We will explore its spam-ﬁltering application, highlighting the simplicity and speed of
+this approach.
+Vegard Høghaug Larsen: Lecture 2:, Machine learning basics and supervised learning
+10/10

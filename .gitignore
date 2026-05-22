@@ -1,8 +1,12 @@
 _site/
 _freeze/
 .quarto/
+.venv/
 *.bak.*
 __pycache__/
 .ipynb_checkpoints/
 node_modules/
 .DS_Store
+
+/.quarto/
+**/*.quarto_ipynb

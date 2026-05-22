@@ -1,0 +1,158 @@
+# SOURCE: lecture5_260521_184934.pdf
+# PAGES: 11
+
+===== [PAGE 1] =====
+Lecture 5:
+Model Selection, Evaluation, and Assessment
+Vegard Høghaug Larsen
+GRA4160: Predictive Modelling with Machine Learning
+February 4th, 2026
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+1/11
+
+===== [PAGE 2] =====
+Plan for Today
+Selection & Evaluation
+Information Criteria
+Cross-Validation
+Bias-Variance Trade-oﬀ
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+2/11
+
+===== [PAGE 3] =====
+Model Selection vs. Evaluation
+Model Selection
+The process of choosing the best model (or
+hyperparameters) from a set of candidates.
+▶Goal: Select the model structure.
+▶Tool: Validation sets, Information Criteria.
+Model Evaluation
+Measuring how well the ﬁnal model performs on
+unseen data.
+▶Goal: Estimate real-world error.
+▶Tool: Test sets, Cross-Validation.
+The Pitfall
+Overusing a single validation set for selection can lead to overﬁtting that speciﬁc subset of data.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+3/11
+
+===== [PAGE 4] =====
+The Confusion Matrix
+A confusion matrix summarizes a classiﬁcation models
+performance by comparing predicted vs. actual values.
+▶TP: Correctly identiﬁed positive.
+▶TN: Correctly identiﬁed negative.
+▶FP (Type I): False alarm.
+▶FN (Type II): Missed detection.
+Predicted
+Pos
+Neg
+Actual
+Pos
+TP
+FN
+Neg
+FP
+TN
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+4/11
+
+===== [PAGE 5] =====
+Common Metrics for Model Evaluation
+▶Accuracy: Fraction of correct predictions. (Caution: Misleading in imbalanced datasets).
+Accuracy =
+TP + TN
+TP + TN + FP + FN
+▶Precision: Purity of positive predictions. Vital when False Positives are costly (e.g., spam ﬁlters).
+Precision =
+TP
+TP + FP
+▶Recall (Sensitivity): Ability to ﬁnd positive instances. Vital when False Negatives are dangerous (e.g.,
+cancer detection).
+Recall =
+TP
+TP + FN
+▶F1-Score: The harmonic mean of Precision and Recall. Useful when you need a balance between the two.
+▶ROC & AUC: Plots TPR vs. FPR. AUC (Area Under Curve) summarizes performance across all
+thresholds.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+5/11
+
+===== [PAGE 6] =====
+Introduction to Information Criteria
+Goal: Select a model that explains the data well without being overly complex.
+Information criteria penalize the likelihood based on the number of parameters (k).
+Akaike Information Criterion (AIC)
+AIC = 2k −2 ln(L)
+▶Estimates out-of-sample prediction error.
+▶Penalizes complexity (2k).
+Bayesian Information Criterion (BIC)
+BIC = ln(n)k −2 ln(L)
+▶penalizes complexity more heavily when n is
+large.
+▶Tends to favor simpler models than AIC.
+Rule of thumb: Lower values are better. Compare only on the same dataset.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+6/11
+
+===== [PAGE 7] =====
+k-Fold Cross-Validation
+The Procedure:
+1. Shuﬄe the dataset.
+2. Split into k groups (folds).
+3. For each unique group:
+▶Take the group as a hold-out or test data set.
+▶Take the remaining groups as a training data set.
+▶Fit a model on the training set and evaluate it on the test set.
+4. Summarize the skill of the model using the sample of model evaluation scores.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+7/11
+
+===== [PAGE 8] =====
+k-Fold Cross-Validation
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+8/11
+
+===== [PAGE 9] =====
+Advanced CV Techniques
+Stratiﬁed k-fold
+Ensures each fold maintains the same class distribution as the full dataset. Essential
+for imbalanced classes.
+Leave-One-Out (LOOCV)
+k = n. Uses all but one observation for training.
+▶Pro: Nearly unbiased.
+▶Con: Computationally expensive.
+Repeated CV
+Repeats the k-fold process multiple times with diﬀerent splits to reduce variance in the
+estimate.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+9/11
+
+===== [PAGE 10] =====
+The Bias-Variance Trade-oﬀ
+Bias (Underﬁtting)
+Error from erroneous assumptions (e.g.,
+assuming data is linear when it’s quadratic).
+▶Misses relevant relations.
+▶Fix: Increase complexity, add features.
+Variance (Overﬁtting)
+Error from sensitivity to small ﬂuctuations in the
+training set.
+▶Models the random noise.
+▶Fix: Regularization, more data, simplify
+model.
+Goal: Find the sweet spot where Total Error (Bias2 + Variance) is minimized.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+10/11
+
+===== [PAGE 11] =====
+Summary and Key Takeaways
+▶Selection vs Evaluation: Don’t use your test set to tune parameters!
+▶Metrics: Accuracy is not enough. Use Precision/Recall/AUC for a complete picture.
+▶Information Criteria: AIC and BIC allow model comparison without a hold-out set, penalizing
+complexity.
+▶Robustness: Cross-Validation (especially Stratiﬁed) is the gold standard for performance
+estimation.
+▶The Trade-oﬀ: Machine Learning is largely the art of balancing Bias and Variance.
+Vegard Høghaug Larsen: Lecture 5:, Model Selection, Evaluation, and Assessment
+11/11

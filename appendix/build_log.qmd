@@ -1,0 +1,31 @@
+---
+title: "Build Log"
+body-classes: fam-cross
+---
+
+::: {.callout-bigpicture}
+**What this is.** A running log of how the site was built — phases completed, substitutions made (e.g. a widget replaced by a static figure under C3), items skipped and why (C7), and unresolved gaps. Final statistics (word/page/file counts, render time) are added in Phase 6.7.
+:::
+
+## Phase log
+
+- **Setup (2026-05-21).** Workspace scaffolding + toolchain (Quarto 1.8.27, Python 3.11 venv, KaTeX). See `phase1_setup_summary.md`, `phase2_setup_summary.md`.
+- **Phase 0 — Inventory & planning (2026-05-22).** All sources read and extracted to `phase0/`. STOP gate cleared (no C6 halt). Mid-build model override: all sub-agents moved to Opus 4.7; four Sonnet-produced extract batches re-done on Opus (originals archived to `phase0/_sonnet_provisional/`, listed in `phase0/sonnet_produced_files.md`). See `phase0_summary.md`.
+- **Phase 1 — Site skeleton & infrastructure (2026-05-22, complete).** Created `_quarto.yml` (website, full sidebar nav, KaTeX), `theme/custom.scss` (color system + callouts + two-mode math visibility), `theme/toggle.js` (+ `toggle-after-body.html` include), `index.qmd` (landing dashboard + preface + math-mode demo), and appendix pages (`notation_table`, `math_appendix` scaffold, `sources`, this log). 31 page stubs generated for the full nav. **Skeleton render (1.6) verified:** all 36 pages build; sidebar shows every section; theme/family-colors compile into `site_libs`; KaTeX renders; math-toggle script + `gra4160.mathMode` present on every page; largest page 63 KB (C4 ✓); zero remote `http(s)` script/link srcs (offline ✓).
+
+  **Two infrastructure decisions (deviations from the literal spec, intent preserved):**
+  1. **`embed-resources: true` turned OFF (deviates from C10).** It is incompatible with a cross-linked multi-page website: Quarto tries to inline every linked sibling page, producing a page-on-page cascade (notation_table hit **36 MB**, far over the C4 8 MB ceiling, with "Could not fetch resource" warnings). Offline use is instead achieved via Quarto's standard local `site_libs/` bundling. Net effect: same offline guarantee, pages ~50–60 KB instead of 12–36 MB.
+  2. **KaTeX vendored locally (`assets/katex/`).** Quarto's `html-math-method: katex` defaults to the jsdelivr **CDN** (violates C8/6.5 offline). Fetched KaTeX 0.16.11 via npm at build time, copied the dist (js/css + 60 font files) into `assets/katex/`, and set `html-math-method: {method: katex, url: "assets/katex/"}` + `resources: assets/katex/**`. Quarto depth-adjusts the URL per page (`../assets/katex/...` in subdirs), so math is fully offline at every depth. (Runtime is offline; only the one-time build-time npm fetch used the network.)
+
+## Substitutions (C3)
+*(none yet)*
+
+## Skipped / logged (C7)
+- `[DATA-1]` `SMSSpamCollection.csv` (spam exercise) not present locally — drill page will document idiom only.
+- `[DATA-2]` `bank-additional-full.csv` (segmentation exercise) not present locally — drill page will document idiom only.
+
+## Unresolved gaps requiring user input
+*(none yet)*
+
+## Final statistics
+*(Phase 6.7)*

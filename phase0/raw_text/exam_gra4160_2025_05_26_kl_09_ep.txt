@@ -1,0 +1,26 @@
+# SOURCE: GRA4160_2025-05-26_kl_09_EP.pdf
+# PAGES: 1
+
+===== [PAGE 1] =====
+Exam in GRA 4160 (Spring 2025) 
+ 
+Predictive modelling with machine learning 
+30-hour take-home exam 
+ 
+Attached to this exam are the following files: 
+1. 
+Exam_GRA4160_spring2025.ipynb 
+2. 
+Hitters.csv 
+3. 
+WholesaleCustomers.csv 
+4. 
+wdbc.data 
+5. 
+wdbc.names 
+6. 
+SimulatedData.csv 
+ 
+Download the provided zip file and extract its contents, which should include six files. 
+Then, open the Jupyter notebook included among these files and follow the instructions 
+contained within it.

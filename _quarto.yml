@@ -1,0 +1,124 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - assets/katex/**
+  # Explicit whitelist so Quarto does NOT render build artifacts (phase0/*.md,
+  # *_summary.md, workspace_inventory.md) into the site.
+  render:
+    - index.qmd
+    - big_picture/*.qmd
+    - methods/*.qmd
+    - cross_method/*.qmd
+    - drill/*.qmd
+    - appendix/*.qmd
+
+freeze: auto
+
+website:
+  title: "GRA 4160 — ML Study Companion"
+  description: "Practical take-home study companion for GRA 4160 (Predictive Modelling with Machine Learning), BI Norwegian Business School."
+  reader-mode: true
+  page-navigation: true
+  back-to-top-navigation: true
+  navbar:
+    background: light
+    pinned: true
+    search: true
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Big picture"
+        menu:
+          - big_picture/reading_the_data.qmd
+          - big_picture/workflow_patterns.qmd
+      - text: "Decision dashboard"
+        href: cross_method/decision_dashboard.qmd
+      - text: "Drill"
+        href: drill/index.qmd
+  sidebar:
+    style: floating
+    collapse-level: 2
+    contents:
+      - text: "Home"
+        href: index.qmd
+      - section: "Big picture"
+        contents:
+          - big_picture/reading_the_data.qmd
+          - big_picture/workflow_patterns.qmd
+      - section: "Methods — Linear family"
+        contents:
+          - methods/ols.qmd
+          - methods/knn.qmd
+          - methods/logistic.qmd
+          - methods/lda.qmd
+          - methods/adaline.qmd
+          - methods/regularization.qmd
+      - section: "Methods — Cross-cutting"
+        contents:
+          - methods/bias_variance.qmd
+          - methods/cv_info_criteria.qmd
+      - section: "Methods — Tree family"
+        contents:
+          - methods/decision_trees.qmd
+          - methods/random_forests.qmd
+          - methods/ensembles.qmd
+      - section: "Methods — Unsupervised"
+        contents:
+          - methods/pca.qmd
+          - methods/kmeans.qmd
+      - section: "Methods — Neural"
+        contents:
+          - methods/nn_basics.qmd
+          - methods/autodiff.qmd
+          - methods/nn_pytorch.qmd
+          - methods/build_a_nn.qmd
+      - section: "Cross-method"
+        contents:
+          - cross_method/decision_dashboard.qmd
+          - cross_method/family_comparisons.qmd
+          - cross_method/showdowns.qmd
+          - cross_method/exercise_dependency_map.qmd
+      - section: "Drill"
+        contents:
+          - drill/index.qmd
+          - drill/exam_spring2025.qmd
+          - drill/exercise_01_titanic_preprocessing.qmd
+          - drill/exercise_02_spam_naive_bayes.qmd
+          - drill/exercise_03_house_prices.qmd
+          - drill/exercise_04_mnist_digits.qmd
+          - drill/exercise_05_model_selection.qmd
+          - drill/exercise_06_customer_segmentation.qmd
+      - section: "Appendix"
+        contents:
+          - appendix/notation_table.qmd
+          - appendix/math_appendix.qmd
+          - appendix/sources.qmd
+          - appendix/build_log.qmd
+
+format:
+  html:
+    theme:
+      - cosmo
+      - theme/custom.scss
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    number-sections: false
+    html-math-method:
+      method: katex
+      url: "assets/katex/"
+    # NOTE: embed-resources is intentionally OFF. It is incompatible with a
+    # cross-linked multi-page website (Quarto tries to inline each linked
+    # sibling page → multi-MB page-on-page cascade, blowing the C4 8 MB ceiling).
+    # Offline use (C8 / 6.5) is achieved instead via Quarto's local `site_libs/`
+    # asset bundling (bootstrap, KaTeX, OJS all copied locally; no CDN). The 6.5
+    # offline pass verifies no remote http(s) script/link srcs remain.
+    code-copy: true
+    code-overflow: wrap
+    link-external-newwindow: true
+    include-after-body: theme/toggle-after-body.html
+
+execute:
+  warning: false
+  message: false

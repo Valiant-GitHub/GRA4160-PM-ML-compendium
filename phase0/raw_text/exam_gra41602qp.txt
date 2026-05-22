@@ -1,0 +1,15 @@
+# SOURCE: GRA41602qp.pdf
+# PAGES: 1
+
+===== [PAGE 1] =====
+Exam in GRA 4160 (Spring 2024)  
+Predictive modelling with machine learning 
+30-hour take-home exam  
+Attached to this exam are the following files:  
+1. Exam_GRA4160_Spring2024.ipynb  
+2. diabetes.csv 
+3. Sales-Win-Loss.csv 
+ 
+Download the provided zip file and extract its contents, which should include three files. 
+Then, open the Jupyter notebook included among these files and follow the instructions 
+contained within it.

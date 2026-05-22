@@ -1,0 +1,88 @@
+---
+title: "GRA 4160 — Machine Learning Study Companion"
+subtitle: "A practical take-home study companion & post-exam reference"
+body-classes: fam-cross
+---
+
+::: {.callout-bigpicture}
+**BI Norwegian Business School — GRA 4160, Predictive Modelling with Machine Learning.** Built from the course's own lecture slides and notebooks, with *The Elements of Statistical Learning* (ESL) and *An Introduction to Statistical Learning* (ISL) as reference anchors. Every claim, formula, and code idiom traces to a real source file.
+:::
+
+## What this is
+
+This is a **practical study companion** for the GRA 4160 take-home exam, and a reference to keep open while you work. The exam is a 30-hour, open-resource, notebook-based take-home: you load data, choose methods, write and run code, and—crucially—**justify every choice**. The course grades your reasoning as heavily as your result. So the centre of gravity here is *practitioner thinking*: when to reach for which method, what code to actually write, and how to read the output you get back. The full mathematics is preserved at two levels of rigor, but tucked behind a toggle so it never crowds out the practical thread.
+
+There are **two ways to read it**. Browse by problem: use the **decision dashboard** below to go from "what does my data look like?" to a short, ranked list of methods with links straight to their pages. Or read straight through: the **sidebar** walks the methods in concept-progression order (OLS → kNN → logistic → LDA → … → neural nets), each page following the same eight-section template. Independently, the **math toggle** in the top bar cycles through three states — *off* (prose and code only), *course level* (the math the course actually teaches and grades), and *full* (complete derivations anchored to ESL). Your choice is remembered across pages.
+
+Beyond the per-method pages, the **cross-method layer** is where method *selection* lives: family-comparison tables, head-to-head **showdowns** (same dataset, several methods, what to notice), and the interactive dashboard. The **drill section** works the actual past-exam questions and the course exercise notebooks end-to-end — not as code dumps, but as the decisions and idioms a strong take-home answer would use. Start with the dashboard if you have a dataset in mind; start with [Reading the Data](big_picture/reading_the_data.qmd) if you want the diagnostic habits that drive every later choice.
+
+## Decision dashboard {#sec-dashboard}
+
+::: {.callout-intuition}
+**How to use it.** Describe your problem with the controls; the panel ranks candidate methods with one-line justifications and links. *This is a placeholder ranking; the full decision logic (derived from every method's "When NOT to use" section) is wired up in the [full dashboard](cross_method/decision_dashboard.qmd).*
+:::
+
+```{ojs}
+//| echo: false
+viewof task = Inputs.radio(
+  ["Regression (predict a number)", "Classification (predict a class)", "Clustering (find groups)", "Dimensionality reduction"],
+  {label: "Task", value: "Classification (predict a class)"}
+)
+viewof interp = Inputs.toggle({label: "Need an interpretable / explainable model?", value: true})
+viewof bign = Inputs.toggle({label: "Many more features than rows (p ≫ n)?", value: false})
+viewof nonlinear = Inputs.toggle({label: "Relationship looks non-linear?", value: false})
+```
+
+```{ojs}
+//| echo: false
+// Placeholder ranking logic — replaced by the real rules in Phase 4.1.
+candidates = {
+  const out = [];
+  const add = (name, href, why) => out.push({name, href, why});
+  if (task.startsWith("Regression")) {
+    add("OLS", "methods/ols.qmd", "interpretable linear baseline; start here");
+    if (bign) add("Lasso / Ridge", "methods/regularization.qmd", "p ≫ n → penalize; Lasso also selects features");
+    if (nonlinear) add("Random Forest", "methods/random_forests.qmd", "captures non-linearity, low tuning");
+  } else if (task.startsWith("Classification")) {
+    add(interp ? "Logistic Regression" : "Random Forest",
+        interp ? "methods/logistic.qmd" : "methods/random_forests.qmd",
+        interp ? "linear, interpretable log-odds" : "strong default, handles non-linearity");
+    add("kNN", "methods/knn.qmd", "non-parametric baseline");
+    if (!nonlinear) add("LDA", "methods/lda.qmd", "linear boundary, Gaussian classes");
+  } else if (task.startsWith("Clustering")) {
+    add("K-Means", "methods/kmeans.qmd", "fast, spherical clusters; pick k via elbow/silhouette");
+    add("PCA → K-Means", "methods/pca.qmd", "reduce dimensions/noise first");
+  } else {
+    add("PCA", "methods/pca.qmd", "linear variance-maximizing projection");
+  }
+  return out;
+}
+html`<ol>${candidates.map(c => html`<li><a href="${c.href}"><b>${c.name}</b></a> — ${c.why}</li>`)}</ol>`
+```
+
+## How the math toggle works {#sec-math-demo}
+
+Use the **Math** control in the top bar to cycle *off → course level → full*. The two boxes below appear and disappear accordingly (try it):
+
+::: {.math-section}
+::: {.math-off-hint}
+*Math is currently off — switch the top-bar toggle to "course level" or "full" to reveal the derivations.*
+:::
+
+::: {.callout-math-a}
+**Mode A — course level.** OLS minimizes the residual sum of squares; the closed-form solution is
+$$\hat{\beta} = (X^\top X)^{-1} X^\top y.$$
+:::
+
+::: {.callout-math-b}
+**Mode B — full rigor.** The normal equations follow from setting $\nabla_\beta \lVert y - X\beta\rVert_2^2 = -2X^\top(y - X\beta) = 0$, giving $X^\top X \hat\beta = X^\top y$; when $X^\top X$ is invertible this is the unique global minimizer (the objective is convex with Hessian $2X^\top X \succeq 0$). Full treatment on the [OLS page](methods/ols.qmd) and the [math appendix](appendix/math_appendix.qmd).
+:::
+:::
+
+## Orientation
+
+- **New to the material?** Start with [Reading the Data](big_picture/reading_the_data.qmd) and [Workflow Patterns](big_picture/workflow_patterns.qmd).
+- **Have a dataset?** Use the dashboard above, or the [full decision dashboard](cross_method/decision_dashboard.qmd).
+- **Comparing methods?** See [Family Comparisons](cross_method/family_comparisons.qmd) and [Showdowns](cross_method/showdowns.qmd).
+- **Practising for the exam?** Go to the [Drill index](drill/index.qmd) — the Spring-2025 take-home is worked there.
+- **Reference:** [Notation](appendix/notation_table.qmd) · [Math appendix](appendix/math_appendix.qmd) · [Sources](appendix/sources.qmd).

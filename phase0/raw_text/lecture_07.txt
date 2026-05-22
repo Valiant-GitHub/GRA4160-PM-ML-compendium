@@ -1,0 +1,253 @@
+# SOURCE: lecture7_260521_184935.pdf
+# PAGES: 25
+
+===== [PAGE 1] =====
+Lecture 7:
+Ensemble Methods
+Vegard Høghaug Larsen
+GRA4160: Predictive modelling with machine learning
+February 18th 2026
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+1/21
+
+===== [PAGE 2] =====
+Plan for today:
+▶Introduction to ensemble methods
+▶Bagging
+▶Boosting
+▶Recap decision trees
+▶Random forests
+▶Extra trees
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+2/21
+
+===== [PAGE 3] =====
+Ensemble methods
+▶A family of techniques that involve training multiple models and combining their
+predictions to form a more accurate and robust model
+▶Can be used with a variety of models (e.g. linear models, decision trees, or neural
+networks)
+▶By combining multiple models, the ensemble typically reduces variance and often boosts
+performance
+▶A trade-oﬀ: ensembles are often more powerful, but can be less interpretable than
+single models
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+3/21
+
+===== [PAGE 4] =====
+Types of Ensemble Methods
+▶Bagging (Bootstrap Aggregating)
+▶Examples: Random Forests, Extra Trees
+▶Reduces variance by training multiple models on bootstrap samples and averaging
+predictions
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+4/21
+
+===== [PAGE 5] =====
+Types of Ensemble Methods
+▶Bagging (Bootstrap Aggregating)
+▶Examples: Random Forests, Extra Trees
+▶Reduces variance by training multiple models on bootstrap samples and averaging
+predictions
+▶Boosting (Sequential Learning)
+▶Examples: Gradient Boosting, AdaBoost, XGBoost
+▶Trains models sequentially, focusing on misclassiﬁed examples to reduce bias
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+4/21
+
+===== [PAGE 6] =====
+Types of Ensemble Methods
+▶Bagging (Bootstrap Aggregating)
+▶Examples: Random Forests, Extra Trees
+▶Reduces variance by training multiple models on bootstrap samples and averaging
+predictions
+▶Boosting (Sequential Learning)
+▶Examples: Gradient Boosting, AdaBoost, XGBoost
+▶Trains models sequentially, focusing on misclassiﬁed examples to reduce bias
+▶Bayesian Model Averaging (BMA)
+▶Trains multiple models and assigns weights based on posterior probabilities
+▶Can dynamically update model weights as new data becomes available
+▶Useful when model uncertainty needs to be explicitly accounted for
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+4/21
+
+===== [PAGE 7] =====
+Types of Ensemble Methods
+▶Bagging (Bootstrap Aggregating)
+▶Examples: Random Forests, Extra Trees
+▶Reduces variance by training multiple models on bootstrap samples and averaging
+predictions
+▶Boosting (Sequential Learning)
+▶Examples: Gradient Boosting, AdaBoost, XGBoost
+▶Trains models sequentially, focusing on misclassiﬁed examples to reduce bias
+▶Bayesian Model Averaging (BMA)
+▶Trains multiple models and assigns weights based on posterior probabilities
+▶Can dynamically update model weights as new data becomes available
+▶Useful when model uncertainty needs to be explicitly accounted for
+▶Stacking (Stacked Generalization)
+▶Combines multiple models by training a meta-model on their outputs
+▶Often uses diverse base models (e.g., decision trees, SVMs, neural networks) to leverage
+complementary strengths
+▶Example: A neural network trained on outputs of logistic regression, SVM, and a random
+forest
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+4/21
+
+===== [PAGE 8] =====
+Bagging
+Bagging
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+5/21
+
+===== [PAGE 9] =====
+Bagging
+▶Bagging is short for Bootstrap AGGregatING
+▶Train multiple instances of a base model on bootstrap samples of the training data
+▶Combine their predictions (via majority vote or averaging) to form a ﬁnal prediction
+▶Subsets are created using sampling with replacement
+▶Eﬀective at reducing variance and mitigating overﬁtting for high-variance base learners
+(e.g., large decision trees)
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+6/21
+
+===== [PAGE 10] =====
+Bootstrap in Machine Learning
+▶A resampling technique to approximate the sampling distribution of a statistic
+▶Repeatedly sample with replacement to create new datasets of the same size as the
+original
+▶About 63% of unique samples from the original dataset typically appear in each
+bootstrap sample
+▶Used to train multiple models (bagging) or provide performance estimates (e.g. OOB
+error)
+▶Especially useful for small datasets or when data is expensive to collect
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+7/21
+
+===== [PAGE 11] =====
+Bootstrap sampling
+Source
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+8/21
+
+===== [PAGE 12] =====
+How does bagging work?
+▶Create multiple bootstrap samples of the training data
+▶Train a base model (e.g. a decision tree) on each bootstrap sample
+▶Use each trained model to make predictions
+▶Combine predictions from all models (majority vote for classiﬁcation or averaging for
+regression)
+▶Final prediction often has lower variance and improved generalization
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+9/21
+
+===== [PAGE 13] =====
+Boosting
+Boosting
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+10/21
+
+===== [PAGE 14] =====
+Boosting
+▶A technique that combines multiple weak learners sequentially
+▶Each subsequent model focuses more on samples that previous models misclassiﬁed
+(higher weight)
+▶Typically reduces bias, but can be prone to overﬁtting if not regularized
+▶Often uses simpler base learners (e.g. shallow trees), which are incrementally improved
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+11/21
+
+===== [PAGE 15] =====
+How does boosting work?
+1. Initialize the weights of each training example equally
+2. Train a base model on the training data using the current weights
+3. Evaluate performance on the training data
+4. Increase weights of misclassiﬁed examples and decrease weights of correctly classiﬁed
+examples
+5. Repeat until stopping criterion (e.g. max iterations or minimal improvement)
+6. Final prediction is a weighted combination of all models’ predictions
+7. Learning rate (η) often controls the contribution of each weak learner
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+12/21
+
+===== [PAGE 16] =====
+AdaBoost and XGBoost
+▶AdaBoost: Adaptive Boosting — one of the earliest boosting algorithms
+▶XGBoost: eXtreme Gradient Boosting — a popular gradient boosting framework
+▶Both typically use decision trees as base learners, though diﬀerent objective and
+optimization strategies
+▶Widely used for tasks like image classiﬁcation, ranking, and structured data problems
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+13/21
+
+===== [PAGE 17] =====
+XGBoost features
+1. Regularization: includes L1 and L2 terms to prevent overﬁtting
+2. Tree pruning: prunes during construction to improve generalization
+3. Handling missing values: a built-in mechanism
+4. Cross-validation: integrated for hyperparameter tuning
+5. Parallelization and out-of-core computation: allows XGBoost to scale eﬃciently
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+14/21
+
+===== [PAGE 18] =====
+Recap: Decision trees
+▶Built by recursively splitting data into subsets based on a feature threshold that provides
+the best information gain
+▶Leaf nodes contain ﬁnal predictions (class labels or numeric values)
+▶Advantages: easy to interpret, handle mixed data types, minimal preprocessing
+▶Disadvantages: prone to overﬁtting if unpruned, can be unstable w.r.t. small data
+changes
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+15/21
+
+===== [PAGE 19] =====
+Visualization of decision trees
+https://github.com/parrt/dtreeviz
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+16/21
+
+===== [PAGE 20] =====
+Visualization of decision trees
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+17/21
+
+===== [PAGE 21] =====
+Decision trees →Random forests
+▶Bagging multiple decision trees alone can lead to highly correlated trees
+▶Random Forest adds feature randomness to reduce correlation among trees
+▶In addition to bootstrapping samples, each split considers only a random subset of
+features
+▶Reduces variance by decorrelating trees; improves predictive performance
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+18/21
+
+===== [PAGE 22] =====
+De-correlated trees
+1. Each tree is built from a bootstrapped subset of the training data
+2. At each split, randomly select a set of predictors (e.g. √p) out of p
+3. From these predictors, choose the best predictor and threshold
+4. Result: lower correlation among trees and often higher accuracy
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+19/21
+
+===== [PAGE 23] =====
+Random forests
+▶Each decision tree in the ensemble is trained on a unique bootstrap sample
+▶Within each tree, only a subset of features is considered for splits
+▶Final classiﬁcation prediction by majority vote; for regression, often averaged
+▶Provides good performance out-of-the-box and can handle large feature spaces
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+20/21
+
+===== [PAGE 24] =====
+Extra trees
+▶Stands for Extremely Randomized Trees
+▶Similar to Random Forest in that multiple trees are trained on bootstrap samples
+▶At each node, a random subset of features is chosen (like in RF)
+▶Key diﬀerence: Extra Trees picks random splitting thresholds, rather than searching for
+the optimal threshold
+Vegard Høghaug Larsen: Lecture 7:, Ensemble Methods
+21/21
+
+===== [PAGE 25] =====
+
