@@ -30,20 +30,37 @@ body-classes: fam-cross
 
 - **Phase 5 — Drill section, COMPLETE (2026-05-22).** All 8 drill pages via Opus 4.7 (directive B: extract + notebook): `exam_spring2025` (4-assignment walkthrough with solution *sketches*, grading rules, honest [VERIFY] on 2024-vs-2025 weighting and the by-design-hidden SimulatedData specs); `exercise_01..06` (Titanic preprocessing stub-only sketch; spam [DATA-1] and segmentation [DATA-2] datasets documented-but-not-fabricated; house-prices and digits quote real stored `_VHL` outputs with cell cites; model-selection notes its notebook saved no outputs); `index` (filterable OJS by type/family/dataset + static fallback table, 7 items, tags traced to extracts). SVM and Naive Bayes correctly described in prose without linking to nonexistent method pages. Final render: 0 errors, 0 OJS-parse, 0 broken links, **0 stubs remaining site-wide** — all content (Phases 0–5) built.
 
-## Open items to resolve in later phases
-- `methods/nn_pytorch.qmd` §4: Iris training loss/accuracy are qualitative + `[VERIFY]` because **PyTorch is not installed in the `.venv`** (sklearn/numpy only). Either `pip install torch` into `.venv` to compute real numbers, or leave qualitative (Tier-2). No fabrication.
-- `methods/regularization.qmd` Ex 3 & `methods/random_forests.qmd` §7: a couple of `[VERIFY]` items where nb08 stored α / WDBC numbers weren't captured — recompute in Phase 3/6 if quoting specific values.
-- `appendix/math_appendix.qmd`: add tree/ensemble and PCA/k-means anchors in Phase 3 (RF currently links `#sec-biasvar`).
+- **Phase 6 — Verification, polish, offline pass, COMPLETE (2026-05-22).** **6.1 content verification** (deterministic 30-claim sample, Opus agent): **29/30 PASS, 1 FAIL (3.3% — under the 10% C6 halt line)**; all 8 sampled §8 formulas passed the R9 cross-check against the actual ESL/ISL PDF pages, all 16 "computed" numbers re-verified in the venv. The one FAIL — `logistic.qmd` mislabeled `0.459` as the "majority-class baseline" (the `random_state=15` test set is 20 survived / 17 died, so the majority-class rate is **0.541**; 0.459 is the always-predict-died rate) — **FIXED** in both §4 and §6. **6.2 notation:** covered by the formula sample (all using `notation_table` conventions) + Phase-3 dual-source discipline. **6.3 color:** family color on every page's header + `fam-badge` opener + primary viz; all callout classes valid. **6.4 interactivity — caught a core bug:** the math-toggle visibility CSS targeted `.math-mode-*` while the pages use `.callout-math-*`, so the toggle was not actually hiding/showing the math — **FIXED** (compiled CSS now hides `.callout-math-a/b` by default and reveals them on `body.math-a/.math-b`); the toggle script is present on all 36 pages; OJS cells parse with 0 errors. **6.5 offline:** 0 remote asset includes site-wide. **6.6 cross-reference:** 5715 internal links resolve, 0 real broken links (the link-checker's 3 hits were regex artifacts inside displayed code). Final render clean (0 errors, ~50 s).
+
+## Deviations from spec (documented, offline/quality intent preserved)
+- **`embed-resources` OFF** → offline via local `site_libs/` (C10 mechanism changed, offline intent met — `embed-resources` is incompatible with a cross-linked website; see Phase 1).
+- **KaTeX vendored** to `assets/katex/` (Quarto's default is a CDN; vendoring satisfies C8 offline at every page depth).
+- **Observable Plot used throughout** (not Plotly) — smaller bundle, R6/C4-aligned; so 6.4's "every Plotly graph-div" check is N/A by design (no Plotly used).
+- **Sidebar nav not family-colored per item** — the family signal is carried instead by each page's header color + `fam-badge` opener + primary viz color (per-item Quarto sidebar coloring would need fragile sidebar CSS).
+- **`methods/nn_pytorch.qmd` §4** Iris numbers remain qualitative + `[VERIFY]` — PyTorch deliberately not installed in `.venv` (~2 GB; Tier-2 page); the marker is intentional (user decision). No fabrication.
+
+## Resolved (formerly open items)
+- nb08 AIC/BIC α (regularization Ex 3, computed: AIC α≈1.52 / BIC α≈4.35) and WDBC RF/GB numbers (random_forests §7: RF 0.951 / GB 0.944) — computed & cited in Phase 3.
+- Math-appendix sections all filled (Phase 3.A); RF links `#sec-biasvar` (the relevant shared foundation — no tree-specific anchor required).
 
 ## Substitutions (C3)
-*(none yet)*
+*None.* Every Observable Plot visualization rendered correctly; no widget needed a static-figure fallback. The exercise-dependency map deliberately uses a robust bipartite layout (not a force simulation) per C3/R6 — a design choice, not a failure substitution.
 
 ## Skipped / logged (C7)
-- `[DATA-1]` `SMSSpamCollection.csv` (spam exercise) not present locally — drill page will document idiom only.
-- `[DATA-2]` `bank-additional-full.csv` (segmentation exercise) not present locally — drill page will document idiom only.
+- `[DATA-1]` `SMSSpamCollection.csv` (spam exercise) not present locally — drill page documents the idiom only; no outputs fabricated.
+- `[DATA-2]` `bank-additional-full.csv` (segmentation exercise) not present locally — drill page documents the idiom only; no outputs fabricated. (The lecture K-means/PCA and the exam use present datasets — seeds, WholesaleCustomers — so method coverage is unaffected.)
 
 ## Unresolved gaps requiring user input
-*(none yet)*
+*None.* The two missing datasets above are course-supplied files absent from this workspace; their drill pages document the method/idiom without fabricating outputs. Not blocking. Optional future polish: install PyTorch into `.venv` to turn the `nn_pytorch` §4 qualitative numbers into computed ones.
 
 ## Final statistics
-*(Phase 6.7)*
+- **Source files:** 36 `.qmd` pages (1 landing + 2 big-picture + 17 methods + 4 cross-method + 8 drill + 4 appendix) + `_quarto.yml` + theme (`custom.scss`, `toggle.js`, `toggle-after-body.html`).
+- **Rendered:** 36 HTML pages in `_site/` (one per source), fully offline.
+- **Word count:** ~91,000 words of `.qmd` content.
+- **Phase-0 provenance:** 49 extract/synthesis files in `phase0/` (10 lecture + 20 notebook + 6 exercise + exam/guideline extracts + 9 synthesis/TOC/verification files), plus archived Sonnet provisionals.
+- **Page sizes:** largest 587 KB (`showdowns`, embedded decision-boundary grids), all well under the 8 MB C4 ceiling; `_site/` total ≈ 9.3 MB.
+- **Full-site render time:** ~50 s (`quarto render`, `QUARTO_PYTHON` → `.venv`).
+- **Vendored offline assets:** `assets/katex/` (KaTeX 0.16.11 + 60 fonts), `site_libs/` (bootstrap, OJS runtime, clipboard).
+- **Model:** all phases produced on Opus 4.7 (main thread + every sub-agent), per the session override.
+
+**Build complete: Phases 0–6 done.**

@@ -105,10 +105,14 @@ h1.title { color: var(--page-family); border-bottom: 3px solid var(--page-family
 // localStorage `gra4160.mathMode` ∈ {off, course, full} → {math-off, math-a, math-b}.
 // Default (no class yet, or math-off): BOTH hidden. Prevents flash of math.
 // ---------------------------------------------------------------------------
-.math-mode-a, .math-mode-b { display: none; }
-body.math-a .math-mode-a { display: block; }
-body.math-b .math-mode-a { display: block; }
-body.math-b .math-mode-b { display: block; }
+// The math callouts (.callout-math-a = Mode A, .callout-math-b = Mode B) are the
+// togglable regions. Hidden by default (covers first-visit no-class AND math-off),
+// revealed by the body class the toggle sets. (Older drafts keyed .math-mode-*; the
+// pages use .callout-math-* — keep these in sync.)
+.callout-math-a, .callout-math-b { display: none; }
+body.math-a .callout-math-a { display: block; }   // course level: Mode A only
+body.math-b .callout-math-a { display: block; }   // full: Mode A …
+body.math-b .callout-math-b { display: block; }   // … and Mode B
 
 // A small hint shown when math is off, inside the math section wrapper.
 .math-off-hint { display: none; color: #667; font-style: italic; }

@@ -110,7 +110,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 log_reg = LogisticRegression(solver='lbfgs', max_iter=500).fit(X_train, y_train)
 ```
 
-This yields **test accuracy ≈ 0.892** (33/37 correct), well above the **majority-class baseline of 0.459** (always predict "did not survive") — *(computed via the course venv, `random_state=15`; the notebook stores no outputs)*. The confusion matrix is `[[13, 4], [0, 20]]`: every actual survivor is caught (recall 1.00 for class 1) at the cost of 4 false alarms (class-0 recall 0.76). The fitted coefficients read directly as log-odds effects:
+This yields **test accuracy ≈ 0.892** (33/37 correct), well above either trivial baseline (the 37-row test set is 20 survived / 17 died, so always-guessing the majority class "survived" scores **0.541** and always-guessing "died" scores **0.459**) — *(computed via the course venv, `random_state=15`; the notebook stores no outputs)*. The confusion matrix is `[[13, 4], [0, 20]]`: every actual survivor is caught (recall 1.00 for class 1) at the cost of 4 false alarms (class-0 recall 0.76). The fitted coefficients read directly as log-odds effects:
 
 | Feature | `Pclass` | `Sex` (male=1) | `Age` | `SibSp` | `Parch` | `Fare` | Intercept |
 |---|---|---|---|---|---|---|---|
@@ -172,7 +172,7 @@ Plot.plot({
 
 What to report and look at to decide whether a logistic model is working:
 
-- **Accuracy vs a baseline** — compare against the **majority-class** rate (Titanic: 0.892 vs 0.459). Accuracy alone is misleading on **imbalanced** data, so also report the confusion matrix.
+- **Accuracy vs a baseline** — compare against the **majority-class** rate (Titanic test: 0.892 vs the **0.541** majority-class baseline; 0.459 is the *minority* "always-died" rate). Accuracy alone is misleading on **imbalanced** data, so also report the confusion matrix.
 - **Confusion matrix + classification report** — precision, recall, F1 per class *(notebook 06, cell 11)*. These expose *where* errors fall (the Titanic model trades false positives for perfect survivor recall). On imbalanced problems these matter more than accuracy.
 - **Coefficients as log-odds / odds ratios** — read the sign and magnitude of each $\beta_j$; $e^{\beta_j}$ is the odds multiplier per unit. As with [OLS](ols.qmd), only compare magnitudes after checking feature scale, and watch for sign flips from correlated predictors.
 - **Threshold tuning** — the 0.5 cut is a default, not a law. Lower it (e.g. 0.3) to catch more positives at the cost of more false alarms; raise it (0.7) for the reverse. The notebook leaves this as an exercise (cell 12).
