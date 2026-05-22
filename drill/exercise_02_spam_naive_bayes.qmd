@@ -3,6 +3,103 @@ title: "Drill: Spam Filtering (Naive Bayes)"
 body-classes: fam-cross
 ---
 
+[**Drill-only topic — no method page**]{.fam-badge} · Build a multinomial naive Bayes spam classifier on SMS text *twice*: first from scratch (manual priors, conditional word probabilities, log-likelihood, `argmax`), then with scikit-learn's `MultinomialNB`. The deepest workout on Bayes' theorem, the conditional-independence assumption, and log-space arithmetic in the whole course.
+
+## 1. What this exercise teaches
+
+It turns Bayes' theorem into running code: estimate class priors and per-word conditional probabilities from counts, combine them in log space to avoid underflow, classify by `argmax`, then check the from-scratch result against `MultinomialNB`. It is the only NLP / text-feature drill and the only from-scratch *probabilistic* classifier.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.2** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**Naive Bayes has no dedicated method page** — it is an exercise-only topic (`phase0/concept_inventory.md`, drill-only list). The course introduces it in **Lecture 2 (slide 10/10)**: Bayes' theorem `P(A|B) = P(B|A)·P(A) / P(B)`, "naive" = features conditionally independent given the class, positioned as a fast, easy *first model* for text. For the comparison classifier on labelled data, see [Logistic Regression](../methods/logistic.qmd).
 :::
+
+## 2. Setup
+
+::: {.callout-pitfall}
+**Dataset is not present locally ([DATA-1]).** The `_VHL` solution loads `../../data/smsspamcollection/SMSSpamCollection.csv`, but the local `Data/` folder contains only the Titanic, house-prices, and seeds files — **no SMS spam file**. Source cited in the notebook: <https://archive.ics.uci.edu/ml/datasets/sms+spam+collection>. Because the data is unavailable, **no outputs (accuracies, top words) are reproduced below** — the VHL export also stored no numeric outputs, so there is nothing to quote. The code idioms below are transcribed near-verbatim from the solution; the numbers are honestly absent.
+:::
+
+- **Dataset (per notebook):** SMS Spam Collection — 5,572 labelled English SMS messages, tab-separated, two columns `label` (`ham`/`spam`) and `message`.
+- **Loader (solution cell-7):** `pd.read_csv('.../SMSSpamCollection.csv', sep='\t', header=None, names=['label', 'message'])`, then the labels are remapped to integers: `df['label'].map({'spam': 0, 'ham': 1})` — so **spam = 0, ham = 1**.
+- **Target:** `label` (binary; class index 0 = spam, 1 = ham).
+- **Task:** binary text classification.
+- **Expected output:** P(spam); the most frequent words per class; from-scratch test accuracy; sklearn `MultinomialNB` test accuracy.
+
+## 3. Walkthrough
+
+Idioms are transcribed near-verbatim from `02_Spam_filtering_with_naive_bayes_VHL.ipynb` (cells cited). The export stores **no cell outputs**, so only the code decisions are reproduced.
+
+**Decision 1 — split, then vectorize (cells 8–9).** Split the *raw text* first, then turn it into counts:
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    df['message'], df['label'], test_size=0.33, random_state=1)   # cell-8
+
+vectorizer = CountVectorizer()                                     # cell-9, all defaults
+X_train = vectorizer.fit_transform(X_train).toarray()             # FIT on train only
+X_test  = vectorizer.transform(X_test).toarray()                  # TRANSFORM test
+```
+
+`CountVectorizer` builds the bag-of-words count matrix. The load-bearing decision is **fit on train, transform on test** — fitting the vocabulary on the test set would leak information. Note the reassignment: `X_train`/`X_test` go from text Series to dense arrays in place.
+
+**Decision 2 — priors from class frequencies (cell-12).** Because the labels are 0/1, each prior is a mean:
+
+```python
+class_probs[0] = (y_train == 0).mean()   # P(spam)
+class_probs[1] = (y_train == 1).mean()   # P(ham)
+```
+
+**Decision 3 — conditional word probabilities with additive smoothing of 0.1 (cell-13).** This is the conceptual core:
+
+```python
+total_words_in_class_0 = X_train[y_train == 0].sum()
+count_x_0 = X_train[y_train == 0].sum(axis=0) + 0.1   # +0.1 so log(0) never happens
+cond_probs_0 = count_x_0 / total_words_in_class_0
+# ... analogous _1 for ham
+```
+
+The smoothing constant is **0.1** (added to the numerator counts). Per-class total word count in the denominator; per-word counts in the numerator.
+
+**Decision 4 — log-space posterior and argmax (cells 18–19).** Multiplying many small probabilities underflows, so the solution works in logs and drops the constant denominator `P(x)`:
+
+```python
+log_probs[0] = np.log(class_probs[0]) + np.log(cond_probs_0).dot(X_test.T)   # cell-18
+log_probs[1] = np.log(class_probs[1]) + np.log(cond_probs_1).dot(X_test.T)
+y_pred = np.argmax([log_probs[0], log_probs[1]], axis=0)                     # cell-19
+print(accuracy_score(y_test, y_pred))
+```
+
+`log P(C) + Σ log P(xᵢ|C)` is exactly Bayes' rule under the naive conditional-independence assumption, written additively. The dot product `log(cond_probs).dot(X_test.T)` weights each word's log-probability by its count in the message.
+
+**Decision 5 — cross-check with sklearn (cell-20).**
+
+```python
+from sklearn.naive_bayes import MultinomialNB
+model = MultinomialNB()                  # all defaults: alpha=1.0, fit_prior=True
+model.fit(X_train, y_train)
+print(accuracy_score(y_test, model.predict(X_test)))
+```
+
+**Methods / hyperparameters (exact):** `train_test_split(test_size=0.33, random_state=1)`; `CountVectorizer()` (all defaults); manual smoothing constant `0.1`; `MultinomialNB()` (defaults, `alpha=1.0`). Imports: `sklearn.model_selection.train_test_split`, `sklearn.feature_extraction.text.CountVectorizer`, `sklearn.naive_bayes.MultinomialNB`, `sklearn.metrics.accuracy_score`, `numpy.argmax`.
+
+## 4. Common pitfalls
+
+::: {.callout-pitfall}
+- **The from-scratch "probabilities" don't sum to 1.** Smoothing is added to the numerator (`counts + 0.1`) but the denominator stays the *unsmoothed* total word count, so `cond_probs` is not a strict probability distribution. It is fine for `argmax` classification — it's a deliberate hack to avoid `log(0)` — but don't read it as a calibrated probability.
+- **Manual smoothing (0.1) ≠ sklearn's (`alpha=1.0`).** `MultinomialNB` defaults to Laplace smoothing of 1.0, so the from-scratch and library accuracies can differ slightly even on identical data.
+- **Label convention spam = 0.** `class_probs[0]` is P(spam), and spam is the *positive* class at index 0 — counterintuitive, and easy to flip when interpreting results.
+- **Cell-order dependence.** `X_train`/`X_test` are reassigned from text to dense arrays in cell-9; re-running earlier cells out of order breaks the pipeline.
+- **`.toarray()` densifies a large sparse matrix** — memory-heavy for big vocabularies; fine here, a trap at scale.
+- **Vectorizer leakage** — must `fit` on train, `transform` on test (the solution does this correctly).
+- **The prompt asks for the "five most frequent" words but the solution prints `.head(10)`** (cell-15) — a small prompt/solution mismatch.
+:::
+
+## 5. What this exercise teaches that the others don't
+
+It is the **only text / NLP exercise** (bag-of-words via `CountVectorizer`) and the **only from-scratch probabilistic classifier** — you assemble priors, conditional probabilities, a log-likelihood, and an `argmax` decision rule by hand before validating against the library. It is the deepest hands-on treatment of Bayes' theorem, the conditional-independence assumption, additive smoothing, and log-space numerical stability anywhere in the course.
+
+## 6. Links
+
+- [Logistic Regression](../methods/logistic.qmd) — the natural comparison classifier on labelled data (and the only other linear-family probabilistic classifier with a method page).
+- **Lecture 2, slide 10/10** — Bayes' theorem and the "naive" conditional-independence assumption (`phase0/lecture_02_extract.md`); naive Bayes is positioned there as a fast first model for spam/text.
+- [Reading the Data](../big_picture/reading_the_data.qmd) — the train/test split and leakage discipline this drill relies on.

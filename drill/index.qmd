@@ -3,6 +3,170 @@ title: "Drill — Index"
 body-classes: fam-cross
 ---
 
+[**Drill section**]{.fam-badge} · This is the practice hub: one page per drillable artefact — the **Spring-2025 take-home exam** (catalogued as a lens, never solved) and the **six course exercises**. Each page works the method idioms in context. Use the **filters below** to find a drill by **method family** (linear / tree / unsupervised / neural / cross-cutting), by **type** (exam vs exercise), or by **dataset**. Every tag here is taken straight from that drill's extract — the exam's structure from `phase0/exam_spring2025_notebook.md`, each exercise's methods and dataset from its `phase0/exercise_0N_*.md` — so a tag means the drill *actually* uses that method on that data; nothing is invented. For the order in which to work them and which method pages to read first, see the [exercise dependency map](../cross_method/exercise_dependency_map.qmd).
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.3** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**New here? Don't pick at random — follow the path.** The [exercise dependency map](../cross_method/exercise_dependency_map.qmd) lays out the suggested study order (1 → 6): preprocessing first ([Titanic](exercise_01_titanic_preprocessing.qmd)), then a from-scratch classifier ([spam / naive Bayes](exercise_02_spam_naive_bayes.qmd)), regression with shrinkage ([house prices](exercise_03_house_prices.qmd)), a multiclass bake-off ([MNIST digits](exercise_04_mnist_digits.qmd)), the evaluation toolkit ([model selection](exercise_05_model_selection.qmd)), and finally unsupervised segmentation ([customer segmentation](exercise_06_customer_segmentation.qmd)). The filter on this page is for *finding* a drill; that map is for *sequencing* them.
 :::
+
+::: {.callout-exam}
+**The one drill that mirrors the real thing.** The [Spring-2025 exam drill](exam_spring2025.qmd) walks the representative 30-hour take-home format — four assignments (regularized regression on Hitters, clustering on WholesaleCustomers, ensembles on WDBC, a classification challenge on SimulatedData) — as a *lens* on how the methods are examined, never as solved answers. Read it to see which method pages each assignment leans on and how the pipeline-style workflow (load → EDA → encode/scale → split → tune via CV → evaluate → compare → interpret) recurs across all four (`phase0/exam_spring2025_notebook.md`).
+:::
+
+## Find a drill
+
+Pick a **type**, **family**, and **dataset** to narrow the list. "Any" leaves that filter open. The family colors match the rest of the site ([linear]{style="color:var(--family-linear);font-weight:600"} · [tree]{style="color:var(--family-tree);font-weight:600"} · [unsupervised]{style="color:var(--family-unsup);font-weight:600"} · [neural]{style="color:var(--family-neural);font-weight:600"} · [cross-cutting]{style="color:var(--family-cross);font-weight:600"}). A drill can belong to more than one family; it matches a family filter if *any* of its families fits. If the interactive panel doesn't load, the [full static table below](#sec-drill-table) lists the same items, tags, and links.
+
+```{ojs}
+//| echo: false
+//| label: drill-filter
+
+// --- family colors, read from the page CSS vars (fallbacks per theme/custom.scss) ---
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+famTree   = (getComputedStyle(document.documentElement).getPropertyValue('--family-tree').trim()   || "#06A77D")
+famUnsup  = (getComputedStyle(document.documentElement).getPropertyValue('--family-unsup').trim()  || "#F18F01")
+famNeural = (getComputedStyle(document.documentElement).getPropertyValue('--family-neural').trim() || "#7B2CBF")
+famCross  = (getComputedStyle(document.documentElement).getPropertyValue('--family-cross').trim()  || "#3D405B")
+
+famColor = ({linear: famLinear, tree: famTree, unsup: famUnsup, neural: famNeural, cross: famCross})
+famLabel = ({linear: "linear", tree: "tree", unsup: "unsupervised", neural: "neural", cross: "cross-cutting"})
+
+// --- drill items: every field traced to phase0 extracts (no network — inline, C8) ---
+//   type:     "exam" | "exercise"
+//   families: method-family tags (a drill can carry several)
+//   datasets: dataset(s) the drill's solution actually uses
+//   methods:  short list of methods exercised (for the row blurb)
+//   href:     relative link to the drill page (same folder)
+drills = [
+  {
+    n: "Exam", title: "Spring-2025 take-home exam", href: "exam_spring2025.qmd",
+    type: "exam",
+    families: ["linear", "unsup", "tree", "cross"],
+    datasets: ["Hitters", "WholesaleCustomers", "wdbc", "SimulatedData"],
+    methods: "OLS / Ridge / Lasso · PCA + K-means · Decision Tree / Random Forest / Gradient Boosting · CV tuning + classification challenge",
+    note: "4 assignments; catalogued as a lens, not solved"
+  },
+  {
+    n: "01", title: "Titanic preprocessing", href: "exercise_01_titanic_preprocessing.qmd",
+    type: "exercise",
+    families: ["cross"],
+    datasets: ["Titanic"],
+    methods: "Missing-value imputation, outlier handling, categorical encoding, conditional survival probabilities — preprocessing / EDA only, no estimator",
+    note: "foundational; no model fitted"
+  },
+  {
+    n: "02", title: "Spam filtering — naive Bayes", href: "exercise_02_spam_naive_bayes.qmd",
+    type: "exercise",
+    families: ["cross"],
+    datasets: ["SMSSpam"],
+    methods: "Multinomial naive Bayes from scratch + sklearn MultinomialNB, CountVectorizer bag-of-words",
+    note: "naive Bayes is drill-only (no method page); dataset [DATA-1] missing"
+  },
+  {
+    n: "03", title: "House prices", href: "exercise_03_house_prices.qmd",
+    type: "exercise",
+    families: ["linear"],
+    datasets: ["house-prices"],
+    methods: "OLS baseline, Ridge, Lasso; Lasso feature-selection (SelectFromModel); in/out-of-sample MSE & R²",
+    note: "the Assignment-1 regression skill"
+  },
+  {
+    n: "04", title: "MNIST digits", href: "exercise_04_mnist_digits.qmd",
+    type: "exercise",
+    families: ["linear", "tree"],
+    datasets: ["digits"],
+    methods: "Multinomial logistic baseline, kNN, Decision Tree, naive Bayes, SVM; manual max_depth / n_neighbors sweeps",
+    note: "multiclass model bake-off"
+  },
+  {
+    n: "05", title: "Model selection & evaluation", href: "exercise_05_model_selection.qmd",
+    type: "exercise",
+    families: ["cross"],
+    datasets: ["iris"],
+    methods: "cross_val_score, GridSearchCV, confusion matrices across kNN / Decision Tree / Logistic / SVM; ROC/PR discussion",
+    note: "the evaluation toolkit"
+  },
+  {
+    n: "06", title: "Customer segmentation", href: "exercise_06_customer_segmentation.qmd",
+    type: "exercise",
+    families: ["unsup"],
+    datasets: ["bank"],
+    methods: "K-means (elbow WCSS + silhouette), PCA 2D viz, StandardScaler + one-hot encoding",
+    note: "only unsupervised exercise; dataset [DATA-2] missing"
+  }
+]
+
+// --- filter option lists, derived from the data ---
+allDatasets = Array.from(new Set(drills.flatMap(d => d.datasets))).sort()
+allFamilies = ["linear", "tree", "unsup", "neural", "cross"]   // canonical order
+
+// --- the three Inputs ---
+viewof typeSel = Inputs.radio(
+  new Map([["Any type", "any"], ["Exam", "exam"], ["Exercise", "exercise"]]),
+  {label: "Type", value: "any"}
+)
+viewof familySel = Inputs.select(
+  new Map([["Any family", "any"], ...allFamilies.map(f => [famLabel[f], f])]),
+  {label: "Method family", value: "any"}
+)
+viewof datasetSel = Inputs.select(
+  ["any", ...allDatasets],
+  {label: "Dataset", value: "any", format: d => d === "any" ? "Any dataset" : d}
+)
+
+// --- reactive filtered list ---
+filtered = drills.filter(d =>
+  (typeSel    === "any" || d.type === typeSel) &&
+  (familySel  === "any" || d.families.includes(familySel)) &&
+  (datasetSel === "any" || d.datasets.includes(datasetSel))
+)
+
+// --- render: a count line + one card per matching drill ---
+html`<div style="margin:.4rem 0 .8rem;font-size:.9rem;color:#666">
+  Showing <strong>${filtered.length}</strong> of ${drills.length} drills.
+</div>`
+
+html`<div style="display:flex;flex-direction:column;gap:.55rem">
+  ${filtered.length === 0
+    ? html`<div style="padding:.8rem;border:1px dashed #ccc;border-radius:8px;color:#777">No drill matches that combination. Reset a filter to "Any".</div>`
+    : filtered.map(d => html`
+      <div style="border:1px solid #e3e3e3;border-left:4px solid ${famColor[d.families[0]]};border-radius:8px;padding:.6rem .8rem">
+        <div style="display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap">
+          <span style="font-size:.72rem;font-weight:700;color:#fff;background:${d.type === "exam" ? famCross : "#888"};border-radius:4px;padding:.05rem .4rem;text-transform:uppercase;letter-spacing:.03em">${d.type}</span>
+          <a href="${d.href}" style="font-weight:700;font-size:1.02rem;text-decoration:none">${d.n === "Exam" ? "" : d.n + " · "}${d.title}</a>
+        </div>
+        <div style="margin:.35rem 0 .3rem">
+          ${d.families.map(f => html`<span style="display:inline-block;font-size:.72rem;font-weight:600;color:#fff;background:${famColor[f]};border-radius:4px;padding:.05rem .45rem;margin-right:.3rem">${famLabel[f]}</span>`)}
+          ${d.datasets.map(ds => html`<span style="display:inline-block;font-size:.72rem;color:#555;background:#f0f0f2;border:1px solid #ddd;border-radius:4px;padding:.05rem .45rem;margin-right:.3rem">${ds}</span>`)}
+        </div>
+        <div style="font-size:.85rem;color:#444;line-height:1.4">${d.methods}</div>
+        ${d.note ? html`<div style="font-size:.78rem;color:#888;margin-top:.25rem;font-style:italic">${d.note}</div>` : ""}
+      </div>`)}
+</div>`
+```
+
+## All drills — static table {#sec-drill-table}
+
+The reliable fallback: the same seven drills with their type, families, dataset(s), and a direct link. Every entry traces to a `phase0` extract (the exam to `exam_spring2025_notebook.md`, each exercise to its `exercise_0N_*.md`).
+
+| Drill (page) | Type | Family | Dataset(s) | What it drills |
+|---|---|---|---|---|
+| [Spring-2025 exam](exam_spring2025.qmd) | exam | [linear]{style="color:var(--family-linear)"} · [unsup.]{style="color:var(--family-unsup)"} · [tree]{style="color:var(--family-tree)"} · [cross]{style="color:var(--family-cross)"} | Hitters, WholesaleCustomers, wdbc, SimulatedData | 4 assignments: OLS/Ridge/Lasso · PCA + K-means · DT/RF/Gradient Boosting · classification challenge (lens, not solved) |
+| [01 Titanic preprocessing](exercise_01_titanic_preprocessing.qmd) | exercise | [cross]{style="color:var(--family-cross)"} | Titanic | Missing values, outliers, encoding, conditional survival probs — preprocessing/EDA, no estimator |
+| [02 Spam — naive Bayes](exercise_02_spam_naive_bayes.qmd) | exercise | [cross]{style="color:var(--family-cross)"} | SMSSpam *([DATA-1] missing)* | Naive Bayes from scratch + `MultinomialNB`, bag-of-words |
+| [03 House prices](exercise_03_house_prices.qmd) | exercise | [linear]{style="color:var(--family-linear)"} | house-prices | OLS baseline, Ridge, Lasso; Lasso feature-selection; in/out-of-sample MSE & R² |
+| [04 MNIST digits](exercise_04_mnist_digits.qmd) | exercise | [linear]{style="color:var(--family-linear)"} · [tree]{style="color:var(--family-tree)"} | digits | Logistic baseline, kNN, Decision Tree, naive Bayes, SVM; manual tuning sweeps |
+| [05 Model selection](exercise_05_model_selection.qmd) | exercise | [cross]{style="color:var(--family-cross)"} | iris | `cross_val_score`, `GridSearchCV`, confusion matrices; ROC/PR discussion |
+| [06 Customer segmentation](exercise_06_customer_segmentation.qmd) | exercise | [unsup.]{style="color:var(--family-unsup)"} | bank *([DATA-2] missing)* | K-means (elbow + silhouette), PCA 2D viz, scaling + one-hot |
+
+: The seven drills — type, method family, dataset, and focus. Tags trace to the `phase0` extracts. {.striped tbl-colwidths="[24,9,17,22,28]"}
+
+::: {.callout-note}
+**Two drills depend on datasets not present in the repo.** Exercise 02 (spam) needs the **SMS Spam Collection** (`[DATA-1]` — the solution loads `data/smsspamcollection/SMSSpamCollection.csv`, absent locally) and exercise 06 (segmentation) needs the **UCI Bank Marketing** file (`[DATA-2]` — `data/bank_marketing_data_set/.../bank-additional-full.csv`, also absent). Both drill pages are written from the VHL solution extracts, but the code blocks won't *run* until those files are supplied. Everything else (Titanic, house-prices, and the sklearn built-ins `digits`/`iris`) is available or self-contained.
+:::
+
+## Where to go next
+
+- **In what order should I work these?** → the [exercise dependency map](../cross_method/exercise_dependency_map.qmd) gives the 1 → 6 study path and the prerequisite method pages for each.
+- **I want to drill toward the exam.** → start at the [Spring-2025 exam drill](exam_spring2025.qmd); each assignment names the method pages it tests.
+- **Where do methods compete on shared data?** → the [Showdowns](../cross_method/showdowns.qmd) page (e.g. OLS vs Ridge vs Lasso vs Tree vs RF on Hitters), and the [Decision Dashboard](../cross_method/decision_dashboard.qmd) for choosing among them.

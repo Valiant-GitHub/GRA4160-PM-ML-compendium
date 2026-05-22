@@ -3,6 +3,98 @@ title: "Drill: Recognising Handwritten Digits"
 body-classes: fam-cross
 ---
 
-::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.2** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+[**Cross-cutting drill**]{.fam-badge} · A multiclass image-classification bake-off on scikit-learn's `digits`: a multinomial [logistic regression](../methods/logistic.qmd) baseline, then a head-to-head against [Decision Tree](../methods/decision_trees.qmd), [kNN](../methods/knn.qmd), Naive Bayes, and SVM — with manual hyperparameter sweeps that make the [bias–variance](../methods/bias_variance.qmd) tradeoff visible.
+
+## What this exercise teaches
+
+How to set up and compare *several* classifiers on one multiclass dataset, reading accuracy as the single comparison metric, and how manually sweeping one hyperparameter (tree `max_depth`, kNN `n_neighbors`) trades bias against variance. It is the broadest model bake-off in the course and the only one that visualizes raw input images.
+
+## Setup
+
+- **Dataset:** scikit-learn's built-in `digits` — load with `from sklearn.datasets import load_digits; digits = load_digits()`. No external file (it ships with sklearn), so there is no path to get wrong.
+- **Shape:** `digits.data` is `(1797, 64)` — 1797 samples, each an 8×8 image flattened to 64 pixel-intensity features (values 0–16). `digits.target` is `(1797,)`, integers 0–9 (10 classes). `digits.images` keeps the original `(8, 8)` arrays for display *(VHL cell 2, stored output: `(1797, 64)` and `(1797,)`)*.
+- **Target:** the digit label 0–9 — a 10-class problem.
+- **Task:** load and inspect → display the first ten images → train/test split → multinomial logistic baseline → predict on one random test image → benchmark DT / kNN / NB / SVM → tune the tree and kNN.
+- **Expected output:** data and target shapes; a 1×10 grid of labelled images; logistic accuracy ≈ 0.975; a random test image with its predicted label; per-model accuracies; two small tuning tables.
+
+## Walkthrough
+
+**Display the images before modelling.** The canonical idiom builds a 1×10 strip and zips axes with images and labels *(VHL cell 10)*:
+
+```python
+_, axes = plt.subplots(nrows=1, ncols=10, figsize=(15, 3))
+for ax, image, label in zip(axes, digits.images, digits.target):
+    ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
+    ax.set_title("Label: %i" % label)
+```
+
+The key decision: plot from `digits.images` (the 8×8 form), but **train on the flattened 64-feature `X`** — sklearn estimators need a 2D `(n_samples, n_features)` matrix, not 3D image stacks.
+
+**Flatten, split, fit the baseline** *(VHL cell 12)*. The decisions that matter are the flatten/reshape, an 80/20 split with a fixed seed, and a generous `max_iter` so lbfgs actually converges on 64 features:
+
+```python
+X = digits.images.reshape((len(digits.images), -1))   # (1797, 64)
+y = digits.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+clf_lr = LogisticRegression(solver="lbfgs", max_iter=10000, random_state=42)  # multinomial is the lbfgs default
+clf_lr.fit(X_train, y_train)
+acc_lr = clf_lr.score(X_test, y_test)     # → 0.975  (VHL cell 12, stored output)
+```
+
+Multinomial logistic is the *default* for the `lbfgs` solver — you do not pass a `multi_class` argument. `C` is left at its default `1.0`.
+
+**Predict on one random image** *(VHL cells 15–16)*. `random.choice` picks a test index, the row is reshaped back to 8×8 for display and to `(1, -1)` for prediction:
+
+```python
+random_idx = random.choice(range(len(X_test)))
+clf_lr.predict(X_test[random_idx, :].reshape(1, -1))   # stored run: index 233, true 1, predicted 1
+```
+
+**The bake-off** *(VHL cells 19–25)* — every alternative uses the same `.fit` / `.score` API, with mostly default hyperparameters, so the comparison is apples-to-apples. Stored test accuracies:
+
+| Model | Constructor (exact) | Test accuracy *(VHL stored)* |
+|---|---|---|
+| Logistic Regression | `LogisticRegression(solver="lbfgs", max_iter=10000, random_state=42)` | 0.975 |
+| Decision Tree | `DecisionTreeClassifier(random_state=42)` | 0.8417 |
+| kNN | `KNeighborsClassifier(n_neighbors=5)` | 0.9861 |
+| Naive Bayes | `MultinomialNB()` (default `alpha=1.0`) | 0.9111 |
+| SVM | `SVC(random_state=42)` (default RBF kernel, `C=1.0`) | 0.9861 |
+
+The single tree is clearly weakest; kNN and SVM edge out the logistic baseline; `MultinomialNB` is in between. SVM has no dedicated method page in this course — it is used here only as a benchmark.
+
+**Manual tuning = the bias–variance lesson** *(VHL cells 28, 30)*. Rather than `GridSearchCV`, the solution loops with `set_params` and prints accuracy. For the **tree**, the grid is `max_depth ∈ {10, 20, None}` × `min_samples_split ∈ {2, 6, 10}`; the best stored combination is `max_depth=10, min_samples_split=6 → 0.8583` (still well below kNN/SVM — a single tree just isn't great on pixels). For **kNN**, `n_neighbors ∈ {3, 5, 7, 9, 11, 60}`:
+
+| `n_neighbors` | 3 | 5 | 7 | 9 | 11 | 60 |
+|---|---|---|---|---|---|---|
+| Accuracy *(VHL cell 30)* | 0.9833 | 0.9861 | **0.9889** | 0.9806 | 0.9833 | 0.9472 |
+
+`k=7` is best; `k=60` over-smooths and drops to 0.9472 — small `k` = low bias / high variance, large `k` = high bias, exactly the [bias–variance](../methods/bias_variance.qmd) story. See [kNN](../methods/knn.qmd) for why.
+
+::: {.callout-pitfall}
+**Three traps in this exercise.**
+
+- **Forgetting to flatten.** Passing 3D `digits.images` to `.fit` fails — sklearn needs `(n_samples, 64)`. Always `reshape` first.
+- **Logistic not converging.** With 64 features, lbfgs needs a high `max_iter` (the solution uses `10000`); too low and you get a convergence warning and a worse fit.
+- **`MultinomialNB` only works here by luck.** It assumes non-negative count-like features, which raw pixel intensities (0–16) happen to satisfy. On centered or negative features it is *wrong* — use `GaussianNB` instead. The notebook flags this in its Q&A.
+- **`random.choice` is unseeded** (VHL cell 15), so the displayed image differs every run — the stored output landed on index 233. Not a bug, but don't expect to reproduce that exact image.
 :::
+
+## Common pitfalls
+
+Beyond the three above: SVM is scale-sensitive — the raw 0–16 pixels work acceptably, but the notebook notes scaling could help, and on most real problems you would put a `StandardScaler` in front of `SVC`. And reporting only the single best accuracy hides the real lesson: the *shape* of the accuracy-vs-`k` curve (peak at 7, decline at 60) is what demonstrates bias–variance, not the winning number alone.
+
+## What this exercise teaches that the others don't
+
+It is the only **multiclass (10-class) image** problem and the **broadest model bake-off** — five classifier families on one dataset, plus manual hyperparameter sweeps. It is the only exercise that visualizes raw input images and does single-instance prediction, and it gives the cleanest hands-on intuition for bias–variance via `n_neighbors` and `max_depth`. (Exercise 05 covers the *systematic* version of this — `cross_val_score` and `GridSearchCV` — on Iris.)
+
+::: {.callout-bigpicture}
+The takeaway is methodological, not "which model wins": a unified `.fit`/`.score` API lets you swap learners freely, accuracy is the multiclass comparison metric, and one swept hyperparameter exposes the bias–variance dial. The accuracies here are dataset-specific; the *procedure* is what transfers.
+:::
+
+## Links
+
+- [Logistic Regression](../methods/logistic.qmd) — the multinomial baseline.
+- [k-Nearest Neighbors](../methods/knn.qmd) — and the `n_neighbors` bias–variance sweep.
+- [Decision Trees](../methods/decision_trees.qmd) — the `max_depth` / `min_samples_split` tuning.
+- [Bias–Variance](../methods/bias_variance.qmd) — the lens behind the kNN sweep.
+- For the *systematic* selection machinery (CV, grid search), see the [Model Selection drill](exercise_05_model_selection.qmd). SVM is used as a benchmark only and has no method page in this course.

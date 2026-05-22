@@ -3,6 +3,141 @@ title: "Drill: Spring 2025 Take-Home Exam"
 body-classes: fam-cross
 ---
 
+[**Cross-method**]{.fam-badge} · The real Spring-2025 take-home, used as a **lens**, not a content source. This page walks the four assignments and gives, for each exercise, the **decisions a strong answer makes** and the **key code idioms** — citing the method page that holds the full treatment. It is a **solution *sketch***, not a worked solution: the exam is graded on reasoning, so the sketch foregrounds *why* over *what to type*. Every claim traces to the exam notebook (`Lecture slides/Past exams/GRA4160_2025-05-26_kl_09_EP_2/Exam_GRA4160_spring2025.ipynb`, catalogued in `phase0/exam_spring2025_notebook.md`) or the grading guidelines (`phase0/guidelines_extract.md`). For the reusable recipes underneath these tasks see [workflow patterns](../big_picture/workflow_patterns.qmd); to pick a method from scratch see the [decision dashboard](../cross_method/decision_dashboard.qmd).
+
+## 1. The format, and the one rule that decides your grade
+
+**The exam at a glance** *(notebook header + instructions cell; `phase0/exam_spring2025_notebook.md`)*:
+
+- **30-hour take-home**, window `26.05.2025 09:00 – 27.05.2025 15:00`. Submit **one completed `.ipynb`** via **WISEflow** before the strict deadline; fill in your student ID in the designated cell.
+- **Four assignments** (regularized regression, clustering, ensembles, a classification challenge), each with multiple numbered exercises (1.1–1.7, 2.1–2.7, 3.1–3.8, 4.1–4.9). Each section ends with a *"List of resources used in this section"* markdown cell you must fill in.
+- **Weighting:** the 2024 guidelines state **each assignment counts 25%** of a **100-point** total (boundaries: F 0–40, E 41–60, D 61–70, C 71–80, B 81–90, A 91–100). The **2025 notebook itself states no point values or weights** — `[VERIFY: section weighting for Spring 2025]`; do not assume 2024's scheme transfers, but 25%-each is the working assumption.
+- **Question types observed:** code-write (load/preprocess/model/evaluate), code-analyze/compare (1.7, 3.6, 4.6–4.7), prose interpretation (EDA, PCs, clusters, feature importance, reflection), and "explain the concept" prompts (1.3 regularization, 2.7 cluster evaluation, 3.8 RF vs GB). **No true/false items and no algebraic-derivation items** appear — `[VERIFY: none present]`.
+
+::: {.callout-exam}
+**The cardinal grading rule: justification is graded as heavily as the choice.** Both guideline documents say it outright — *"justifications for your choices are equally important as the choices themselves"* (2023 rubric) — and the 2024 file rewards *"well-reasoned model choices including strengths and weaknesses,"* *"correct, well-explained cross-validation,"* and *"depth/critical analysis"* (`phase0/guidelines_extract.md`). Concretely, for every exercise:
+
+- **State the decision and the reason in the same breath.** "I standardize because the penalty in [§2 of regularization](../methods/regularization.qmd#sec-reg-when) is only meaningful on a common scale" beats a bare `StandardScaler()` call.
+- **Keep prose concise.** The notebook warns *"Long responses with irrelevant information can lead to a deduction of points,"* and the reflection answers (Assignment 4) are capped at **≤300 words each**. Put non-code answers in **markdown cells**.
+- **Comment your code** comprehensively; ensure every cell **executes error-free** and cells are **arranged logically**; label each cell with the exercise it answers.
+- **AI is allowed** *only if you can explain every line in your own words*, justify why you used it, and **list the tool in the resources cell**. Same for internet code snippets (list the URL). No help from other people.
+:::
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.1** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**Each assignment is one trip through the standard workflow.** Load → inspect → handle missing → encode/scale (decide *out loud* whether to scale) → split → baseline → tune via cross-validation → evaluate with the *right* metric → compare → interpret. The [decision dashboard](../cross_method/decision_dashboard.qmd) turns "what method?" into a few dropdowns, and [workflow patterns](../big_picture/workflow_patterns.qmd) gives the liftable code skeleton for each step. The four assignments below map to dashboard paths B+F+G, C+D, A+E+G, and A+E+F+G respectively.
+:::
+
+---
+
+## 2. Assignment 1 — Regularized regression on `Hitters.csv`
+
+**The data** *(notebook Assignment-1 markdown cell)*: MLB player statistics from the 1986 season plus career totals, with 1987 salaries. 322 players, 20 features (performance metrics + categorical `League` and `Division`); **target = annual salary, some missing — 263 observations remain after dropping missing salaries.** **Methods:** [OLS](../methods/ols.qmd) baseline → [Ridge/Lasso regularization](../methods/regularization.qmd) with CV-tuned `alpha`, read through the [bias–variance](../methods/bias_variance.qmd) lens; tuning is [cross-validation](../methods/cv_info_criteria.qmd).
+
+**The task, exercise by exercise** *(paraphrased from the notebook)*: **1.1** load, show head, report #obs/#features and types, check & handle missing values. **1.2** EDA — summary stats for numerics, category distributions, argue which variables likely predict salary. **1.3** explain regularization; the Ridge-vs-Lasso difference; when each is preferred. **1.4** encode categoricals, standardize numerics, train/test split. **1.5** train OLS, evaluate on test with regression metrics, comment. **1.6** train Ridge and Lasso, **CV on the training set for optimal `alpha`**, report alphas, evaluate on test. **1.7** compare OLS/Ridge/Lasso; examine coefficients; did Lasso zero any; interpret the bias–variance trade-off.
+
+### Solution sketch — the decisions and idioms
+
+- **1.1 Missing values.** Salary is the only column with NaNs; the canonical move is **drop the rows with missing target** (you cannot impute a label) → 263 rows. State it: imputing a *target* would fabricate the thing you are predicting. Idiom: `df.dropna(subset=['Salary'])`. See [reading the data](../big_picture/reading_the_data.qmd).
+- **1.2 EDA.** `df.describe()` for numerics, `value_counts()` for `League`/`Division`. Argue from the data: career-total and 1986-rate hitting features (`CRuns`, `CRBI`, `Hits`, `Years`) plausibly drive salary; flag that many career totals are **mutually correlated** — the exact condition that motivates Assignment 1's regularization.
+- **1.3 Concept (prose, concise).** Regularization = OLS + a penalty on coefficient size, trading a little bias for a large drop in variance. **Ridge (L2)** shrinks all coefficients smoothly toward zero, never *to* zero — the multicollinearity cure. **Lasso (L1)** has corner geometry, so it zeros some coefficients exactly → built-in feature selection. Prefer Ridge for many small correlated effects; Lasso when you want a sparse, interpretable model. Source the full statement to [regularization §1 + §6](../methods/regularization.qmd#sec-reg-diag).
+- **1.4 Prep.** One-hot encode `League`/`Division`/`NewLeague` (`pd.get_dummies(..., drop_first=True)`), **standardize numerics**, then split. **Put the `StandardScaler` inside a `Pipeline` so it is fit on training folds only** — see the idiom in [regularization §3](../methods/regularization.qmd#sec-reg-code).
+- **1.5 OLS baseline.** `LinearRegression().fit(...)`; report **test $R^2$ and RMSE** (and/or MSE/MAE). The graded observation is the **train–test gap**: OLS on this data fits *train $R^2 \approx 0.55$ but test $R^2 \approx 0.36$* (computed; see [OLS §Example 2](../methods/ols.qmd#sec-ols-hitters)) — a wide gap = variance from redundant career totals, which sets up Ridge/Lasso.
+- **1.6 Ridge + Lasso with CV `alpha`.** Use `RidgeCV(alphas=np.logspace(-3, 3, 100))` and `LassoCV(cv=10, max_iter=100000)`, **each wrapped in `make_pipeline(StandardScaler(), ...)`**; read the chosen value off `model[-1].alpha_`. This is the exact pattern in [regularization §3](../methods/regularization.qmd#sec-reg-code) and [§4 Example 2](../methods/regularization.qmd#sec-reg-hitters). Report both alphas; evaluate with the *same* metrics as 1.5.
+- **1.7 Compare + interpret.** Both regularized models nudge **train $R^2$ down slightly while raising test $R^2$** — the train–test gap narrows (the bias–variance trade-off made concrete). Inspect `.coef_`: Ridge shrinks toward but not to zero; **Lasso zeros a couple of correlated career totals** (feature selection). Tie it together: *more bias, less variance, better generalization* — cite [bias–variance](../methods/bias_variance.qmd). For the head-to-head numbers on this dataset see the [regression showdown](../cross_method/showdowns.qmd).
+
+::: {.callout-exam}
+**Where the points are.** (i) Justify the missing-value strategy (drop, because it is the *target*). (ii) Tune `alpha` *by CV on the training set* and **report the values** — guidelines reward "correct, well-explained cross-validation." (iii) Connect the narrowed train–test gap to **reduced variance** in words. (iv) Read off which coefficients Lasso zeroed and say what that implies about feature importance. The interpretation in 1.7 carries as much weight as the code in 1.5–1.6.
+:::
+
+::: {.callout-pitfall}
+**Three traps in Assignment 1.** (i) **`alpha` is not $\alpha$** — in scikit-learn the argument named `alpha` is the penalty strength $\lambda$; the Elastic-Net mixing ratio is `l1_ratio`. Confusing them silently fits the wrong model ([regularization §2 pitfall](../methods/regularization.qmd#sec-reg-when)). (ii) **Scaling before, not inside, CV** leaks test information across folds — keep the scaler in the pipeline. (iii) **Reading raw-scale penalized coefficients as effect sizes** — they are comparable *only* because you standardized; never compare a penalized coefficient on an unscaled feature.
+:::
+
+---
+
+## 3. Assignment 2 — Clustering / unsupervised on `WholesaleCustomers.csv`
+
+**The data** *(notebook Assignment-2 markdown cell)*: annual spending of **440 wholesale clients** across six product categories — Fresh, Milk, Grocery, Frozen, Detergents_Paper, Delicassen — plus two categorical attributes, `Region` (1/2/3) and `Channel` (1 = Horeca, 2 = Retail). **Methods:** scaling rationale → [PCA](../methods/pca.qmd) to ~90% variance → [K-Means](../methods/kmeans.qmd) with elbow/silhouette → cluster profiling and interpretation.
+
+**The task** *(paraphrased)*: **2.1** load, inspect, report #obs/#features, identify continuous vs categorical, check missing (none expected). **2.2** summary stats for the six spending features; which categories have the highest mean spend and highest variability; **decide whether scaling is necessary and explain.** **2.3** PCA on the six spending features (scale first if you deemed it necessary); how many PCs reach ~90% variance; **interpret the first two PCs** in terms of original features. **2.4** K-Means; use the **elbow method and/or silhouette score** to choose *k*. **2.5** run K-Means with chosen *k*; describe cluster characteristics (mean spend per category), report #customers per cluster. **2.6** relate clusters to `Region`/`Channel` labels (a validation aid, *not* used in clustering). **2.7** discuss how to evaluate clustering quality and the challenge of doing so without ground truth; judge whether your clusters are meaningful.
+
+### Solution sketch — the decisions and idioms
+
+- **2.1 Inspect.** Six spending columns are continuous; `Region`/`Channel` are categorical *codes* (not to be averaged). `df.isnull().sum()` confirms no missing values — say so, do not silently skip.
+- **2.2 Scaling decision (graded prose).** The spending features span very different magnitudes and variances (Fresh and Grocery dwarf Delicassen). Both PCA and K-Means are **variance/distance based**, so the large-spend categories would dominate unscaled → **standardize the six spending features.** Justify it; do not assume it. See [PCA §Example 2 (wine)](../methods/pca.qmd#sec-pca-wine), where scaling flips a mediocre PCA into an excellent one.
+- **2.3 PCA.** `PCA().fit(X_scaled)`, then read `np.cumsum(pca.explained_variance_ratio_)` and pick the smallest #components crossing **0.90**. Interpret PC1/PC2 from `pca.components_` (loadings): typically PC1 = an overall "grocery/detergents/milk vs fresh/frozen" retail-vs-Horeca axis. Idiom and reading in [PCA §3](../methods/pca.qmd#sec-pca-code).
+- **2.4 Choose *k*.** Sweep `k = 2..10`: plot **inertia** (`KMeans.inertia_`) for the elbow and **`silhouette_score`** for cohesion/separation. Report what each suggests; they need not agree — say which you trust and why. Idiom in [K-Means §3](../methods/kmeans.qmd#sec-km-code); the full scale → PCA → K-Means pipeline is [K-Means §Example 3](../methods/kmeans.qmd#sec-km-wholesale).
+- **2.5 Fit + profile.** `KMeans(n_clusters=k, n_init=10, random_state=...)`; group by `labels_` and report **mean spend per category per cluster** and the **count per cluster**. Characterize in plain words ("high Fresh / low Grocery = Horeca-like").
+- **2.6 Validate against labels.** Cross-tabulate cluster vs `Channel` and vs `Region` (`pd.crosstab`). Strong cluster–`Channel` alignment is a sanity check that the unsupervised structure recovers a real distinction; weak `Region` alignment is also informative. Be explicit that labels were **withheld from clustering**.
+- **2.7 Evaluate without ground truth (concept).** Internal metrics — **silhouette**, **Davies–Bouldin**, inertia/elbow — measure cohesion/separation; **stability** under re-seeding and **interpretability** of profiles matter too. The honest point: with no labels, "meaningful" is a judgement about whether profiles are *actionable*, not a single number. Source to [K-Means §6 diagnostics](../methods/kmeans.qmd#sec-km-diag).
+
+::: {.callout-exam}
+**Where the points are.** (i) The **scaling decision is itself graded** (2.2) — argue it from the value ranges, do not just call `StandardScaler`. (ii) Justify the **#components** by the 90% threshold and **interpret PC1/PC2 from the loadings** (not just "PC1 explains X%"). (iii) Show *both* the elbow and silhouette and **commit to a *k* with a reason**. (iv) 2.6 and 2.7 are pure interpretation — concise, concrete cluster stories beat metric dumps.
+:::
+
+::: {.callout-pitfall}
+**Clustering traps.** (i) **Clustering on raw spending** lets Fresh/Grocery swamp everything — scale first. (ii) **Feeding `Region`/`Channel` codes into K-Means** treats categorical codes as distances and double-counts what 2.6 is meant to *validate against* — cluster on the six spending features only. (iii) **Treating the elbow as exact** — it is a heuristic; let silhouette and interpretability break ties. (iv) **`n_init=1`** makes K-Means seed-dependent; use `n_init=10` (or the default) for stable centroids.
+:::
+
+---
+
+## 4. Assignment 3 — Ensemble methods on `wdbc.data` (breast cancer)
+
+**The data** *(notebook Assignment-3 markdown cell + `wdbc.names`)*: Wisconsin Diagnostic Breast Cancer — **569 instances, 30 real-valued features** (ten nucleus measurements × {mean, SE, worst}), target **diagnosis M (malignant) / B (benign)**, class split **357 B / 212 M**, no missing values. **Methods:** [decision tree](../methods/decision_trees.qmd) → [Random Forest](../methods/random_forests.qmd) → gradient boosting ([ensembles](../methods/ensembles.qmd)), all CV-tuned, with feature importance and an RF-vs-GB construction discussion; framed by [bias–variance](../methods/bias_variance.qmd).
+
+**The task** *(paraphrased)*: **3.1** load by combining `wdbc.data` + `wdbc.names`; report #obs/#features, the feature names, what the target is; **check class balance.** **3.2** train/test split with **class proportion roughly maintained (stratified).** **3.3** decision tree; **CV on the training set to choose a complexity constraint**; refit on full train; report test performance. **3.4** Random Forest; evaluate; **compare to the tree.** **3.5** Gradient Boosting; may tune #estimators / learning rate via CV; evaluate. **3.6** compare all three on the test set — which is best, by how much — **via the bias–variance trade-off** and the advantage of ensembles over a single tree. **3.7** identify the **most important features for the Random Forest**; list the top ones and interpret. **3.8** explain how **Random Forests vs Gradient Boosting are constructed**, and why ensembles may beat a single tree.
+
+### Solution sketch — the decisions and idioms
+
+- **3.1 Load + balance.** `wdbc.data` is headerless CSV; supply column names from `wdbc.names` (`id`, `diagnosis`, then 30 features). Map target `{'M':1,'B':0}`. Report **357 B / 212 M** — mildly imbalanced (~37% malignant), so prefer **precision/recall/F1**, not accuracy alone (a malignant miss is the costly error). See [decision trees §Example 3](../methods/decision_trees.qmd#sec-tree-wdbc).
+- **3.2 Stratified split.** `train_test_split(..., stratify=y, random_state=1)` preserves the class ratio in both sets — the exercise asks for this explicitly.
+- **3.3 Tree + CV complexity.** Tune a complexity constraint (`max_depth` and/or `min_samples_leaf`, or `ccp_alpha`) with `GridSearchCV(cv=5)` on the *training* set, refit on full train, evaluate on test. This single tree is the **baseline the ensembles must beat** ([decision trees §3](../methods/decision_trees.qmd#sec-tree-code)).
+- **3.4 Random Forest.** `RandomForestClassifier(n_estimators=...)`; trees are scale-invariant so **no scaling needed.** Expect it to **beat the single tree** by averaging decorrelated trees (variance reduction). Compare on the *same* metrics ([random forests §3](../methods/random_forests.qmd#sec-rf-code)).
+- **3.5 Gradient Boosting.** `GradientBoostingClassifier`; CV-tune `n_estimators` and `learning_rate` (the two trade off — more trees need a smaller rate). Evaluate on test ([ensembles §3](../methods/ensembles.qmd#sec-ens-code)).
+- **3.6 Compare via bias–variance.** Order the three on test F1/accuracy and **quantify the gap** ("by how much"). The narrative: a single deep tree is **low bias / high variance** (overfits); RF cuts variance by **averaging decorrelated trees**; boosting cuts **bias** by sequentially fitting residuals. On WDBC the ensembles typically edge out the tuned tree but margins can be small — say so honestly. Cite [bias–variance §Past-exam lens](../methods/bias_variance.qmd#sec-bv-exam).
+- **3.7 Feature importance.** `rf.feature_importances_` sorted descending; the "worst" perimeter/radius/concave-points/area features usually dominate. Interpret: larger, more irregular nuclei → malignant. Idiom in [random forests §Example 2](../methods/random_forests.qmd#sec-rf-importance).
+- **3.8 Construction (concept, concise).** **RF = bagging + random feature subsets:** many *independent*, deep trees on bootstrap samples, each split choosing from a random √p feature subset, then **majority vote** — parallel, variance-reducing. **Gradient Boosting = sequential:** each shallow tree fits the **residual/gradient** of the running ensemble, additively correcting errors — bias-reducing. Ensembles beat a single tree because **averaging/correcting many weak learners reduces variance (RF) or bias (GB)** beyond what one tree achieves. Source to [ensembles §6](../methods/ensembles.qmd#sec-ens-diag) and [random forests §6](../methods/random_forests.qmd#sec-rf-diag).
+
+::: {.callout-exam}
+**Where the points are.** (i) **Stratify** the split and *say why* (class balance). (ii) **CV-tune the tree's complexity** — an untuned default tree forfeits the "correct, well-explained cross-validation" points. (iii) 3.6 must be a **quantified comparison framed in bias–variance terms**, not just "RF won." (iv) 3.7 interpretation and 3.8 construction-difference are conceptual deliverables — keep them tight and correct (parallel-bagging vs sequential-boosting is the crux).
+:::
+
+::: {.callout-pitfall}
+**Ensemble traps.** (i) **Accuracy on the imbalanced target** — 63% benign means a do-nothing classifier scores 63%; report precision/recall/F1 and the confusion matrix, and watch the *malignant* recall. (ii) **Scaling tree models** — pointless; trees split on thresholds, scale-invariant (only flag if you reused a scaled matrix from elsewhere). (iii) **Tuning on the test set** — choose all hyperparameters by CV on train; the test set is touched once. (iv) **Reading feature importances as causal** — they are split-utility, correlated-feature-sensitive; interpret with care.
+:::
+
+---
+
+## 5. Assignment 4 — Binary-classification challenge on `SimulatedData.csv`
+
+**The data** *(notebook Assignment-4 markdown cell)*: a **simulated** binary-classification dataset — multiple features, a binary target, a **non-trivial relationship with non-linear effects and noise.** A separate **hold-out test set in the same format is withheld for grading** — *the grader runs your submitted notebook on it.* `[VERIFY: exact #features/#instances/class split]` — not stated in the notebook by design (you compute them in 4.1). **Methods:** EDA → preprocessing decisions → **≥2 tuned classifiers** (e.g. [logistic regression](../methods/logistic.qmd) / [tree](../methods/decision_trees.qmd) baseline + [random forest](../methods/random_forests.qmd) / [gradient boosting](../methods/ensembles.qmd) / SVM / NN) → classification metrics → final-model selection → a **generalizable predict pipeline.**
+
+**The task** *(paraphrased)*: **4.1** load, examine structure, #features and types, #instances, **class distribution (% class 1 vs 0).** **4.2** EDA wrt target — per-feature distributions (optionally split by class), pairwise relationships, target proportion within categorical levels; summarize patterns (expect non-linearity). **4.3** encode categoricals, **scale if necessary** — discuss: trees need no scaling, distance/gradient models (k-NN, logistic) do. **4.4** train **at least two different classifiers**; **justify the choices** (different inductive biases). **4.5** **hyperparameter tuning** per model (CV or a hold-out validation subset); describe process and criteria. **4.6** evaluate with **accuracy, precision, recall, F1** (look beyond accuracy if imbalanced); use CV/validation to estimate unseen performance; identify the best. **4.7** compare; **choose a final model to deploy and why** (performance, complexity, interpretability); what this implies about the task. **4.8** **demonstrate predicting on new data** — simulate a `SimulatedData_test.csv`, apply the *same* preprocessing, `model.predict`; code must be **generalizable** (the grader runs it on the hidden set). **4.9** **reflect** (≤300 words) on what made it hard, how you addressed it, how you'd improve with more time/data.
+
+### Solution sketch — the decisions and idioms
+
+- **4.1 Structure + balance.** `df.info()`, `df.shape`, `y.value_counts(normalize=True)`. **Compute the class split** and let it set your metric choice (4.6) and whether to stratify. Do not assume balance.
+- **4.2 EDA for non-linearity.** Histograms/KDE per feature **split by class**; a correlation heatmap; pairwise scatter for promising pairs. The brief warns the data is **non-linear** — note features that separate only *jointly*, which is the cue that a flexible model will beat a linear one.
+- **4.3 Preprocessing, justified.** Encode categoricals (`get_dummies`). **Scale only the models that need it:** put `StandardScaler` in the **pipeline for logistic/k-NN/SVM**, and *omit* it for tree/RF/GB. Say this explicitly — the exercise asks for the rationale. See [Pattern A in workflow patterns](../big_picture/workflow_patterns.qmd#sec-wp-a).
+- **4.4 Two contrasting classifiers.** Pick a **simple, interpretable baseline** (logistic regression or a single tree) **and a flexible non-linear model** (random forest or gradient boosting). Justify by **inductive bias**: logistic = linear boundary (baseline to beat); RF/GB = non-linear interactions (suited to a simulated non-linear DGP). Use the [decision dashboard](../cross_method/decision_dashboard.qmd) to defend the pairing.
+- **4.5 Tune each.** `GridSearchCV`/`RandomizedSearchCV` (`cv=5`, scoring `f1` or `roc_auc`) **on the training set only**; describe the grid and the selection criterion. Each estimator that needs scaling is tuned **inside a `Pipeline`** so the scaler re-fits per fold.
+- **4.6 Metrics.** Report **accuracy, precision, recall, F1** (add ROC-AUC); if imbalanced, **lead with F1/recall, not accuracy.** Use the **cross-validated** score as your unbiased estimate of unseen performance — this is what predicts how you'll do on the hidden test set.
+- **4.7 Final model.** Choose on the CV metric **plus** complexity/interpretability; if the flexible model clearly beats the linear baseline, that *itself* is the finding: **the decision boundary is genuinely non-linear.** State the trade-off you accepted.
+- **4.8 Generalizable predict pipeline (the make-or-break exercise).** Wrap **all preprocessing + the final estimator in one `Pipeline`** (or `ColumnTransformer` + estimator), fit once, and define a path that loads a same-format CSV and calls `pipeline.predict(new_X)`. Apply the *exact* transformations from 4.3 — **no separate, hand-applied scaling that won't run on the grader's file.** This is the most common point-loser; the grader executes your notebook on unseen data, so the pipeline must run end-to-end with no manual steps. See [Pattern G in workflow patterns](../big_picture/workflow_patterns.qmd#sec-wp-g).
+- **4.9 Reflection (≤300 words).** Name the concrete difficulties — **non-linear feature interactions, irrelevant/noise features, possible imbalance** — how you handled each (flexible model, CV, F1), and improvements (more data, feature engineering, stronger tuning, ensembling). Concise and specific; verbosity is penalized.
+
+::: {.callout-exam}
+**Where the points are.** (i) **Compute the class split** and let it drive metric choice. (ii) **Justify two *contrasting* models** by inductive bias, not "I tried two." (iii) **Tune by CV and report the criterion** — this is your honest unseen-performance estimate. (iv) **4.8 must actually generalize** — a self-contained `Pipeline` that the grader can run on the hidden test set; this exercise rewards engineering discipline as much as modelling. (v) Reflection (4.9) is graded for *insight*, capped at 300 words.
+:::
+
+::: {.callout-pitfall}
+**Challenge traps.** (i) **Optimizing accuracy on an imbalanced split** — a constant predictor can look strong; use F1/recall and the confusion matrix. (ii) **Manual preprocessing outside the pipeline** — scaling/encoding done by hand won't replay on the grader's data → broken predictions in 4.8. **Everything in the `Pipeline`.** (iii) **Tuning or selecting on the test/validation fold you then report** — keep selection and final estimate separate (nested or held-out). (iv) **Fitting the scaler on the full dataset before CV** — leakage; fit inside the pipeline, per fold. (v) **A linear-only model on a non-linear DGP** — the brief says the relationship is non-linear; a logistic baseline alone will underfit, so pair it with a flexible learner.
+:::
+
+---
+
+## 6. The through-line
+
+::: {.callout-bigpicture}
+**Four datasets, one graded skill.** Salaries, customers, tumours, a simulated puzzle — but every assignment rewards the same thing: **a decision made out loud, defended, executed correctly, and interpreted.** Scale-or-not, drop-or-impute, which `alpha`, which *k*, which metric, which final model — each is a fork, and the points live in the *because*. Code that runs is the floor; reasoning that holds is the grade. For the reusable recipes see [workflow patterns](../big_picture/workflow_patterns.qmd); to choose a method cold see the [decision dashboard](../cross_method/decision_dashboard.qmd); for head-to-head numbers on Hitters and the WDBC family see the [showdowns](../cross_method/showdowns.qmd).
 :::

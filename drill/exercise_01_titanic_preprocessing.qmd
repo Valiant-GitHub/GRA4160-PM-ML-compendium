@@ -3,6 +3,72 @@ title: "Drill: Titanic Preprocessing"
 body-classes: fam-cross
 ---
 
+[**Foundations / preprocessing drill**]{.fam-badge} · The one exercise that is *pure* data preparation — no model is fitted. Load the raw Titanic table, fix missing values, tame outliers, encode the categoricals, and read survival straight off the data as conditional probabilities.
+
+## 1. What this exercise teaches
+
+Hands-on preprocessing and EDA on a real, messy tabular dataset: load and inspect, impute missing values, treat outliers (focus on `Fare`), encode `Sex` and `Embarked`, and compute survival probabilities by group. It is the drill that builds the habits every later modelling exercise *assumes* — the data-cleaning that happens before any estimator.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.2** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**This is the only no-model exercise.** Every other drill starts from cleaned data or a sklearn toy dataset. Here the whole task *is* the cleaning. Treat it as the canonical worked example of [Pattern F — Missing data handling](../big_picture/workflow_patterns.qmd#sec-wp-f) and the diagnostics in [Reading the Data](../big_picture/reading_the_data.qmd).
 :::
+
+## 2. Setup
+
+- **Dataset:** the Kaggle Titanic training set, `train.csv` (891 passengers). Locally it lives at `Data/Titanic data/train.csv` (note the space in the folder name), so a loader call is `pd.read_csv("Data/Titanic data/train.csv")`. The stub itself names only the bare filename `train.csv` and gives no loader.
+- **Columns referenced by the prompt:** `Fare`, `Sex`, `Embarked`, `Survived` (the 0/1 target), and passenger class. The actual CSV header is `PassengerId, Survived, Pclass, Name, Sex, Age, SibSp, Parch, Ticket, Fare, Cabin, Embarked` (verified against the local file).
+- **Target (implied):** `Survived` (0/1) — the survival-probability questions are means of this column.
+- **Task:** preprocessing + descriptive analysis. No train/test split, no estimator, no fit.
+- **Expected output:** a cleaned DataFrame, a stated imputation/outlier strategy, encoded categoricals, and computed survival probabilities by class and by sex, plus a short written discussion of what passenger class represents and why preprocessing matters.
+
+::: {.callout-pitfall}
+**The stub writes `pclass` (lowercase); the real column is `Pclass`.** The Kaggle CSV capitalizes `Pclass`, `Survived`, `Sex`, `Embarked`, and `Fare`. Code that hard-codes the lowercase `pclass` from the prompt raises `KeyError`. Always check the header with `df.columns` before indexing. (Verified against the local `train.csv` header.)
+:::
+
+## 3. Walkthrough
+
+There is **no `_VHL` solution notebook for this topic** — the stub is a single markdown cell with a seven-part prompt and no code. The walkthrough below is therefore a sketch of the standard decisions the prompt asks for, anchored to the [Reading the Data](../big_picture/reading_the_data.qmd) diagnostics rather than to stored solution cells. No numbers or outputs are reproduced because none exist to cite.
+
+**Decision 1 — load and inspect (prompt part 1).** `df.head()`, `df.info()`, `df.describe()`. The point of `info()` here is to surface the missingness: it prints non-null counts per column, which is how you discover that `Age`, `Cabin`, and `Embarked` are incomplete — see [Diagnostic 2 — Missingness](../big_picture/reading_the_data.qmd#sec-rd-missing).
+
+**Decision 2 — impute missing values (prompt part 2).** Three columns, three different calls:
+
+- `Age` (~177 missing) — fill with the **median**, not the mean, because the age distribution is right-skewed and the median is robust to that skew: `df["Age"].fillna(df["Age"].median())`.
+- `Embarked` (a couple missing) — fill with the **mode** (most common port): `df["Embarked"].fillna(df["Embarked"].mode()[0])`.
+- `Cabin` (~77% missing) — too sparse to impute; the usual move is to **drop the column** rather than invent values.
+
+The key *idiom* is choosing the statistic to match the column's type and shape (median for skewed numeric, mode for categorical) — not a single blanket rule.
+
+**Decision 3 — outliers on `Fare` (prompt part 3).** `Fare` is heavily right-skewed (a handful of very high first-class fares). Inspect with `df["Fare"].describe()` or a boxplot, then decide: cap at a high quantile (winsorize) *or* leave them, but do **not** blindly delete — the extreme fares are legitimate first-class tickets that carry real survival signal. The decision and its justification are what the prompt grades.
+
+**Decision 4 — encode categoricals (prompt part 4).** `Sex` is binary → label-encode to 0/1 (`df["Sex"].map({"male": 0, "female": 1})`). `Embarked` is nominal with three levels → one-hot encode (`pd.get_dummies(df, columns=["Embarked"])`), which produces the C/Q/S indicator columns. The idiom worth internalizing: **binary → label, multi-level nominal → one-hot**.
+
+**Decision 5 — survival probabilities (prompt parts 5–6).** Because `Survived` is 0/1, a survival *probability* is just its group mean:
+
+```python
+df.groupby("Pclass")["Survived"].mean()    # survival rate by class
+df.groupby("Sex")["Survived"].mean()        # survival rate male vs female
+```
+
+This is the conceptual heart of the exercise: a conditional probability `P(Survived | group)` read directly off the data as a `groupby(...).mean()`. The written parts (6–7) then ask what `Pclass` represents (a socio-economic proxy: 1st/2nd/3rd) and why this cleaning matters before any model.
+
+## 4. Common pitfalls
+
+::: {.callout-pitfall}
+- **Mean vs median for `Age`.** Using the mean on a skewed column pulls imputed values toward the long tail; median is the safer default. (See [Diagnostic 2](../big_picture/reading_the_data.qmd#sec-rd-missing).)
+- **Deleting `Fare` outliers wholesale** discards real first-class passengers and biases survival rates downward for that group.
+- **Lowercase `pclass`** — the prompt's spelling does not match the CSV's `Pclass`; will `KeyError`.
+- **Forgetting that `Survived` is binary** — "survival probability" *is* `mean()` of the 0/1 column; computing a count or a sum instead answers a different question.
+- **One-hot vs label for `Embarked`** — label-encoding a 3-level nominal (S=0, C=1, Q=2) invents a false ordering; use one-hot. `Sex` is the exception because it is binary.
+- **Imputing `Cabin`** — at ~77% missing there is nothing reliable to impute; drop it.
+:::
+
+## 5. What this exercise teaches that the others don't
+
+It is the **only drill focused purely on raw-data preprocessing and EDA** — missing-value imputation, outlier treatment, and categorical encoding — with **no estimator at all**. It is also the only one that asks you to compute **conditional probabilities directly from a real tabular dataset** as descriptive statistics (`groupby().mean()` on a 0/1 target), rather than getting them out of a fitted classifier. Every modelling drill silently assumes these steps are already done; this one makes them the whole job.
+
+## 6. Links
+
+- [Reading the Data](../big_picture/reading_the_data.qmd) — the six diagnostics (types, missingness, target balance, scale, correlation, linearity) this drill exercises.
+- [Workflow Pattern F — Missing data handling](../big_picture/workflow_patterns.qmd#sec-wp-f) — the reusable recipe this exercise is a worked instance of.
+- Downstream classifiers that consume cleaned data like this: [Logistic Regression](../methods/logistic.qmd) (the course fits logistic regression on Titanic in notebook 06) and [Random Forests](../methods/random_forests.qmd) (notebook 13, also Titanic).

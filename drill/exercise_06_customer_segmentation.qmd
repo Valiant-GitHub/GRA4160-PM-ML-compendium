@@ -3,6 +3,106 @@ title: "Drill: Customer Segmentation"
 body-classes: fam-cross
 ---
 
-::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.2** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+[**Cross-cutting drill**]{.fam-badge} · The course's only end-to-end **unsupervised** exercise: scale + one-hot a mixed customer table, choose the cluster count by elbow (WCSS) and silhouette, run [K-Means](../methods/kmeans.qmd), visualize the result in 2D with [PCA](../methods/pca.qmd), then interpret the segments against a held-aside label.
+
+## What this exercise teaches
+
+The full unsupervised-segmentation pipeline: preprocess mixed numeric/categorical data, pick `k` *without* labels via elbow + silhouette, cluster with K-Means, project to 2D with PCA for a sanity-check picture, and interpret each cluster by its feature profile and subscription rate. It is the only exercise where there is no target to train against — `y` is set aside and used only afterwards to make sense of the clusters.
+
+::: {.callout-pitfall}
+**Dataset not available locally [DATA-2].** The solution loads the UCI **Bank Marketing** file `bank-additional-full.csv` (41,188 rows, 20 inputs) from `../../data/bank_marketing_data_set/bank-additional/bank-additional-full.csv`. That file is **not present** in this repo's `data/` folder (only Titanic, house-prices, and seeds are), and the VHL notebook export **has no saved cell outputs**. So this page documents the *idioms and decisions* from the notebook but **does not reproduce any numbers** — no shapes, WCSS, silhouette values, or cluster stats are quoted, because none exist to cite and none will be fabricated. To run it yourself, download the dataset from <https://archive.ics.uci.edu/ml/datasets/Bank+Marketing> and fix the path. For *worked, runnable* K-Means and PCA examples on present data, use the method pages linked below (their examples use Iris / seeds / Wholesale Customers).
 :::
+
+## Setup
+
+- **Dataset (intended):** UCI Bank Marketing — Portuguese bank direct-marketing campaigns. The full variant `bank-additional-full.csv` has 41,188 rows and 20 input columns; the CSV uses a **semicolon separator** and the literal string `'unknown'` for missing values.
+- **Loader (VHL cell 2):** `pd.read_csv('../../data/bank_marketing_data_set/bank-additional/bank-additional-full.csv', sep=';')`.
+- **Numeric columns (exact, VHL cell 6):** `age, duration, campaign, pdays, previous, emp.var.rate, cons.price.idx, cons.conf.idx, euribor3m, nr.employed`. All other columns (`job, marital, education, default, housing, loan, contact, month, day_of_week, poutcome`) are categorical.
+- **Target (held aside, not used for clustering):** `y` — binary `yes`/`no`, whether the client subscribed to a term deposit.
+- **Task:** load + preprocess → visualize → K-Means with elbow/silhouette → PCA 2D plot → interpret clusters.
+- **Expected output:** preprocessed feature shape; numeric histograms + a correlation heatmap; WCSS and silhouette per `k` (2–10); a chosen `k` (the notebook picks 3) with labels; a PCA scatter coloured by cluster; per-cluster numeric summaries and target distributions. *(All unsaved in this export — see the callout above.)*
+
+## Walkthrough
+
+**Step 1 — load and clean missing values** *(VHL cells 2, 4)*. Two decisions are easy to miss: the `sep=';'` and treating `'unknown'` as missing before dropping:
+
+```python
+df = pd.read_csv('.../bank-additional-full.csv', sep=';')
+df.replace('unknown', np.nan, inplace=True)
+df.dropna(inplace=True)                  # drops every row with any 'unknown'
+```
+
+**Step 2 — scale numerics, one-hot categoricals, drop the label** *(VHL cell 6)*. The target is separated first; numerics are standardized; categoricals are one-hot encoded with `drop_first=True`:
+
+```python
+target = df['y']
+df_features = df.drop('y', axis=1)
+categorical_cols = [c for c in df_features.columns if c not in numeric_cols]
+df_features[numeric_cols] = StandardScaler().fit_transform(df_features[numeric_cols])
+X = pd.get_dummies(df_features, columns=categorical_cols, drop_first=True)
+```
+
+The decisive idea: K-Means uses **Euclidean distance**, so features must be on comparable scales — hence `StandardScaler` on the numerics — and categoricals must become numbers, hence `get_dummies`. Dropping `y` is mandatory: clustering is unsupervised.
+
+**Step 3 — pick `k` by elbow + silhouette, then cluster** *(VHL cell 10)*. Sweep `k` from 2 to 10, collecting inertia (WCSS) and silhouette for each, then commit to a chosen `k`:
+
+```python
+for k in range(2, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X)
+    wcss.append(kmeans.inertia_)                       # within-cluster sum of squares
+    silhouette_scores.append(silhouette_score(X, kmeans.labels_))
+# ...inspect the two curves...
+optimal_k = 3
+cluster_labels = KMeans(n_clusters=optimal_k, random_state=42).fit_predict(X)
+```
+
+Choosing `k=3` is a **judgment call** read off the elbow and silhouette plots — not an automatic result. See [K-Means](../methods/kmeans.qmd) for how to read both diagnostics.
+
+**Step 4 — PCA to 2D for visualization** *(VHL cell 12)*. PCA here is purely for *plotting* the high-dimensional clusters, not for modelling:
+
+```python
+X_pca = PCA(n_components=2, random_state=42).fit_transform(X)
+sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=cluster_labels, palette='Set1', s=50)
+```
+
+Some overlap in 2D is expected — two components rarely capture all the structure of a wide one-hot feature space. See [PCA](../methods/pca.qmd).
+
+**Step 5 — interpret clusters against the held-aside `y`** *(VHL cell 14)*. Re-attach the labels and profile each cluster, including its subscription rate:
+
+```python
+df['cluster'] = cluster_labels
+for c in range(optimal_k):
+    display(df[df['cluster'] == c][numeric_cols].describe())
+    print(df[df['cluster'] == c]['y'].value_counts())   # which segments subscribe
+```
+
+This is where `y` finally enters — as a *post-hoc* interpretation aid, asking which segment is most likely to subscribe, never as a clustering input.
+
+::: {.callout-pitfall}
+**The traps that bite in unsupervised work.**
+
+- **Wrong separator or unhandled `'unknown'`.** Forget `sep=';'` and the file loads as one column; forget the `'unknown'`→`NaN` step and "missing" values silently survive.
+- **`dropna()` can shrink the data a lot.** Many columns use `'unknown'`, so dropping every affected row removes a sizeable fraction — note how much you lose.
+- **`duration` leaks the outcome.** The UCI data description warns `duration` (call length) is known only *after* the call and essentially determines `y`. Including it in clustering is questionable for honest segmentation; consider dropping it.
+- **One-hot blows up the dimensionality** and mixes geometries — Euclidean distance over 0/1 dummies behaves very differently from distance over standardized continuous features. K-Means treats them all alike, which is a real limitation here.
+- **K-Means depends on initialization.** With `random_state=42` and default `n_init`, results are reproducible but the elbow at `k=3` is still a judgment, not a fact.
+:::
+
+## Common pitfalls
+
+The conceptual one underneath all of the above: clustering finds structure in the *features you give it*, so preprocessing **is** the model. Scaling, encoding, and which columns you include (especially the leaky `duration`) change the clusters more than any K-Means setting. And because there is no ground truth during fitting, you cannot "score" the result — you justify `k` with elbow + silhouette and validate the segments by whether they tell a coherent story (their feature profiles and, here, their subscription rates).
+
+## What this exercise teaches that the others don't
+
+It is the **only unsupervised-learning** exercise: K-Means, cluster-count selection by **elbow (WCSS) + silhouette**, and **PCA for visualizing** high-dimensional clusters. It is the only one combining one-hot encoding of many categoricals with scaled numerics for distance-based modelling, and the only one interpreting clusters against a *held-aside* label rather than predicting it. Every other drill has a target to optimize; here the work is finding and explaining structure with none.
+
+::: {.callout-bigpicture}
+Supervised learning asks "predict `y`"; this asks "what natural groups exist?" — so there is no accuracy to chase. The deliverables are a *defensible* `k` (elbow + silhouette), a 2D PCA picture that shows the groups are real, and a plain-language profile of each segment. The course's *lecture* K-Means/PCA examples use present datasets (Iris, seeds, Wholesale Customers); pair this drill with those for runnable practice.
+:::
+
+## Links
+
+- [K-Means](../methods/kmeans.qmd) — the clustering algorithm, elbow, and silhouette (worked example on present data).
+- [PCA](../methods/pca.qmd) — dimensionality reduction for the 2D cluster plot (worked example on present data).
+- The Bank Marketing dataset is not in this repo [DATA-2]; download it from <https://archive.ics.uci.edu/ml/datasets/Bank+Marketing> to run the notebook end-to-end.

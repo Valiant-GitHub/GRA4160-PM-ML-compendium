@@ -3,6 +3,111 @@ title: "Drill: Predicting House Prices"
 body-classes: fam-cross
 ---
 
+[**Regression drill — Linear family**]{.fam-badge} · End-to-end regression on the Ames house-prices data: numeric-only cleaning, standardize *both* X and y, fit OLS → Ridge → Lasso, compare in- vs out-of-sample MSE/R², select features with Lasso, and close with an inverse-transform "what-if" price predictor.
+
+## 1. What this exercise teaches
+
+The full regularized-regression workflow on real, messy data: clean to numeric and drop missing rows, standardize, fit [OLS](../methods/ols.qmd) as a baseline, then [Ridge and Lasso](../methods/regularization.qmd), reading the in-sample-vs-out-of-sample gap as the bias–variance story, then use Lasso for feature selection and inverse-transform predictions back to dollars.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 5.2** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**This is the worked instance of [Workflow Pattern B — regression with many predictors](../big_picture/workflow_patterns.qmd#sec-wp-b).** It is also the exercise companion to the exam's Assignment 1 (OLS vs Ridge vs Lasso on `Hitters.csv`): same reasoning, different dataset. The graded skill is the *justification* — why shrinkage narrows the train–test gap — at least as much as the code.
 :::
+
+## 2. Setup
+
+- **Dataset:** Kaggle "House Prices — Advanced Regression Techniques" (Ames, Iowa). 1,460 rows, 81 columns. Locally at `Data/house-prices data/train.csv` (note the space in the folder name; the notebook's own path is `../../data/house-prices/train.csv`).
+- **Loader (solution cell-2):** `data = pd.read_csv('../../data/house-prices/train.csv')`.
+- **Target:** `SalePrice`.
+- **Feature set after cleaning:** the 37 numeric columns (the categorical columns are dropped entirely).
+- **Task:** continuous-target regression; report in-sample and out-of-sample MSE and R² for OLS, Ridge, and Lasso.
+- **Expected output:** MSE/R² for all three models (in- and out-of-sample); the 10 most important Lasso features; MSE/R² for OLS re-fit on just those 10; and a function that returns un-normalized predicted prices for edited feature vectors.
+
+## 3. Walkthrough
+
+Idioms and **stored numeric outputs** are transcribed from `03_Predicting_house_prices_VHL.ipynb` (cells cited). All metrics below are the exact saved cell outputs, and are on the **standardized** y scale.
+
+**Decision 1 — split before cleaning (cell-3).** `X = data.drop("SalePrice", axis=1)`, `y = data["SalePrice"]`, then `train_test_split(X, y, test_size=0.33, random_state=10)`. Note `random_state=10` (not the usual 42) — selected features and metrics are split-dependent.
+
+**Decision 2 — numeric-only, drop NaN rows, re-align y (cell-4).**
+
+```python
+numeric_cols = X_train.select_dtypes(include=['int64', 'float64']).columns
+X_train_num  = X_train[numeric_cols].dropna()       # drops any row with a numeric NaN
+y_train_num  = y_train.loc[X_train_num.index]       # KEY: re-align y to surviving rows
+```
+
+The load-bearing idiom is `y_train.loc[X_train_num.index]`: `dropna()` removes rows, so y must be re-indexed to match or X and y silently desync. Categorical columns are dropped wholesale — simpler, but it discards signal (ordinal integers like `OverallQual` survive because they're stored as ints).
+
+**Decision 3 — standardize X *and* y with separate scalers (cell-5).**
+
+```python
+scaler_x = StandardScaler().fit(X_train_num)
+scaler_y = StandardScaler().fit(y_train_num.values.reshape(-1, 1))
+# transform train and test; keep DataFrames so index/columns survive
+```
+
+Two scalers because y is scaled too — this is *why* the reported MSE/R² are on the standardized scale, and why the prediction function later needs `scaler_y.inverse_transform`. Both scalers are fit on **train only**.
+
+**Decision 4 — OLS baseline (cells 6–8).** `LinearRegression()` on the standardized data. Stored outputs:
+
+| OLS | MSE | R² |
+|---|---|---|
+| In-sample | 0.2024 | 0.7976 |
+| Out-of-sample | 0.1760 | 0.8223 |
+
+**Decision 5 — Ridge and Lasso (cells 9–11).** `Ridge(alpha=0.5)` and `Lasso(alpha=0.01)`, same fit/predict API. Stored outputs:
+
+| Model | In MSE | In R² | Out MSE | Out R² |
+|---|---|---|---|---|
+| Ridge (`alpha=0.5`) | 0.2024 | 0.7976 | 0.1759 | 0.8223 |
+| Lasso (`alpha=0.01`) | 0.2055 | 0.7945 | **0.1729** | **0.8254** |
+
+Lasso is best out-of-sample (lowest test MSE 0.1729, highest test R² 0.8254) despite the *worst* in-sample fit — the textbook signature of regularization trading a little training fit for better generalization.
+
+**Decision 6 — Lasso feature selection (cell-12).** Re-fit `Lasso(alpha=0.01)`, then wrap it:
+
+```python
+sfm = SelectFromModel(lasso, max_features=10)
+sfm.fit(X_train_norm, y_train_norm)
+important_features = X_train_norm.columns[sfm.get_support()]
+```
+
+The 10 selected features (stored output): `MSSubClass, LotArea, OverallQual, OverallCond, YearBuilt, MasVnrArea, BsmtFinSF1, GrLivArea, BsmtFullBath, GarageCars`.
+
+**Decision 7 — re-fit OLS on the 10 features (cell-13).** `LinearRegression()` on `X_train_norm[important_features]`. Stored output: **MSE 0.1784, R² 0.8198** — almost identical to the full 37-feature OLS (0.1760 / 0.8223) using only 10 features, which is the whole point of selection.
+
+**Decision 8 — inverse-transform "what-if" predictor (cell-14).**
+
+```python
+def inspectPrediction(model, observed_units):
+    pred = model.predict(pd.DataFrame(scaler_x.transform(observed_units),
+                                      index=observed_units.index,
+                                      columns=observed_units.columns))
+    return scaler_y.inverse_transform(pred.reshape(-1, 1))   # back to dollars
+```
+
+It scales the inputs in, predicts on the standardized scale, then `scaler_y.inverse_transform` brings the prediction back to dollar prices — letting you edit a feature (e.g. raise `OverallQual`) and see the price change.
+
+**Hyperparameters (exact):** `train_test_split(test_size=0.33, random_state=10)`; `LinearRegression()` defaults; `Ridge(alpha=0.5)`; `Lasso(alpha=0.01)` (used for both fitting and selection); `SelectFromModel(max_features=10)` (default threshold); `StandardScaler()` defaults.
+
+## 4. Common pitfalls
+
+::: {.callout-pitfall}
+- **`dropna()` desyncs X and y** unless you re-align with `y_train.loc[X_train_num.index]`. Columns like `LotFrontage`, `MasVnrArea`, `GarageYrBlt` carry NaNs that drop rows.
+- **Metrics are on the standardized y scale**, not dollars. An MSE of 0.17 is meaningless until you remember y was standardized — and the predictor must `inverse_transform` y to report dollars.
+- **`random_state=10`, not 42.** Selected features and every metric are split-dependent; a different seed gives a different "10 most important".
+- **`Lasso(alpha=0.01)` is deliberately small.** Too large an alpha zeros most coefficients, and then `SelectFromModel(max_features=10)` can return *fewer* than 10 surviving features.
+- **`SelectFromModel(max_features=10)` still applies a default importance threshold** — `max_features` is a cap, not a guarantee; results shift with alpha.
+- **Dropping all categoricals loses signal.** The model is numeric-only for simplicity; in practice you'd encode the informative categoricals.
+- **`alpha` is λ, not the Elastic-Net mix.** In scikit-learn the `alpha` argument is the penalty strength λ; the mixing ratio is the separate `l1_ratio`. See the [regularization page pitfall](../methods/regularization.qmd#sec-reg-when).
+:::
+
+## 5. What this exercise teaches that the others don't
+
+It is the **only continuous-target regression drill** and the only one that compares **OLS vs Ridge vs Lasso** head-to-head with explicit in-sample vs out-of-sample MSE/R². It uniquely covers **Lasso-based feature selection** via `SelectFromModel` and an **inverse-transform "what-if" prediction** workflow on doubly-standardized data. It is also the messiest real dataset in the drills — 81 mixed-type columns with genuine missing values — so the cleaning decisions are part of the lesson.
+
+## 6. Links
+
+- [OLS](../methods/ols.qmd) — the `LinearRegression` baseline and the λ = 0 limit of regularization (the course also uses this same dataset on the OLS page's downstream notes).
+- [Regularization — Ridge, Lasso, Elastic Net](../methods/regularization.qmd) — the Ridge/Lasso theory, the standardize-before-penalize rule, and the exam's `Hitters.csv` companion of this exact workflow.
+- [Workflow Pattern B — regression with many predictors](../big_picture/workflow_patterns.qmd#sec-wp-b) — the reusable recipe this drill instantiates.
