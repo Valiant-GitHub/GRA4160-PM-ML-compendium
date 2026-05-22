@@ -3,6 +3,107 @@ title: "Family Comparisons"
 body-classes: fam-cross
 ---
 
+The course's sixteen methods are not sixteen unrelated tools — they cluster into a handful of **families**, and inside each family the members are siblings that solve the *same* problem with a different lever. This page is the family-by-family rollup: for every method, its one defining **strength**, its one defining **weakness**, and the situation in which you'd pick it **over its own siblings**. Every cell is paraphrased from that method's own page — its §1 Essence, §2 *When to use / when not to use*, and §6 Diagnostics — so a claim here is the compressed version of a claim you can verify there. For the *cross*-family choice (linear vs tree vs net on one dataset) see the [showdowns](showdowns.qmd) and the [decision dashboard](decision_dashboard.qmd); this page stays *within* the family.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 4.2** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**The three axes every family choice rides on.** Whatever the family, the same three trade-offs decide which member fits:
+
+- **Parametric vs non-parametric.** Parametric models ([OLS](../methods/ols.qmd), [logistic](../methods/logistic.qmd), [LDA](../methods/lda.qmd), [Adaline](../methods/adaline.qmd), the regularizers, neural nets) commit to a fixed functional form and a fixed parameter count — fast, data-thrifty, interpretable, but wrong if the form is wrong. Non-parametric models ([kNN](../methods/knn.qmd), [Decision Trees](../methods/decision_trees.qmd) and their ensembles) assume no form; their complexity grows with the data — flexible, but hungry and harder to read.
+- **The bias-variance lever.** Each family has a single knob that *is* the [bias-variance](../methods/bias_variance.qmd) dial: $\lambda$ for the regularizers, $K$ for kNN, depth/number-of-trees for the tree family, width/depth for nets, $k$ for K-Means. Turning it always trades a little bias for a lot of variance, or the reverse.
+- **Interpretability vs flexibility.** Linear models hand you signed coefficients ("+1 unit ⇒ +β"); trees hand you a readable flowchart or feature-importance ranking; ensembles and nets trade that readability away for raw predictive power. Pick the output that answers *your* question.
+
+These axes are why the "when to prefer over its siblings" column reads the way it does: every preference is one of these three trade-offs made concrete.
+:::
+
+::: {.callout-exam}
+**Which families the Spring-2025 take-home actually examined.** Three of the six families below are *core* exam content; the neural family is not.
+
+- **Linear regressors** — Assignment 1 (Hitters): OLS baseline, then **Ridge and Lasso with cross-validated `alpha`**, interpreting the coefficient change and bias-variance trade-off.
+- **Tree-based** — Assignment 3 (WDBC): single tree → **Random Forest → gradient boosting**, with task 3.8 contrasting RF-vs-GB (bagging vs boosting).
+- **Unsupervised** — Assignment 2 (WholesaleCustomers): standardize → **PCA to 90 % variance → K-Means** with elbow + silhouette.
+- **Linear classifiers** — partial: [logistic regression](../methods/logistic.qmd) and [kNN](../methods/knn.qmd) are *candidate* classifiers for Assignment 4; [LDA](../methods/lda.qmd) and [Adaline](../methods/adaline.qmd) were **not examined** (lecture-core scaffolding only).
+- **Neural** — **not examined at all.** The 2025 take-home has no neural-network assignment; the whole NN block is taught as conceptual scaffolding, so treat the neural table below as understanding, not drill.
+:::
+
+## Linear regressors
+
+The continuous-target family: one weight per predictor, fit by least squares, judged against [OLS](../methods/ols.qmd). The three regularizers are all OLS-plus-a-penalty (the [Regularization](../methods/regularization.qmd) page covers Ridge, Lasso and Elastic Net together).
+
+::: {.cmp-table}
+
+| Method | Key strength | Key weakness | When to prefer over its siblings |
+|---|---|---|---|
+| [OLS](../methods/ols.qmd) | Interpretable, BLUE-optimal unbiased fit under Gauss-Markov; fast, transparent baseline (§1) | Overfits / coefficients blow up when predictors are many or correlated ($p\gtrsim n$); misleading if the truth is non-linear (§2) | When $p\ll n$, predictors uncorrelated, and you want **unbiased** inference — the $\lambda=0$ limit a penalty would only bias for no variance gain (§2) |
+| [Ridge](../methods/regularization.qmd) | L2 shrinkage cures multicollinearity by sharing a coefficient across correlated predictors; smooth, stable (§1) | Never zeros a coefficient, so it never simplifies the model — keeps every predictor (§6) | Many small, genuinely-present effects / strong collinearity, none worth discarding (§2, §6) |
+| [Lasso](../methods/regularization.qmd) | L1 geometry drives coefficients to *exactly* zero — automatic feature selection, sparse model (§1) | Unstable under correlation: faced with a correlated group it arbitrarily keeps one and drops the rest (§2, §6) | When you want a **sparse, interpretable** model and the irrelevant predictors zeroed out (§2) |
+| [Elastic Net](../methods/regularization.qmd) | Blends L1+L2: Lasso-style sparsity while keeping correlated groups together (§1) | Two hyperparameters to tune ($\lambda$ and the mix $\alpha$/`l1_ratio`), and the `alpha`-vs-$\alpha$ naming trap (§2) | Correlated predictors **and** you want sparsity — Lasso alone would split the group, Ridge wouldn't select (§2, §6) |
+
+:::
+
+## Linear classifiers
+
+Same linear machinery, aimed at a class label. [Logistic](../methods/logistic.qmd) and [LDA](../methods/lda.qmd) both draw a linear boundary; [Adaline](../methods/adaline.qmd) is the gradient-descent template they share. (kNN is the non-parametric classifier baseline — it gets its own family below.)
+
+::: {.cmp-table}
+
+| Method | Key strength | Key weakness | When to prefer over its siblings |
+|---|---|---|---|
+| [Logistic Regression](../methods/logistic.qmd) | Calibrated probabilities and interpretable coefficients (each $e^{\beta_j}$ an odds multiplier); few distributional assumptions (§1) | Coefficients can diverge on perfectly separable classes; assumes a roughly linear boundary (§2) | The safe default linear classifier when normality is doubtful — it models the log-odds directly without a Gaussian assumption (§2 vs LDA) |
+| [LDA](../methods/lda.qmd) | Gives classification **and** supervised dimensionality reduction from one fit; low-variance, needs little data (§1) | Assumes Gaussian classes with a **shared covariance**; the linear boundary underfits when class covariances differ (→ QDA) (§2) | Well-separated classes with similar covariances, little data, or when you also want a supervised low-dim view (§2) |
+| [Adaline](../methods/adaline.qmd) | Cleanest from-scratch view of gradient descent; the bridge from [OLS](../methods/ols.qmd) to logistic to neural nets (§1) | MSE-on-net-input is the wrong loss for 0/1 labels (penalizes confident-correct points); only a linear boundary (§2, §6) | Only as a **teaching** step — to see the GD update and the regression↔classification link; for real probabilistic work use logistic (§2) |
+
+:::
+
+## Instance-based
+
+A family of one in this course: [kNN](../methods/knn.qmd), the non-parametric supervised baseline that stores the training set and votes among neighbors. Its siblings live in *other* families — the parametric linear classifiers above and the trees below.
+
+::: {.cmp-table}
+
+| Method | Key strength | Key weakness | When to prefer over its siblings |
+|---|---|---|---|
+| [kNN](../methods/knn.qmd) | Assumption-free, instant "training," follows irregular-but-local boundaries; a prediction is literally "these K labeled neighbors" (§1) | Curse of dimensionality (nearest stops meaning anything in high $p$); slow at predict time; **demands feature scaling** (§2, §6) | Over a parametric classifier when the boundary is irregular but locally smooth, you have enough scaled data, and you want a flexible local fit rather than a global rule (§2) |
+
+:::
+
+## Tree-based
+
+The non-parametric, axis-aligned family. A single [Decision Tree](../methods/decision_trees.qmd) is the high-variance building block; [Random Forests](../methods/random_forests.qmd) and the broader [Ensembles](../methods/ensembles.qmd) exist to tame or sharpen it.
+
+::: {.cmp-table}
+
+| Method | Key strength | Key weakness | When to prefer over its siblings |
+|---|---|---|---|
+| [Decision Tree](../methods/decision_trees.qmd) | Fully interpretable flowchart; no scaling/encoding; captures non-linear interactions for free (§1) | High variance and unstable — grown unchecked it memorizes the data, and a few flipped rows reshape it (§1, §6) | When you need a **readable rule set** a stakeholder can follow, and a single shallow tree already generalizes well enough (§2) |
+| [Random Forest](../methods/random_forests.qmd) | Bagging + $\sqrt p$ feature randomness decorrelates trees, slashing variance at almost no bias cost; strong out-of-the-box, OOB error for free (§1, §6) | Loses the readable flowchart — gives feature-importance *rankings*, not signed coefficients; importances biased toward high-cardinality features (§1, §6) | When a single tree overfits and you want robust, low-tuning prediction with a driver ranking — variance reduction in **parallel** (§2, §6) |
+| [Ensembles (bagging/boosting)](../methods/ensembles.qmd) | A family of strategies (bagging, boosting, stacking, BMA) that beat any single member; **boosting** sharpens weak learners to cut **bias** (§1) | Trade interpretability for performance; **boosting can overfit** noisy data if not regularized (small $\eta$, shallow trees) (§2) | Boosting when the symptom is *underfitting* (bias); stacking to fuse several diverse good models — vs RF/bagging which only attack *variance* (§2, §6) |
+
+:::
+
+## Unsupervised
+
+No labels — find structure instead. [PCA](../methods/pca.qmd) re-describes the data along variance-maximizing axes; [K-Means](../methods/kmeans.qmd) carves it into discrete groups. They are natural partners (reduce, then cluster) rather than rivals.
+
+::: {.cmp-table}
+
+| Method | Key strength | Key weakness | When to prefer over its siblings |
+|---|---|---|---|
+| [PCA](../methods/pca.qmd) | Compresses many correlated features into a few uncorrelated directions; visualization, denoising, compression; explained-variance ratio quantifies what you keep (§1) | Only finds **linear** directions; components are blends so harder to interpret; variance-driven, so outliers and unscaled features hijack it (§2, §6) | When you want to *re-describe* / shrink dimensions and keep most variance — vs K-Means, which *partitions* rather than projects; vs [LDA](../methods/lda.qmd), use PCA when you have no labels (§1, §6) |
+| [K-Means](../methods/kmeans.qmd) | Fast, scalable hard clustering by minimizing within-cluster sum of squares; finds segments with no labels (§1) | $K$ is not learned (elbow/silhouette only *guide* it); assumes spherical, equal-size clusters; sensitive to outliers and scale (§1, §2) | When the goal is **discrete groups/segments** and clusters are roughly round — vs PCA, which gives continuous axes not groups; pair them (PCA then K-Means) rather than choosing (§1, §6) |
+
+:::
+
+## Neural
+
+The compose-simple-pieces family, taught from a scalar [autodiff](../methods/autodiff.qmd) engine up to a high-level PyTorch workflow. The members differ less in *model* than in **abstraction level** — same forward-pass-and-backprop math, more or less boilerplate hidden.
+
+::: {.cmp-table}
+
+| Method | Key strength | Key weakness | When to prefer over its siblings |
+|---|---|---|---|
+| [NN basics](../methods/nn_basics.qmd) | Builds the MLP from first principles on the course's own engine — every gradient visible; a flexible non-linear universal approximator (§1) | Data-hungry, slow, hard to interpret; overkill (and loses to trees) on small tabular data (§2) | When you want to *understand* the architecture and forward pass before reaching for a framework — the conceptual seed of the rest (§1) |
+| [Autodiff](../methods/autodiff.qmd) | Exact gradients of any scalar expression, computed mechanically by the graph + chain rule — demystifies backprop (§1) | A scalar engine is unusably slow for real work; supports only the few ops you add by hand (§2) | When the goal is to *see why a gradient has its value* node-by-node — vs a framework's `autograd`, which hides exactly this (§2) |
+| [NN with PyTorch](../methods/nn_pytorch.qmd) | Autograd on whole tensors / GPU while you still hand-write the forward pass, loss, and SGD step — shows what a framework automates (§1) | The manual loop invites silent bugs (forgetting `grad.zero_()` or `torch.no_grad()`); low-level, not for shipping (§2, §6) | When you want autodiff *at scale* but still need to see the loop a framework hides — vs the high-level API for production (§1, §2) |
+| [Build a NN](../methods/build_a_nn.qmd) | The practical `nn.Module` workflow — pre-built layers, loss, optimizer; depth buys a real accuracy jump (MNIST 92→97.5 %) (§1, §4) | A black box you can't read; on the MNIST run L2/dropout barely help because the net wasn't overfitting (§4, §6) | The level you'd actually **ship**: large unstructured data, when you want PyTorch to handle autograd/loss/optimizer — vs dropping down the ladder to learn mechanics (§2) |
+
 :::

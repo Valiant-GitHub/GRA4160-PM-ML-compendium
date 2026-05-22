@@ -3,6 +3,332 @@ title: "Workflow Patterns"
 body-classes: fam-cross
 ---
 
-::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 4.5** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+[**Cross-method**]{.fam-badge} · A take-home cheat sheet. Every exam task is one of a small number of *recipes* — load, clean, encode, split, baseline, tune, evaluate — and the recipe barely changes whether you are predicting salaries, segmenting customers, or classifying tumours. This page collects the seven patterns the Spring-2025 exam actually exercises, each as a short **decisions** note plus an **annotated code skeleton you can lift verbatim**. Every skeleton is built from idioms that appear in the course notebooks (cited inline); where a step is plain scikit-learn that the course never demonstrated, it is flagged **"standard sklearn, not in the course notebooks"** so you know what you are improvising. Pick the pattern that matches the task, swap in the dataset, and reason out loud about the choices — the reasoning is what is graded.
+
+::: {.callout-exam}
+**The four Spring-2025 assignments, mapped to patterns.** The take-home is four sections (`phase0/exam_spring2025_notebook.md`); each is a composite of the patterns below.
+
+| Assignment | Dataset | Task | Patterns to reach for |
+|---|---|---|---|
+| **1 — Regularized regression** | `Hitters.csv` | Predict salary; OLS → Ridge/Lasso with CV `alpha`; interpret coefficients & bias–variance | **B** (regression w/ many predictors), **F** (missing salaries), **G** (model selection) |
+| **2 — Clustering / unsupervised** | `WholesaleCustomers.csv` | Scale → PCA (~90% var) → K-Means; choose *k*; interpret clusters vs labels | **C** (clustering, no ground truth), **D** (dim-reduction) |
+| **3 — Ensemble methods** | `wdbc.data` | Stratified split; tree → RF → boosting; class balance; feature importance | **A** (classification), **E** (class balance check), **G** (CV tuning) |
+| **4 — Classification challenge** | `SimulatedData.csv` | Encode/scale; ≥2 classifiers; tune; *accuracy + precision/recall/F1*; predict on hidden test | **A**, **E** (imbalance), **F** (missing/encoding), **G** (don't tune on test) |
+
+The graded skill is the *workflow*: load → inspect → handle missing → encode/scale → split → baseline → tune via CV → evaluate with the right metric → compare → interpret (`phase0/exam_spring2025_notebook.md`, "Recurring topics").
 :::
+
+::: {.callout-pitfall}
+**The three traps that cost the most points.** (i) **Scaling outside cross-validation** — fitting `StandardScaler` on the whole dataset before CV leaks test information into training folds; always put the scaler *inside* a `Pipeline` so it is re-fit per fold (Lecture 3, slides 19–20; the [regularization page](../methods/regularization.qmd) hammers this). (ii) **Tuning on the test set** — the test set is touched *once*, at the very end; choose hyperparameters by CV or a validation split, never by peeking at test scores (Lecture 5, slides 3 & 11). (iii) **Accuracy on imbalanced classes** — 95% accuracy is worthless if 95% of cases are negative; report precision / recall / F1 and check the confusion matrix (Lecture 5, slide 5). Each trap has a dedicated `callout-pitfall` in the pattern it threatens most.
+:::
+
+## Pattern A — Classification on a new dataset {#sec-wp-a}
+
+**Decisions.** You have a labelled table and a categorical target. Route: inspect → handle missing → encode categoricals → split → fit a cheap, interpretable **baseline** ([logistic regression](../methods/logistic.qmd)) → fit a stronger model ([random forest](../methods/random_forests.qmd)) → evaluate. Always anchor against the **majority-class baseline** (predict the most common label) so "good accuracy" means *better than guessing*. Scale features for distance/gradient models (logistic), skip scaling for tree models (RF is scale-invariant) — the exam explicitly wants this distinction (`phase0/exam_spring2025_notebook.md`, Ex 4.3). Pick metrics by the task: if classes are imbalanced, jump to [Pattern E](#sec-wp-e).
+
+*Template: nb01 preprocessing (`notebook_01_Working_with_data.md`, cells 6/15/20) + nb06 logistic (`notebook_06_Logistic_regression.md`, cells 5/7/11) + nb13 random forest (`notebook_13_Random_forests.md`, cells 3/12) + exercise_05 (`exercise_05_model_selection.md`, cell 3).*
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# --- load & inspect ---  (nb01 cell 6 idiom)
+df = pd.read_csv('../data/your_dataset.csv')
+df.head(); df.info(); df.describe()                 # always look first
+
+# --- clean & encode ---  (nb06 cell 5: drop-NaN + binary encode; nb01 cell 15: one-hot)
+df = df.dropna()                                     # simplest missing-data rule (see Pattern F)
+df['Sex'] = df['Sex'].apply(lambda x: 1 if x == 'male' else 0)   # binary categorical → 0/1
+df = pd.get_dummies(df, columns=['Embarked'], drop_first=True)   # multi-level → one-hot
+
+X = df[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare']]      # feature columns
+y = df['Survived']                                              # categorical target
+
+# --- split ---  (nb06 cell 5)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=15)
+
+# --- majority-class baseline ---  (nb06 cell 7 idiom: how good is "always predict 0"?)
+baseline_acc = round(1 - y_test.mean(), 3)          # accuracy of predicting the majority class
+
+# --- baseline model: logistic regression (scale first — gradient model) ---  (nb01 cell 20 pipeline + nb06 cell 7)
+scaler = StandardScaler()
+log_reg = LogisticRegression(solver='lbfgs', max_iter=500)       # max_iter raised to converge
+log_reg.fit(scaler.fit_transform(X_train), y_train)
+y_pred = log_reg.predict(scaler.transform(X_test))   # NOTE: transform (not fit) on test
+
+# --- stronger model: random forest (no scaling needed — tree model) ---  (nb13 cell 12)
+rf = RandomForestClassifier(n_estimators=100, max_depth=3, random_state=30)
+rf.fit(X_train, y_train)
+
+# --- evaluate ---  (nb06 cell 11)
+print('baseline (majority):', baseline_acc)
+print('logistic acc:', accuracy_score(y_test, y_pred))
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))         # precision / recall / F1 per class
+```
+
+::: {.callout-pitfall}
+**Fit the scaler on training only.** `scaler.fit_transform(X_train)` then `scaler.transform(X_test)` — never `fit` on the test set. The notebooks' one-shot `Pipeline([('scaler', StandardScaler()), ('classifier', LogisticRegression())])` (nb01 cell 20) does this automatically and is the cleaner habit; the two-line version above is shown so the leak point is visible.
+:::
+
+## Pattern B — Regression with many predictors {#sec-wp-b}
+
+**Decisions.** Continuous target, many (possibly correlated) numeric predictors. Route: standardize → fit **[OLS](../methods/ols.qmd) as the baseline** → add **Ridge and Lasso with cross-validated `alpha`** → compare in-sample vs out-of-sample $R^2$/MSE → read off which coefficients Lasso zeroed. This is exactly Assignment 1. The whole game is the **bias–variance trade-off**: shrinkage trades a little training fit for lower variance and a narrower train–test gap (see [regularization](../methods/regularization.qmd) §4). `StandardScaler` goes *inside* the CV pipeline so the standardize-before-penalize rule holds and no test info leaks.
+
+*Template: nb05 estimators (`notebook_05_Regularised_regressions.md`, cells 6/10/12) + nb08 CV-`alpha`-in-a-pipeline (`notebook_08_Info_criteria_CV.md`, cells 6/11) + exercise_03 (`exercise_03_house_prices.md`, cells 2–11).*
+
+```python
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LinearRegression, RidgeCV, LassoCV
+from sklearn.metrics import mean_squared_error, r2_score
+
+# keep numeric columns, drop missing, split  (exercise_03 cells 3–4)
+X = data.select_dtypes(include=['int64', 'float64']).dropna()
+y = data.loc[X.index, 'SalePrice']                  # re-align y after dropping rows!
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.33, random_state=10)
+
+# --- OLS baseline (standardized) ---  (exercise_03 cells 5–6)
+ols = make_pipeline(StandardScaler(), LinearRegression()).fit(X_train, y_train)
+
+# --- Ridge & Lasso with cross-validated alpha, scaling baked in ---  (nb08 cell 11 pattern)
+ridge = make_pipeline(
+    StandardScaler(), RidgeCV(alphas=np.logspace(-3, 3, 100))).fit(X_train, y_train)
+lasso = make_pipeline(
+    StandardScaler(), LassoCV(cv=10, max_iter=100000, random_state=1)).fit(X_train, y_train)
+
+# --- read the selected alpha and which features Lasso zeroed ---  (nb08 cells 6 & 11 idioms)
+print('Ridge alpha:', ridge[-1].alpha_, '| Lasso alpha:', lasso[-1].alpha_)
+zeroed = np.where(lasso[-1].coef_ == 0)[0]           # indices Lasso dropped (feature selection)
+
+# --- compare in- vs out-of-sample (the bias–variance story) ---  (exercise_03 cells 6–11)
+for name, m in [('OLS', ols), ('Ridge', ridge), ('Lasso', lasso)]:
+    tr = r2_score(y_train, m.predict(X_train))
+    te = r2_score(y_test,  m.predict(X_test))
+    print(f'{name}: train R2={tr:.3f}  test R2={te:.3f}  '
+          f'test MSE={mean_squared_error(y_test, m.predict(X_test)):.3f}')
+```
+
+::: {.callout-pitfall}
+**`alpha` is sklearn's $\lambda$, not the math's mixing ratio.** In `Ridge`/`Lasso`/`ElasticNet`, the argument `alpha` is the *penalty strength* ($\lambda$); the Elastic-Net L1/L2 mix is the separate `l1_ratio` (nb05 cell 13). And after `dropna()`, re-align the target with `y = data.loc[X.index, 'SalePrice']` (exercise_03 cell 4) or X and y desync.
+:::
+
+## Pattern C — Clustering with no ground truth {#sec-wp-c}
+
+**Decisions.** No labels — group by similarity. Route: **scale** (K-Means uses Euclidean distance, so unscaled features with big ranges dominate) → run [K-Means](../methods/kmeans.qmd) over a range of *k* → choose *k* by the **elbow** (WCSS / `inertia_`, the within-cluster spread) *and* the **silhouette score** (how well-separated the clusters are). There is no test set; "optimal *k*" is a judgement read off two curves, and the chosen *k* need not equal the number of true classes (nb11 picks *k*=2 on 3-species iris). This is Assignment 2's clustering half; pipe its output into [Pattern D](#sec-wp-d) for visualization.
+
+*Template: nb11 elbow+silhouette loop (`notebook_11_K_means.md`, cells 2/8/10) + exercise_06 scale→KMeans (`exercise_06_customer_segmentation.md`, cells 6/10).*
+
+```python
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+# --- scale numeric features (clustering is distance-based) ---  (exercise_06 cell 6)
+scaler = StandardScaler()
+X = scaler.fit_transform(df[numeric_cols])          # no target — unsupervised
+
+# --- sweep k: collect WCSS (inertia) and silhouette ---  (nb11 cell 8)
+wcss, sil = [], []
+K_range = range(2, 11)
+for k in K_range:
+    km = KMeans(n_clusters=k, init='k-means++', max_iter=300,
+                n_init=10, random_state=0).fit(X)
+    wcss.append(km.inertia_)                         # elbow metric: lower = tighter clusters
+    sil.append(silhouette_score(X, km.labels_))      # higher = better-separated (range -1..1)
+
+# plot wcss vs K (look for the "elbow") and sil vs K (look for the peak), then choose k:
+optimal_k = 3                                        # judgement call from the two curves
+
+# --- final fit at chosen k ---  (nb11 cell 10 / exercise_06 cell 10)
+kmeans = KMeans(n_clusters=optimal_k, random_state=0, n_init=10)
+cluster_labels = kmeans.fit_predict(X)              # cluster id per row; interpret these
+```
+
+::: {.callout-pitfall}
+**Scale before you cluster, and decide *whether* to scale out loud.** K-Means on a mix of standardized continuous features and 0/1 one-hot dummies mixes incompatible geometries (exercise_06). The exam asks you to *justify* the scaling decision, not assume it (`phase0/exam_spring2025_notebook.md`, Ex 2.2). Drop any leakage columns (e.g. a field only known after the outcome) before clustering.
+:::
+
+## Pattern D — High-dim → dimensionality reduction → classifier/visualization {#sec-wp-d}
+
+**Decisions.** Too many features (or you need a 2-D picture of clusters). Route: **scale → [PCA](../methods/pca.qmd) → downstream step**, all in one `make_pipeline` so scaling and PCA are re-fit on training folds only. Two uses in the course: (i) **visualization** — `PCA(n_components=2)` to scatter clusters in 2-D (Assignment 2, after [Pattern C](#sec-wp-c)); (ii) **compression before a classifier** — reduce dimensions, then fit a cheap classifier on the components. To keep "~90% of variance," inspect `explained_variance_ratio_` and pick the number of components whose cumulative sum crosses 0.90 (Assignment 2, Ex 2.3).
+
+*Template: nb10 scale→PCA→classifier pipeline (`notebook_10_PCA.md`, cells 6/7/12) + exercise_06 PCA-for-viz (`exercise_06_customer_segmentation.md`, cell 12).*
+
+```python
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.pipeline import make_pipeline
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+
+# --- choose #components for ~90% variance ---  (nb10 cells 6–7: explained_variance_ratio_)
+scaler = StandardScaler()
+Xs = scaler.fit_transform(X)
+probe = PCA().fit(Xs)
+cum = np.cumsum(probe.explained_variance_ratio_)    # cumulative variance explained
+k90 = int(np.argmax(cum >= 0.90)) + 1               # smallest #PCs reaching 90%  [standard sklearn idiom, not shown in the course notebooks — nb10 only sums .explained_variance_ratio_]
+
+# --- use 1: PCA to 2-D for visualization of clusters ---  (exercise_06 cell 12)
+X_pca = PCA(n_components=2, random_state=42).fit_transform(Xs)
+# scatter X_pca[:, 0] vs X_pca[:, 1], colour by cluster_labels from Pattern C
+
+# --- use 2: scale → PCA → classifier, as one leak-free pipeline ---  (nb10 cell 12)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
+clf = make_pipeline(StandardScaler(), PCA(n_components=2), GaussianNB())
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)
+```
+
+::: {.callout-pitfall}
+**PCA needs scaled inputs, and `n_components=0.90` is a shortcut the course didn't use.** Without `StandardScaler`, PCA chases the highest-variance *units*, not the most informative directions (nb10 cell 8). Passing a float to `PCA(n_components=0.90)` to auto-keep 90% variance is **standard sklearn, not in the course notebooks** — the notebooks set an integer `n_components` and sum `explained_variance_ratio_` by hand (nb10 cell 7), which is the safer thing to write in the exam.
+:::
+
+## Pattern E — Imbalanced classes {#sec-wp-e}
+
+**Decisions.** One class is rare (fraud, disease, the positive in `SimulatedData`). Accuracy lies here — a model that always predicts the majority class scores high and detects nothing. Route: **check the class balance first** (`y.value_counts()`); **stratify** the split and the CV so every fold keeps the class proportions (Lecture 5, slide 9, calls stratified CV "the gold standard"); evaluate with **precision, recall, F1, and the confusion matrix**, not accuracy (Lecture 5, slide 5); optionally tell the model to weight the rare class. The metric quartet `accuracy/precision/recall/f1_score` is exactly what nb13 reports.
+
+*Template: nb13 metric quartet (`notebook_13_Random_forests.md`, cell 9) + nb06 confusion matrix / classification_report (`notebook_06_Logistic_regression.md`, cell 11) + Lecture 5 metrics (`lecture_05_extract.md`, slides 5 & 9).*
+
+```python
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                             f1_score, confusion_matrix, classification_report)
+
+# --- 1. inspect the balance BEFORE modelling ---  (Lecture 5 slide 5; exam Ex 3.1 / 4.1)
+print(y.value_counts(normalize=True))               # e.g. 0: 0.95, 1: 0.05  → imbalanced
+
+# --- 2. stratified split: keep class proportions in train & test ---
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42,
+    stratify=y)                                      # stratify=y  [standard sklearn, not in the course notebooks]
+
+# --- 3. let the model up-weight the rare class (optional) ---
+clf = RandomForestClassifier(
+    n_estimators=100, max_depth=3, random_state=30,
+    class_weight='balanced')                         # class_weight  [standard sklearn, not in the course notebooks]
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+
+# --- 4. report the RIGHT metrics — not accuracy alone ---  (nb13 cell 9 quartet; nb06 cell 11)
+print('accuracy :', accuracy_score(y_test, y_pred))   # misleading when imbalanced!
+print('precision:', precision_score(y_test, y_pred))  # of predicted-positive, how many right
+print('recall   :', recall_score(y_test, y_pred))     # of true-positive, how many caught
+print('f1       :', f1_score(y_test, y_pred))         # harmonic mean of the two
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+# --- 5. stratified CV for an honest estimate ---  (Lecture 5 slide 9: stratified = gold standard)
+# cross_val_score uses StratifiedKFold by default for classifiers (exercise_05 cell 2 uses cv=5)
+print('CV F1:', cross_val_score(clf, X, y, cv=5, scoring='f1').mean())
+```
+
+::: {.callout-pitfall}
+**Accuracy is the wrong headline for imbalanced data.** "98% accurate" on a 98%-negative set can mean *zero* positives detected. Lead with recall (did we catch the rare cases?) and precision (were the alarms real?), pick the operating point by the cost of FP vs FN, and always show the confusion matrix (Lecture 5, slides 5 & 11). `stratify=`, `class_weight='balanced'`, and `scoring='f1'` are **standard sklearn the course notebooks don't demonstrate** — but the metrics they feed (precision/recall/F1, stratified CV) *are* core Lecture 5 material.
+:::
+
+## Pattern F — Missing data handling {#sec-wp-f}
+
+**Decisions.** Real tables have gaps. Route: **inspect** which columns are missing and how badly (`df.isnull().sum()`) → choose per column: **drop** rows (fine when few are missing), **impute** (mean for symmetric numeric, **median** for skewed — `Age` is skewed, so median; `Fare` is skewed with extreme outliers), or drop a column that is mostly empty → then **encode** categoricals. Justify each choice: dropping `Cabin`-style sparse columns is fine; dropping rows wholesale can bias the sample (nb06's `dropna()` on Titanic skews toward 1st class). This is Assignment 1's Ex 1.1 and the Titanic preprocessing drill end-to-end.
+
+*Template: nb01 imputation + IQR outliers + one-hot (`notebook_01_Working_with_data.md`, cells 13/15) + exercise_01 Titanic plan (`exercise_01_titanic_preprocessing.md`, parts 2–4).*
+
+```python
+import pandas as pd
+
+# --- 1. inspect missingness ---  (exercise_01 part 1)
+df = pd.read_csv('../data/train.csv')
+print(df.isnull().sum())                             # count NaN per column
+print(df.info())
+
+# --- 2a. impute numeric: mean (symmetric) ---  (nb01 cell 13: fillna with column mean)
+df['SomeNumeric'] = df['SomeNumeric'].fillna(df['SomeNumeric'].mean())
+
+# --- 2b. impute skewed numeric with the MEDIAN ---  (exercise_01 part 2: Age is skewed)
+df['Age'] = df['Age'].fillna(df['Age'].median())     # median safer than mean under skew
+
+# --- 2c. drop rows / columns when appropriate ---  (nb06 cell 5 uses the blunt drop-all)
+df = df.dropna(subset=['Embarked'])                  # only a few missing → drop those rows
+# df = df.drop(columns=['Cabin'])                    # mostly empty → drop the whole column
+
+# --- 3. (optional) flag outliers via the IQR rule ---  (nb01 cell 13)
+Q1, Q3 = df['Fare'].quantile(0.25), df['Fare'].quantile(0.75)
+IQR = Q3 - Q1
+outliers = df[(df['Fare'] < Q1 - 1.5 * IQR) | (df['Fare'] > Q3 + 1.5 * IQR)]
+
+# --- 4. encode categoricals once data is clean ---  (nb01 cell 15)
+df = pd.get_dummies(df, columns=['Sex', 'Embarked'], drop_first=True)
+```
+
+::: {.callout-pitfall}
+**Match the imputation to the distribution, and watch for desync.** Mean imputation on a skewed column (`Fare`, `Age`) drags values toward the tail — use the median (exercise_01). If you `dropna()` rows on *some* columns, the target must be re-aligned by index (see [Pattern B](#sec-wp-b)). Note `sklearn.impute.SimpleImputer` is *mentioned* in nb01's markdown but the course code only ever uses `df.fillna(...)` and `pd.get_dummies` (nb01 cell 37 note) — so `SimpleImputer` is **standard sklearn the notebooks don't actually run**; `fillna` is the demonstrated idiom.
+:::
+
+## Pattern G — Model selection & evaluation {#sec-wp-g}
+
+**Decisions.** Choosing *which* model / *which* hyperparameters, and reporting how good the winner really is. Keep the two jobs separate (Lecture 5, slide 3): **selection** uses validation data / CV / information criteria; **evaluation** uses the held-out test set, touched once. Route: split off a test set → **tune on the training set by cross-validation** (`cross_val_score` to compare models, `GridSearchCV` to search a hyperparameter grid) → refit the best config → report test performance. For nested linear models you can also rank by **AIC/BIC** (lower is better, same dataset only) instead of a hold-out. This is the spine of Assignments 1, 3, and 4 (CV tuning recurs in Ex 1.6, 3.3, 3.5, 4.5).
+
+*Template: exercise_05 `cross_val_score` + `GridSearchCV` (`exercise_05_model_selection.md`, cells 2/5) + nb08 AIC/BIC & CV-`alpha` (`notebook_08_Info_criteria_CV.md`, cells 6/11) + Lecture 5 selection-vs-evaluation (`lecture_05_extract.md`, slides 3/6/11).*
+
+```python
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+
+# --- protect a test set you will NOT look at until the end ---  (Lecture 5 slide 11)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# --- compare candidate models by CV on the TRAINING set ---  (exercise_05 cells 2 & 4)
+for name, model in [('logreg', LogisticRegression(max_iter=200, random_state=42)),
+                    ('tree',   DecisionTreeClassifier(random_state=42))]:
+    cv = cross_val_score(model, X_train, y_train, cv=5)   # 5-fold CV mean accuracy
+    print(name, 'CV acc:', cv.mean())
+
+# --- tune the chosen model's hyperparameters by grid search + CV ---  (exercise_05 cell 5)
+param_grid = {'max_depth': [None, 2, 3, 4, 5],
+              'min_samples_leaf': [1, 2, 3],
+              'min_samples_split': [2, 3, 4]}
+grid = GridSearchCV(DecisionTreeClassifier(random_state=42),
+                    param_grid, cv=5, scoring='accuracy')
+grid.fit(X_train, y_train)                                # search runs on TRAINING data only
+print('best params:', grid.best_params_)                 # chosen config
+print('best CV score:', grid.best_score_)                # CV estimate, NOT test accuracy
+best_model = grid.best_estimator_
+
+# --- ONLY NOW touch the test set, once, to report final performance ---  (Lecture 5 slide 3)
+print('held-out test acc:', best_model.score(X_test, y_test))
+
+# --- alternative for nested linear models: rank by AIC/BIC (no hold-out) ---  (nb08 cell 6)
+# from sklearn.linear_model import LassoLarsIC
+# ic = make_pipeline(StandardScaler(), LassoLarsIC(criterion='aic')).fit(X, y)
+# ic.set_params(lassolarsic__criterion='bic').fit(X, y)   # BIC's ln(n) penalty → sparser model
+```
+
+::: {.callout-pitfall}
+**Never tune on the test set.** `GridSearchCV` and `cross_val_score` run on the *training* data; `best_score_` is a CV estimate, and the test set is scored exactly once at the end (Lecture 5, slides 3 & 11). Reusing the test set to pick models silently overfits it — your reported error becomes optimistic. If you also need to *evaluate* honestly while tuning, nest CV or hold out a separate validation split.
+:::
+
+## Quick index
+
+| Pattern | Use when | Core method page(s) | Notebook template |
+|---|---|---|---|
+| [A](#sec-wp-a) | Labelled table, categorical target | [logistic](../methods/logistic.qmd), [random forests](../methods/random_forests.qmd) | nb01 + nb06 + nb13 + ex05 |
+| [B](#sec-wp-b) | Continuous target, many predictors | [OLS](../methods/ols.qmd), [regularization](../methods/regularization.qmd), [CV & info criteria](../methods/cv_info_criteria.qmd) | nb05 + nb08 + ex03 |
+| [C](#sec-wp-c) | No labels, group by similarity | [k-means](../methods/kmeans.qmd) | nb11 + ex06 |
+| [D](#sec-wp-d) | Too many features / 2-D picture | [PCA](../methods/pca.qmd) | nb10 + ex06 |
+| [E](#sec-wp-e) | One class rare | [logistic](../methods/logistic.qmd), [random forests](../methods/random_forests.qmd), [bias–variance](../methods/bias_variance.qmd) | nb13 + nb06 + L5 |
+| [F](#sec-wp-f) | Missing values / mixed types | (preprocessing, feeds all) | nb01 + ex01 |
+| [G](#sec-wp-g) | Pick model / tune / report error | [CV & info criteria](../methods/cv_info_criteria.qmd), [bias–variance](../methods/bias_variance.qmd) | nb08 + ex05 + L5 |
+
+See also the [decision dashboard](../cross_method/decision_dashboard.qmd) (which method, given the data) and the [showdowns](../cross_method/showdowns.qmd) (same dataset, several methods head-to-head).

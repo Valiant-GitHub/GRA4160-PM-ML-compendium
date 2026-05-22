@@ -3,6 +3,157 @@ title: "Exercise Dependency Map"
 body-classes: fam-cross
 ---
 
+[**Cross-method**]{.fam-badge} · The six course exercises are not a flat list — each one *exercises* a specific set of method pages, and they stack into a natural learning order: clean data first, then a probabilistic classifier, then regression with shrinkage, then a multiclass bake-off, then the evaluation machinery, and finally unsupervised segmentation. This page maps **which exercise notebook builds on which method** (every edge taken straight from that exercise's "Method page(s) it links to" and its solution walkthrough — see `phase0/exercise_0*.md`), colors the method nodes by [family](family_comparisons.qmd), and proposes a study order. Use it to see, at a glance, what you must already understand before opening a given exercise — and which method page to revise when an exercise gives you trouble.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 4.6** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**The suggested learning path (1 → 6).** Work the exercises in this order — it matches how the course layers skills: **(1) [Titanic preprocessing](../drill/exercise_01_titanic_preprocessing.qmd)** — raw-data hygiene with no model, the foundation every later exercise assumes. **(2) [Spam / naive Bayes](../drill/exercise_02_spam_naive_bayes.qmd)** — your first classifier, built from scratch *and* with sklearn, on text features. **(3) [House prices](../drill/exercise_03_house_prices.qmd)** — regression: [OLS](../methods/ols.qmd) baseline then [Ridge/Lasso](../methods/regularization.qmd), the exam's Assignment-1 skill. **(4) [MNIST digits](../drill/exercise_04_mnist_digits.qmd)** — a multiclass bake-off ([logistic](../methods/logistic.qmd) vs [kNN](../methods/knn.qmd) vs [trees](../methods/decision_trees.qmd) vs naive Bayes vs SVM). **(5) [Model selection](../drill/exercise_05_model_selection.qmd)** — the evaluation toolkit ([cross-validation](../methods/cv_info_criteria.qmd), GridSearchCV, confusion matrices) that makes (3)–(4) rigorous. **(6) [Customer segmentation](../drill/exercise_06_customer_segmentation.qmd)** — the only unsupervised exercise ([K-means](../methods/kmeans.qmd) + [PCA](../methods/pca.qmd)). Preprocessing (1) underpins all; evaluation (5) is the lens you re-apply to everything before it.
 :::
+
+## The map
+
+Read it left-to-right: each **exercise** (left column, slate) connects to the **methods it exercises** (right column, colored by family). An edge means "this exercise's solution actually uses this method" — nothing is drawn that isn't in the extract. Methods with a dedicated study page are linked from the table below; *naive Bayes* and *SVM* appear because exercises use them but they are drill-only / not covered as method pages, so they carry no family link.
+
+```{ojs}
+//| echo: false
+//| label: fig-dep-map
+//| fig-cap: "Exercise → method dependency map (bipartite). Left nodes are the six exercise notebooks in suggested study order (top = first); right nodes are the methods each exercise exercises, colored by family (blue = linear/supervised-baseline, green = tree, orange = unsupervised, slate = cross-cutting / drill-only). Each link is an 'exercise X uses method Y' edge taken verbatim from that exercise's extract (phase0/exercise_0N_*.md — its 'Method page(s) it links to' plus the solution walkthrough); no edge is inferred beyond the sources. The insight the layout encodes: the foundational preprocessing exercise (01) has no method edges — it is the prerequisite for everything else — while method load builds toward the multiclass bake-off (04) and the cross-cutting evaluation machinery (CV, bias–variance) only enters from exercise 04 onward."
+
+// --- family colors, read from the page CSS vars (fallbacks per theme/custom.scss) ---
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+famTree   = (getComputedStyle(document.documentElement).getPropertyValue('--family-tree').trim()   || "#06A77D")
+famUnsup  = (getComputedStyle(document.documentElement).getPropertyValue('--family-unsup').trim()  || "#F18F01")
+famCross  = (getComputedStyle(document.documentElement).getPropertyValue('--family-cross').trim()  || "#3D405B")
+
+famColor = ({linear: famLinear, tree: famTree, unsup: famUnsup, cross: famCross})
+
+// --- exercises (left), in suggested study order ---
+exercises = [
+  {id: "01 Titanic preprocessing", order: 1},
+  {id: "02 Spam / naive Bayes",    order: 2},
+  {id: "03 House prices",          order: 3},
+  {id: "04 MNIST digits",          order: 4},
+  {id: "05 Model selection",       order: 5},
+  {id: "06 Customer segmentation", order: 6}
+]
+
+// --- methods (right), grouped by family for a tidy column order ---
+methods = [
+  {id: "OLS",               family: "linear"},
+  {id: "Regularization",    family: "linear"},
+  {id: "Logistic",          family: "linear"},
+  {id: "kNN",               family: "linear"},
+  {id: "Decision Trees",    family: "tree"},
+  {id: "PCA",               family: "unsup"},
+  {id: "K-means",           family: "unsup"},
+  {id: "CV / Info Criteria",family: "cross"},
+  {id: "Bias–Variance",     family: "cross"},
+  {id: "Naive Bayes",       family: "cross"}
+]
+
+// --- edges: each one traced to an exercise extract (see table & prose) ---
+edges = [
+  // 02 Spam / naive Bayes  → naive Bayes (primary; drill-only)
+  {ex: "02 Spam / naive Bayes",    m: "Naive Bayes"},
+  // 03 House prices → OLS baseline + Ridge/Lasso
+  {ex: "03 House prices",          m: "OLS"},
+  {ex: "03 House prices",          m: "Regularization"},
+  // 04 MNIST digits → logistic baseline, kNN, trees, naive Bayes; touches CV/tuning
+  {ex: "04 MNIST digits",          m: "Logistic"},
+  {ex: "04 MNIST digits",          m: "kNN"},
+  {ex: "04 MNIST digits",          m: "Decision Trees"},
+  {ex: "04 MNIST digits",          m: "Naive Bayes"},
+  {ex: "04 MNIST digits",          m: "CV / Info Criteria"},
+  // 05 Model selection → kNN, trees, logistic; strongest link to CV; touches bias–variance
+  {ex: "05 Model selection",       m: "kNN"},
+  {ex: "05 Model selection",       m: "Decision Trees"},
+  {ex: "05 Model selection",       m: "Logistic"},
+  {ex: "05 Model selection",       m: "CV / Info Criteria"},
+  {ex: "05 Model selection",       m: "Bias–Variance"},
+  // 06 Customer segmentation → K-means + PCA
+  {ex: "06 Customer segmentation", m: "K-means"},
+  {ex: "06 Customer segmentation", m: "PCA"}
+  // 01 Titanic preprocessing has NO method edges (extract: "None of the modeling
+  // methods directly ... foundational/preprocessing"). It is the shared prerequisite.
+]
+
+// --- layout geometry: two columns, evenly spaced rows ---
+W = 720
+rowH = 46
+topPad = 34
+xL = 215     // x of exercise (right edge of left labels)
+xR = 505     // x of method (left edge of right labels)
+H = topPad + Math.max(exercises.length, methods.length) * rowH
+
+exPos = new Map(exercises.map((e, i) => [e.id, topPad + i * rowH]))
+mPos  = new Map(methods.map((m, i)  => [m.id, topPad + i * rowH]))
+
+linkData = edges.map(d => ({
+  x1: xL, y1: exPos.get(d.ex),
+  x2: xR, y2: mPos.get(d.m),
+  family: methods.find(m => m.id === d.m).family,
+  ex: d.ex, m: d.m
+}))
+
+exNodes = exercises.map(e => ({x: xL, y: exPos.get(e.id), label: e.order + ". " + e.id}))
+mNodes  = methods.map(m => ({x: xR, y: mPos.get(m.id), label: m.id, family: m.family}))
+
+depMap = Plot.plot({
+  width: W, height: H,
+  marginLeft: 0, marginRight: 0, marginTop: 0, marginBottom: 0,
+  x: {axis: null, domain: [0, W]},
+  y: {axis: null, domain: [H, 0]},
+  marks: [
+    // edges, colored by destination method's family
+    Plot.link(linkData, {
+      x1: "x1", y1: "y1", x2: "x2", y2: "y2",
+      stroke: d => famColor[d.family], strokeWidth: 1.6, strokeOpacity: 0.55,
+      curve: "bump-x"
+    }),
+    // exercise nodes (slate squares) + right-aligned labels
+    Plot.dot(exNodes, {x: "x", y: "y", r: 6, fill: famCross, symbol: "square"}),
+    Plot.text(exNodes, {x: "x", y: "y", text: "label", dx: -12, textAnchor: "end", fontSize: 12, fontWeight: 600}),
+    // method nodes (family-colored) + left-aligned labels
+    Plot.dot(mNodes, {x: "x", y: "y", r: 6, fill: d => famColor[d.family]}),
+    Plot.text(mNodes, {x: "x", y: "y", text: "label", dx: 12, textAnchor: "start", fontSize: 12, fill: d => famColor[d.family], fontWeight: 600}),
+    // column headers
+    Plot.text([{x: xL, y: 8, t: "EXERCISE  (study order →)"}], {x: "x", y: "y", text: "t", textAnchor: "end", dx: -12, fontSize: 11, fill: "#666", fontWeight: 700}),
+    Plot.text([{x: xR, y: 8, t: "METHOD EXERCISED"}], {x: "x", y: "y", text: "t", textAnchor: "start", dx: 12, fontSize: 11, fill: "#666", fontWeight: 700})
+  ]
+})
+```
+
+::: {.callout-note collapse="true"}
+## Family legend
+
+[●]{style="color:var(--family-linear)"} **Linear / supervised baseline** — OLS, Regularization, Logistic, kNN
+[●]{style="color:var(--family-tree)"} **Tree** — Decision Trees
+[●]{style="color:var(--family-unsup)"} **Unsupervised** — PCA, K-means
+[●]{style="color:var(--family-cross)"} **Cross-cutting / drill-only** — CV & Info Criteria, Bias–Variance, Naive Bayes (no method page)
+
+(kNN is grouped with the linear/supervised baselines per the [concept inventory](../methods/knn.qmd) — it has no natural family color and sits with the baseline supervised learners.)
+:::
+
+## Dependency table
+
+The reliable companion to the graph: one row per exercise, listing the dataset, the methods its solution actually exercises, the **method pages you should read first**, and its place in the suggested order. Every "Methods exercised" entry is taken from that exercise's extract (`phase0/exercise_0N_*.md`).
+
+| # | Exercise (drill page) | Dataset | Methods exercised | Prerequisite method pages | Order |
+|---|---|---|---|---|---|
+| 01 | [Titanic preprocessing](../drill/exercise_01_titanic_preprocessing.qmd) | Titanic `train.csv` | *(preprocessing / EDA only — no estimator)* | none (foundational) | **1** |
+| 02 | [Spam / naive Bayes](../drill/exercise_02_spam_naive_bayes.qmd) | SMS Spam Collection | Naive Bayes (scratch + `MultinomialNB`), bag-of-words | naive Bayes *(drill-only — no method page)* | **2** |
+| 03 | [House prices](../drill/exercise_03_house_prices.qmd) | Ames house prices | OLS, Ridge, Lasso, Lasso feature-selection | [OLS](../methods/ols.qmd), [Regularization](../methods/regularization.qmd) | **3** |
+| 04 | [MNIST digits](../drill/exercise_04_mnist_digits.qmd) | sklearn `digits` (8×8) | Logistic (multinomial), kNN, Decision Tree, Naive Bayes, SVM; manual tuning | [Logistic](../methods/logistic.qmd), [kNN](../methods/knn.qmd), [Decision Trees](../methods/decision_trees.qmd), [CV & Info Criteria](../methods/cv_info_criteria.qmd) | **4** |
+| 05 | [Model selection](../drill/exercise_05_model_selection.qmd) | Iris | kNN, Decision Tree, Logistic, SVM; `cross_val_score`, `GridSearchCV`, confusion matrices | [CV & Info Criteria](../methods/cv_info_criteria.qmd), [Bias–Variance](../methods/bias_variance.qmd), [kNN](../methods/knn.qmd), [Decision Trees](../methods/decision_trees.qmd), [Logistic](../methods/logistic.qmd) | **5** |
+| 06 | [Customer segmentation](../drill/exercise_06_customer_segmentation.qmd) | UCI Bank Marketing | K-means (elbow + silhouette), PCA (2D viz), scaling + one-hot | [K-means](../methods/kmeans.qmd), [PCA](../methods/pca.qmd) | **6** |
+
+: Exercise dependency table — methods exercised and the method pages to read first. {.striped tbl-colwidths="[5,22,16,28,24,5]"}
+
+::: {.callout-note}
+**Two notes on faithfulness to the sources.** (i) **Exercise 01 has no method edges** because its extract is explicit: *"None of the modeling methods directly… It is foundational/preprocessing."* It is the shared prerequisite for everything downstream, not a consumer of a method page. (ii) **Naive Bayes and SVM appear as methods used by exercises 02/04** but have **no dedicated method page** — naive Bayes is drill-only (taught in lecture, exercised here, but excluded from the 16 method pages per the [recurrence map](../methods/cv_info_criteria.qmd)); SVM (`SVC`) is used as a comparison classifier but is noted in the digits/model-selection extracts as not covered in course detail. They are shown for completeness but carry no method-page link.
+:::
+
+## How to use this with the rest of the site
+
+- **Stuck on an exercise?** Find its row above and open the listed **prerequisite method pages** first — those are the exact methods its solution uses.
+- **Revising a method?** Trace its node in the [map](#fig-dep-map) back to the exercises that exercise it — that gives you ready-made practice problems for that method.
+- **Cross-method practice:** exercises 03–05 are where methods *compete* on one dataset. For head-to-head comparisons on shared datasets see the [Showdowns](showdowns.qmd) page; for choosing among them see the [Decision Dashboard](decision_dashboard.qmd) and [Family Comparisons](family_comparisons.qmd).

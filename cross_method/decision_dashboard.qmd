@@ -3,6 +3,245 @@ title: "Decision Dashboard"
 body-classes: fam-cross
 ---
 
+[**Cross-method**]{.fam-badge} · the front door for "I have a dataset — what should I reach for?" Describe your problem with the controls below and the panel returns a **ranked shortlist** of methods, each with a one-line justification and a link to its page. This is the full version of the [placeholder dashboard on the home page](../index.qmd#sec-dashboard).
+
+## How this works
+
+The dashboard is not a model and it does not run your data. It is a **lookup over the course's own method pages**: every ranking rule below is lifted from the *"When to use / when **not** to use"* callouts in **§2** of a method page — the same conditions the course states for reaching toward, or away from, each technique. So when the panel says "regression + many correlated predictors → Ridge/Lasso," that is not a heuristic invented here; it is [OLS §2's](../methods/ols.qmd) own "reach for something else when $p \gtrsim n$ or predictors are correlated" pointing at [Regularization §2](../methods/regularization.qmd). The justifications are paraphrases of those callouts, and each card links straight to the page so you can read the full reasoning and the worked example behind it.
+
+Use it two ways. **Diagnose first:** answer the controls honestly about your data — task type, whether predictors rival the sample size, linearity, whether you need an interpretable model, and the data-shape flags (categoricals, missing values, class imbalance) — and read the top of the list as your starting candidate, the rest as fallbacks. **Then read the pages:** the shortlist is a map, not a verdict; the §2 callouts it points to carry the caveats (e.g. "Lasso is unstable under correlation," "kNN needs scaling," "trees overfit unless you ensemble") that decide the final call. The notes panel surfaces the cross-cutting habits — stratified CV, `class_weight`, scaling, pipelines — that apply *regardless* of which method wins.
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 1.4 / 4.1** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**Where the rules come from — the §2 "when NOT to use" reasoning.** Each ranking and each one-line justification is derived from a method page's §2 callout, not invented for this page. The regression rules trace to [OLS §2](../methods/ols.qmd) ("non-linear → trees; $p\gtrsim n$ or correlated → Ridge/Lasso") and [Regularization §2](../methods/regularization.qmd) ("Lasso selects, Ridge shrinks, Elastic Net for correlated + sparse; non-linear → trees; keep interpretable axes → not PCA"). The classification rules trace to [Logistic §2](../methods/logistic.qmd) ("interpretable linear boundary; non-linear → trees/kNN; well-separated Gaussians → LDA"), [LDA §2](../methods/lda.qmd) ("Gaussian classes, shared covariance; different covariances → QDA; minimal assumptions → logistic"), [kNN §2](../methods/knn.qmd) ("irregular local boundary, must scale; high-dimensional → reduce/parametric"), and [Decision Trees §2](../methods/decision_trees.qmd) / [Random Forests §2](../methods/random_forests.qmd) / [Ensembles §2](../methods/ensembles.qmd) ("non-linear, mixed types, no scaling; a lone tree overfits → bag into a forest or boost"). The unsupervised rules trace to [K-Means §2](../methods/kmeans.qmd) ("find groups, spherical, scale first, pair with PCA") and [PCA §2](../methods/pca.qmd) ("compress many correlated features; labels + separation → LDA instead"). The neural rules trace to [NN basics §2](../methods/nn_basics.qmd) / [Build a NN §2](../methods/build_a_nn.qmd) ("large unstructured data; small tabular → trees/linear"). The cross-cutting notes (stratified CV under imbalance, scaling for distance/gradient models) trace to [CV & Information Criteria §2](../methods/cv_info_criteria.qmd) and [kNN §2](../methods/knn.qmd).
 :::
+
+## The dashboard {#sec-dashboard-full}
+
+```{ojs}
+//| echo: false
+viewof task = Inputs.radio(
+  ["Regression (predict a number)", "Classification (predict a class)", "Clustering (find groups, no labels)", "Dimensionality reduction"],
+  {label: "Task", value: "Classification (predict a class)"}
+)
+viewof bign = Inputs.toggle({label: "Predictors rival or outnumber rows (p ≳ n), or strongly correlated?", value: false})
+viewof nonlinear = Inputs.toggle({label: "Relationship / boundary looks non-linear?", value: false})
+viewof interp = Inputs.toggle({label: "Need an interpretable / explainable model (signed effects)?", value: true})
+viewof categorical = Inputs.toggle({label: "Categorical features present (mixed types)?", value: false})
+viewof missing = Inputs.toggle({label: "Missing data present?", value: false})
+viewof imbalance = Inputs.toggle({label: "Class imbalance present?", value: false})
+```
+
+```{ojs}
+//| echo: false
+// ----------------------------------------------------------------------------
+// Family colors — read from the page's CSS custom properties (set in custom.scss),
+// with the concept-inventory hex values as offline fallbacks. No network calls.
+// ----------------------------------------------------------------------------
+famColor = (name, fallback) =>
+  (getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback)
+COL = ({
+  linear: famColor('--family-linear', '#2E86AB'),
+  tree:   famColor('--family-tree',   '#06A77D'),
+  neural: famColor('--family-neural', '#7B2CBF'),
+  unsup:  famColor('--family-unsup',  '#F18F01'),
+  cross:  famColor('--family-cross',  '#3D405B')
+})
+```
+
+```{ojs}
+//| echo: false
+// ----------------------------------------------------------------------------
+// RANKING LOGIC — every rule and justification is DERIVED FROM a method page's
+// §2 "When to use / when NOT to use" callout (cited in the comment on each push).
+// Higher score = ranked higher. Pure JS, no data, no network (C8).
+// ----------------------------------------------------------------------------
+ranked = {
+  const out = [];
+  // add(score, name, href, fam, why) — why is a paraphrase of the cited §2 callout.
+  const add = (score, name, href, fam, why) => out.push({score, name, href, fam, why});
+
+  // ===================== REGRESSION =====================
+  if (task.startsWith("Regression")) {
+    if (nonlinear) {
+      // OLS §2 "reach for something else when the relationship is clearly non-linear → Trees/RF";
+      // Random Forests §2 "non-linear with interactions, no scaling, strong out-of-the-box".
+      add(95, "Random Forest", "../methods/random_forests.qmd", "tree",
+          "OLS §2 sends a non-linear target to trees; RF §2: captures non-linearity and interactions with little tuning, no scaling.");
+      add(82, "Decision Tree", "../methods/decision_trees.qmd", "tree",
+          "Trees §2: non-linear, mixed types, no scaling — but a lone tree overfits, so use it as the readable baseline before the forest.");
+      add(70, "Gradient Boosting (ensemble)", "../methods/ensembles.qmd", "tree",
+          "Ensembles §2: boosting reduces bias sequentially and often edges out RF on structured data when you can afford to tune.");
+      // OLS §2 still names OLS only if you can linearize; offered as a low-rank interpretable fallback.
+      if (interp) add(40, "OLS (with transforms)", "../methods/ols.qmd", "linear",
+          "OLS §2: usable on a non-linear target only if you hand-engineer transforms/interactions to make it linear.");
+    } else if (bign) {
+      // OLS §2 "reach for something else when p ≳ n or strongly correlated → Ridge/Lasso";
+      // Regularization §2 "Lasso selects, Ridge shrinks; Elastic Net for correlated + sparse".
+      add(95, "Lasso", "../methods/regularization.qmd", "linear",
+          "Regularization §2: penalize when p ≳ n / collinear; Lasso (L1) also zeros irrelevant predictors for a sparse, interpretable model.");
+      add(93, "Ridge", "../methods/regularization.qmd", "linear",
+          "Regularization §2: many small genuine effects under multicollinearity → Ridge shrinks them together (keeps every predictor).");
+      add(85, "Elastic Net", "../methods/regularization.qmd", "linear",
+          "Regularization §2: correlated predictors AND want sparsity → Elastic Net keeps correlated groups together where plain Lasso is unstable.");
+      // PCA §2 is the dim-reduction alternative for many correlated predictors.
+      add(55, "PCA → regression", "../methods/pca.qmd", "unsup",
+          "PCA §2: the alternative to shrinkage — compress many correlated features into a few uncorrelated directions, then regress.");
+      // OLS §2 explicitly says plain OLS overfits here; rank it last as the diagnostic baseline.
+      add(35, "OLS (baseline only)", "../methods/ols.qmd", "linear",
+          "OLS §2: with p ≳ n or correlated predictors, plain OLS overfits (wide train–test gap) — fit it only as the baseline to beat.");
+    } else {
+      // OLS §2 "reach for OLS when target is continuous, roughly linear, n > p, interpretable coefficients wanted".
+      add(95, "OLS", "../methods/ols.qmd", "linear",
+          "OLS §2: continuous target, roughly linear, n > p, little collinearity — the fast, interpretable baseline. Reach here first.");
+      // Regularization §2: even with p ≪ n, a small penalty can help; offered as a guardrail.
+      add(60, "Ridge / Lasso", "../methods/regularization.qmd", "linear",
+          "Regularization §2: if the OLS train–test gap opens up, shrink — Ridge for stability, Lasso for built-in feature selection.");
+      // Random Forests §2: the non-linear fallback to keep in mind even when you assumed linearity.
+      add(45, "Random Forest", "../methods/random_forests.qmd", "tree",
+          "RF §2: the non-linear fallback if residual plots reveal curvature OLS can't fit — prediction over a coefficient story.");
+    }
+  }
+
+  // ===================== CLASSIFICATION =====================
+  else if (task.startsWith("Classification")) {
+    if (nonlinear) {
+      // Logistic §2 / LDA §2 "boundary clearly non-linear → Trees/RF or kNN";
+      // Decision Trees §2 / Random Forests §2 / kNN §2.
+      add(95, "Random Forest", "../methods/random_forests.qmd", "tree",
+          "Logistic §2 sends a non-linear boundary to trees/RF; RF §2: tames a single tree's variance, strong out-of-the-box, no scaling.");
+      add(82, "Decision Tree", "../methods/decision_trees.qmd", "tree",
+          "Trees §2: axis-aligned splits capture non-linearity + interactions, fully interpretable flowchart — the baseline before the forest.");
+      add(74, "kNN", "../methods/knn.qmd", "linear",
+          "kNN §2: an assumption-free non-parametric baseline that follows an irregular but locally smooth boundary — but you must scale features.");
+      add(60, "Gradient Boosting (ensemble)", "../methods/ensembles.qmd", "tree",
+          "Ensembles §2: boosting sharpens weak learners to reduce bias — top accuracy on structured data when you can tune.");
+    } else {
+      // Logistic §2 "interpretable linear boundary, calibrated probabilities, fast baseline".
+      add(95, "Logistic Regression", "../methods/logistic.qmd", "linear",
+          "Logistic §2: linear boundary, calibrated probabilities, coefficients read as log-odds/odds ratios — the interpretable first classifier.");
+      // LDA §2 "two+ reasonably-separated classes with similar covariances; supervised low-dim view".
+      add(85, "LDA", "../methods/lda.qmd", "linear",
+          "LDA §2: well-separated Gaussian-ish classes with similar covariances → a stable linear boundary (and a supervised low-dim view).");
+      // kNN §2 baseline; Trees §2 even a linear-boundary case can use a tree, but they note it overfits a diagonal.
+      add(60, "kNN", "../methods/knn.qmd", "linear",
+          "kNN §2: a quick assumption-free baseline alongside logistic/LDA — scale first, and watch the curse of dimensionality.");
+      add(45, "Random Forest", "../methods/random_forests.qmd", "tree",
+          "RF §2: the non-linear fallback if a linear boundary underfits — Trees §2 warn a tree needs a jagged staircase for a truly linear boundary.");
+    }
+  }
+
+  // ===================== CLUSTERING =====================
+  else if (task.startsWith("Clustering")) {
+    // K-Means §2 "no labels, want groups, roughly spherical, continuous + scaled, pair with PCA".
+    add(95, "K-Means", "../methods/kmeans.qmd", "unsup",
+        "K-Means §2: no labels, want groups/segments, roughly spherical and similar-sized clusters — standardize first (the #1 mistake).");
+    // K-Means §2 + PCA §2: the course-recommended PCA→K-Means pipeline (denoise/reduce, then cluster).
+    add(80, "PCA → K-Means", "../methods/pca.qmd", "unsup",
+        "PCA §2 + K-Means §2: reduce/denoise with PCA, then cluster — the course's recommended pairing and the exam's Assignment-2 pipeline.");
+  }
+
+  // ===================== DIMENSIONALITY REDUCTION =====================
+  else {
+    // PCA §2 "many correlated features → compress into a few uncorrelated directions; visualize; denoise".
+    add(95, "PCA", "../methods/pca.qmd", "unsup",
+        "PCA §2: compress many (correlated) features into a few uncorrelated, variance-ranked directions — visualize, denoise, compress. Standardize first.");
+    // PCA §2 / LDA §2: if labels exist and you care about separation, LDA is the supervised reducer.
+    add(70, "LDA (if you have labels)", "../methods/lda.qmd", "linear",
+        "LDA §2 / PCA §2: with labels and a goal of class separation, LDA keeps the directions that separate classes (PCA ignores y).");
+    // Regularization §2: the interpretable alternative to projecting — keep the original axes.
+    if (interp) add(55, "Regularization (keep original axes)", "../methods/regularization.qmd", "linear",
+        "PCA §2 / Regularization §2: to keep interpretable original features instead of blended components, shrink with Ridge/Lasso.");
+  }
+
+  // ----- sort high→low, stable -----
+  return out.sort((a, b) => b.score - a.score);
+}
+```
+
+```{ojs}
+//| echo: false
+// ----------------------------------------------------------------------------
+// Cross-cutting NOTES — surfaced by the data-shape flags. Each note paraphrases
+// a §2 callout (cited inline). These apply regardless of which method wins.
+// ----------------------------------------------------------------------------
+notes = {
+  const ns = [];
+  if (imbalance) ns.push(
+    "**Class imbalance:** use **stratified V-fold CV** so every fold keeps the class ratio, and report precision/recall/F1, not just accuracy (CV & Info Criteria §2; kNN/Logistic §6). For logistic regression set `class_weight='balanced'` (Logistic §3).");
+  if (categorical) ns.push(
+    "**Categorical / mixed-type features:** **trees and random forests split on thresholds and need no one-hot encoding or scaling** (Decision Trees §2). Distance/linear models (kNN, logistic, LDA) require you to encode and scale first (kNN §2).");
+  if (missing) ns.push(
+    "**Missing data:** trees tolerate mixed, messy inputs more gracefully (Decision Trees §2: mixed types, no preprocessing); distance/gradient models (kNN, logistic, NN) need complete, scaled rows — impute inside a pipeline so nothing leaks (CV & Info Criteria §2).");
+  if (bign && !task.startsWith("Regression")) ns.push(
+    "**p ≳ n / many predictors:** for classification this destabilizes linear coefficients — use the built-in L2/L1 penalty (`C`/`penalty`, Logistic §2) or reduce dimensions with **PCA** before a distance model (kNN §2: the curse of dimensionality makes 'nearest' meaningless).");
+  ns.push(
+    "**Always:** standardize *inside* a `make_pipeline` / CV loop for any distance- or gradient-based model (kNN, logistic, K-Means, PCA, NN), so scaling is learned on training folds only and never leaks (CV & Info Criteria §2; kNN §2; PCA §2). Trees are the exception — they need no scaling (Decision Trees §2).");
+  return ns;
+}
+```
+
+```{ojs}
+//| echo: false
+// ----------------------------------------------------------------------------
+// RENDER — ranked cards + the notes panel. Pure HTML/DOM, no network.
+// ----------------------------------------------------------------------------
+html`
+<div style="display:flex; flex-direction:column; gap:0.55rem; margin:0.5rem 0 1rem;">
+  ${ranked.map((c, i) => html`
+    <div style="display:flex; align-items:flex-start; gap:0.7rem;
+                border-left:5px solid ${COL[c.fam]}; background:rgba(0,0,0,0.025);
+                padding:0.55rem 0.8rem; border-radius:0 6px 6px 0;">
+      <div style="flex:0 0 1.6rem; font-weight:700; font-size:1.05rem;
+                  color:${COL[c.fam]};">${i + 1}.</div>
+      <div style="flex:1;">
+        <a href="${c.href}" style="font-weight:700; color:${COL[c.fam]}; text-decoration:none;">
+          ${c.name}</a>
+        <div style="font-size:0.9rem; color:#444; margin-top:0.15rem;">${c.why}</div>
+      </div>
+    </div>`)}
+</div>`
+```
+
+```{ojs}
+//| echo: false
+html`
+<div style="border:1px solid #ddd; border-radius:6px; padding:0.6rem 0.9rem;
+            background:rgba(61,64,91,0.05);">
+  <div style="font-weight:700; color:${COL.cross}; margin-bottom:0.35rem;">
+    Cross-cutting notes for this problem</div>
+  <ul style="margin:0; padding-left:1.2rem;">
+    ${notes.map(n => html`<li style="margin:0.25rem 0; font-size:0.9rem;">${boldify(n)}</li>`)}
+  </ul>
+</div>`
+```
+
+```{ojs}
+//| echo: false
+// Render a string with **bold** markup as an HTML fragment — pure JS, no imports,
+// no network (C8). Splits on the **…** delimiters and wraps the odd segments in <b>.
+boldify = (s) => {
+  const parts = s.split("**");
+  return html`<span>${parts.map((seg, i) => i % 2 === 1 ? html`<b>${seg}</b>` : seg)}</span>`;
+}
+```
+
+## How the four Spring-2025 assignments map to dashboard paths
+
+::: {.callout-exam}
+**The exam *is* four trips through this dashboard.** Each Spring-2025 take-home assignment corresponds to one path through the controls above — set them as listed and the panel returns the methods the exam actually expects (`phase0/concept_inventory.md`; `phase0/exam_spring2025_notebook.md`).
+
+- **Assignment 1 — regression on `Hitters.csv`.** Path: *Regression* → *p ≳ n / correlated* **on** → the panel ranks **Lasso / Ridge / Elastic Net** with **OLS as the baseline to beat**. This is exactly the exam ask: fit [OLS](../methods/ols.qmd) as baseline, then [Ridge/Lasso with cross-validated `alpha`](../methods/regularization.qmd), and interpret the coefficient change and the [bias–variance](../methods/bias_variance.qmd) trade-off.
+- **Assignment 2 — clustering + PCA on `WholesaleCustomers`.** Path: *Clustering* (or *Dimensionality reduction*) → the panel ranks **PCA → K-Means**. The exam pipeline is the course-recommended one: scale → [PCA](../methods/pca.qmd) to 90 % variance → [K-Means](../methods/kmeans.qmd) with elbow + silhouette to choose $K$.
+- **Assignment 3 — ensembles on `WDBC` (breast cancer).** Path: *Classification* → *non-linear* **on** → the panel ranks **Random Forest / Decision Tree / Gradient Boosting**. The exam walks the [single tree](../methods/decision_trees.qmd) → [Random Forest](../methods/random_forests.qmd) → [gradient boosting](../methods/ensembles.qmd) progression and asks you to contrast bagging-vs-boosting (Assignment 3.8).
+- **Assignment 4 — classification on `SimulatedData.csv`.** Path: *Classification*, with *categorical features* and *imbalance* flags as the data demands → the panel ranks candidate classifiers ([logistic](../methods/logistic.qmd), [kNN](../methods/knn.qmd), [trees/RF](../methods/random_forests.qmd)) and the **notes** surface "scale distance/gradient models, not trees" and "stratified CV + class metrics" — precisely Assignment 4's "encode + scale if necessary," "tune by CV," and "report accuracy/precision/recall/F1."
+:::
+
+## See also
+
+- The condensed [home-page dashboard](../index.qmd#sec-dashboard) (same idea, fewer controls).
+- [Family Comparisons](family_comparisons.qmd) — side-by-side tables of the method families.
+- [Showdowns](showdowns.qmd) — same dataset, several methods, what to notice.
+- [Bias–Variance](../methods/bias_variance.qmd) and [CV & Information Criteria](../methods/cv_info_criteria.qmd) — the cross-cutting lenses every choice above is read through.
+- The [Drill index](../drill/index.qmd) — the Spring-2025 take-home worked end-to-end.
+</content>
+</invoke>

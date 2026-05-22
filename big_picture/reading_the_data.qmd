@@ -3,6 +3,248 @@ title: "Reading the Data"
 body-classes: fam-cross
 ---
 
+[**Cross-method**]{.fam-badge} · The preface to every method page. Before you fit anything, you *read* the data — and what you read decides what you fit. This page runs a concrete exploratory pass over the five datasets the course actually uses (Titanic, Hitters, seeds, WholesaleCustomers, and the sklearn digits) and is organized not by dataset but by **diagnostic**: data types & dimensionality, missingness, target distribution & class balance, feature scales, multicollinearity, and a linearity check. Each diagnostic shows the *real* numbers side-by-side and then names the **method or workflow step** it steers you toward. Every number below is computed live with the course `.venv` (numpy 2.4.6, pandas 3.0.3, scikit-learn 1.8.0); none is fabricated. Pair this page with the [decision dashboard](../cross_method/decision_dashboard.qmd) (which method?) and the [workflow patterns](workflow_patterns.qmd) (which recipe?).
+
 ::: {.callout-bigpicture}
-**Under construction.** This page is filled in during **Phase 4.4** of the build. The structure, sources, and cross-links are planned in `phase0/concept_inventory.md`.
+**The reading-to-method loop.** Reading the data is not a warm-up you do once and forget — it is the first half of every exam answer. *Shape* tells you whether $p$ rivals $n$ (regularize, reduce). *Missingness* dictates an imputation or drop step before any model. *Class balance* decides your metric (accuracy or precision/recall/F1). *Feature scales* decide whether to standardize (mandatory before distance or variance-based methods). *Correlations* warn of multicollinearity (Ridge over OLS). *(Non-)linearity* decides linear vs. tree-based learners. This page makes each of those calls on the course's own datasets; the [workflow patterns](workflow_patterns.qmd) page then strings them into runnable recipes.
+:::
+
+## The five datasets at a glance {#sec-rd-datasets}
+
+The course's datasets span every problem type you will be asked about — one of each, almost by design *(all figures computed via the course `.venv`)*:
+
+| Dataset | Path | Shape | Type mix | Task | Used by |
+|---|---|---|---|---|---|
+| **Titanic** | `Data/Titanic data/train.csv` | 891 × 12 | 5 int, 2 float, 5 text | Binary classification (`Survived`) | [logistic](../methods/logistic.qmd), [RF](../methods/random_forests.qmd), [trees](../methods/decision_trees.qmd) |
+| **Hitters** | `…/GRA4160_…_EP_2/Hitters.csv` | 322 × 20 | 16 int, 1 float, 3 text | Regression (`Salary`) | [OLS](../methods/ols.qmd), [Ridge/Lasso](../methods/regularization.qmd) |
+| **seeds** | `Data/seeds.csv` | 140 × 8 | 7 float, 1 int label | Clustering / classification (`type`) | [K-Means](../methods/kmeans.qmd), [PCA](../methods/pca.qmd) |
+| **WholesaleCustomers** | `…/GRA4160_…_EP_2/WholesaleCustomers.csv` | 440 × 8 | 8 int | Clustering (no ground-truth label) | [PCA](../methods/pca.qmd), [K-Means](../methods/kmeans.qmd) |
+| **digits** | sklearn `load_digits()` | 1797 × 64 | all numeric (0–16) | Multiclass (10 classes) | [kNN](../methods/knn.qmd), high-dim example for [PCA](../methods/pca.qmd) |
+
+::: {.callout-pitfall}
+**The local `seeds.csv` is *not* the textbook seeds set.** The canonical UCI "seeds" dataset is 210 rows × 3 wheat varieties (70 each). The copy in this repo is **140 rows and only 2 varieties** (`type` is 70× class 1 and 70× class 2 — computed), per the dataset-availability note [DATA] in `phase0/disagreements.md`. Quote 140×8 / 2-variety here, not the 210×3 you may remember from ISL. Likewise, **MNIST** (the dataset of notebook 19, 70 000 images × 784 pixels) cannot be loaded in this environment — `torch`/`torchvision` are absent — so wherever a *large* high-dimensional image example is needed, this page uses sklearn's **digits** (1797 × 64) as the loadable analogue and never quotes MNIST numbers.
+:::
+
+## Diagnostic 1 — Data types & dimensionality {#sec-rd-types}
+
+The first two questions are *how many columns of each kind?* and *how does $p$ compare to $n$?* They decide your very first lines of code (encoding text, dropping IDs) and flag the high-$p$ regime where plain [OLS](../methods/ols.qmd) overfits.
+
+| Dataset | $n$ rows | $p$ usable features | Numeric | Categorical / text | Notable |
+|---|---|---|---|---|---|
+| Titanic | 891 | ~7 numeric + 3 cat | `Pclass, Age, SibSp, Parch, Fare`, + `Survived`, `PassengerId` | `Sex, Embarked` (model-able); `Name, Ticket, Cabin` (need work) | `PassengerId` is an **ID, not a feature** — drop it |
+| Hitters | 263* | 16 numeric + 3 cat | 16 batting/career counts | `League, Division, NewLeague` | many predictors **move together** (Diag 5) |
+| seeds | 140 | 7 numeric | all 7 geometric measurements | `type` is the label | small $n$, clean |
+| WholesaleCustomers | 440 | 6 spend + 2 cat | 6 annual-spend columns | `Channel, Region` (integer codes, really categorical) | no row labels at all |
+| digits | 1797 | 64 numeric | 64 pixel intensities | none | $p=64$ is the high-dim case |
+
+\* Hitters has 322 rows but 59 have a missing `Salary`; the modelling frame is 263 (Diag 2).
+
+::: {.callout-intuition}
+**Three type traps to catch on sight.** (i) An **ID column** (`PassengerId`, row index) correlates with nothing and must be dropped — feeding it to a model is a classic silent bug. (ii) **Integer-coded categoricals** lie about their type: WholesaleCustomers' `Channel` (1/2) and `Region` (1/2/3) read as `int64` but are *nominal* — treating `Region=3` as "three times Region=1" is wrong; one-hot or leave them out of distance/PCA. (iii) **Text that is secretly a feature** — Titanic's `Name` hides a title (Mr/Mrs/Master) and `Cabin`'s deck letter is informative; raw, they're unusable, so the course's preprocessing exercise drops or engineers them (`Exercises and solutions(VHL)/01_Data_preprocessing_titanic.ipynb`).
+:::
+
+**Where this steers you.** When $p$ is large or rivals $n$ — or when many columns are near-duplicates as in Hitters — plain [OLS](../methods/ols.qmd) has too much variance; move to [Ridge/Lasso](../methods/regularization.qmd) (shrink/select) or [PCA](../methods/pca.qmd) (compress). digits' 64 dimensions are the cue for dimensionality reduction before visualization or a distance-based classifier — exactly [workflow Pattern D](workflow_patterns.qmd#sec-wp-d).
+
+## Diagnostic 2 — Missingness {#sec-rd-missing}
+
+You cannot fit on `NaN`. *Which* columns are missing, and *how much*, decides whether you drop rows, drop the column, or impute — and the answer differs sharply across these datasets *(all counts computed)*:
+
+| Dataset | Column | Missing count | Missing % | Sensible action |
+|---|---|---|---|---|
+| Titanic | `Cabin` | 687 | **77.1 %** | drop the column (or reduce to "has cabin?") |
+| Titanic | `Age` | 177 | 19.9 % | impute (median / by group) — too valuable to drop |
+| Titanic | `Embarked` | 2 | 0.2 % | impute mode or drop 2 rows |
+| Hitters | `Salary` (target) | 59 | 18.3 % | **drop those rows** — can't impute the target |
+| seeds | — | 0 | 0 % | nothing to do |
+| WholesaleCustomers | — | 0 | 0 % | nothing to do |
+| digits | — | 0 | 0 % | nothing to do |
+
+```{ojs}
+//| echo: false
+//| label: fig-rd-missing
+//| fig-cap: "Titanic missingness by column (counts computed from Data/Titanic data/train.csv, n=891). Cabin is 77.1% missing → drop the column; Age is 19.9% missing → impute (too predictive to discard); Embarked is 2 rows → trivial. Every other column is complete. The shape of this bar chart is the whole missing-data decision: tall bars get dropped, medium bars get imputed, the rest get left alone."
+famUnsup = (getComputedStyle(document.documentElement).getPropertyValue('--family-unsup').trim() || "#F18F01")
+famCross = (getComputedStyle(document.documentElement).getPropertyValue('--family-cross').trim() || "#3D405B")
+titanicMissing = [
+  {col: "Cabin", missing: 687, pct: 77.1},
+  {col: "Age", missing: 177, pct: 19.9},
+  {col: "Embarked", missing: 2, pct: 0.2},
+  {col: "PassengerId", missing: 0, pct: 0.0},
+  {col: "Survived", missing: 0, pct: 0.0},
+  {col: "Pclass", missing: 0, pct: 0.0},
+  {col: "Name", missing: 0, pct: 0.0},
+  {col: "Sex", missing: 0, pct: 0.0},
+  {col: "SibSp", missing: 0, pct: 0.0},
+  {col: "Parch", missing: 0, pct: 0.0},
+  {col: "Ticket", missing: 0, pct: 0.0},
+  {col: "Fare", missing: 0, pct: 0.0}
+]
+Plot.plot({
+  height: 320, marginLeft: 95, marginRight: 40, grid: true,
+  x: {label: "Missing values (of 891 rows)", domain: [0, 891]},
+  y: {label: null, domain: titanicMissing.map(d => d.col)},
+  marks: [
+    Plot.barX(titanicMissing, {x: "missing", y: "col", fill: d => d.pct > 50 ? famUnsup : famCross, fillOpacity: 0.9}),
+    Plot.text(titanicMissing.filter(d => d.missing > 0), {x: "missing", y: "col", text: d => d.missing + " (" + d.pct + "%)", dx: 6, textAnchor: "start", fontSize: 11}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+::: {.callout-pitfall}
+**Never impute the target, and never impute *before* you split.** Hitters' 59 missing `Salary` values are dropped (322 → 263), because inventing a target value would be inventing the answer — this is exactly the row-drop in the [OLS](../methods/ols.qmd#sec-ols-hitters) and [regularization](../methods/regularization.qmd#sec-reg-hitters) examples. And any *feature* imputation (Titanic's `Age` median) must be learned on the training fold only and applied to the test fold — put the imputer in a `Pipeline` so it never sees the held-out data, the same leakage rule that governs scaling.
+:::
+
+**Where this steers you.** Missingness is a *workflow* decision, not a method choice — it sits before every model. The recipe is [workflow Pattern F (missing-data handling)](workflow_patterns.qmd#sec-wp-f): drop columns past a missing threshold, impute the rest inside a pipeline, drop rows only when the *target* is missing.
+
+## Diagnostic 3 — Target distribution & class balance {#sec-rd-target}
+
+The target's shape decides two things at once: for **classification**, whether accuracy is a trustworthy metric; for **regression**, whether the target is skewed enough to warrant a transform.
+
+**Classification targets — is it balanced?** *(class counts computed)*
+
+| Dataset | Target | Class balance | Majority-class accuracy | Verdict |
+|---|---|---|---|---|
+| Titanic | `Survived` | 549 died / 342 survived = **61.6 % / 38.4 %** | 0.616 | mild imbalance — watch the metric |
+| seeds | `type` | 70 / 70 = **50 % / 50 %** | 0.50 | perfectly balanced |
+| digits | 0–9 | 174–183 per class (**≈ 10 % each**) | 0.102 | balanced across 10 classes |
+
+::: {.callout-pitfall}
+**Accuracy lies on imbalanced data.** A model that always predicts "died" on Titanic scores **61.6 % accuracy** (the majority-class rate, computed) while finding *zero* survivors — useless. The fix is to report **precision / recall / F1** and read the confusion matrix, and to consider `class_weight="balanced"` or stratified splitting (Lecture 5, slide 5). Titanic's 62/38 split is only mild, but the WDBC tumour data and the exam's `SimulatedData` are where this bites hard — see [workflow Pattern E (imbalanced classes)](workflow_patterns.qmd#sec-wp-e). seeds and digits are balanced, so accuracy there is honest.
+:::
+
+**Regression target — is it skewed?** Hitters' `Salary` is heavily **right-skewed** *(computed)*: min &#36;67.5k, **median &#36;425k**, **mean &#36;535.9k** (mean > median, the skew fingerprint), max &#36;2 460k; sample skewness **+1.58**. A log transform almost fully fixes it — skewness of `log(Salary)` is **−0.18** (computed). The histogram makes the long right tail visible:
+
+```{ojs}
+//| echo: false
+//| label: fig-rd-salary
+//| fig-cap: "Hitters Salary distribution (computed from Hitters.csv, n=263 after dropping missing salaries; &#36;1000s, bin width &#36;200k). Right-skewed: skewness +1.58, mean &#36;535.9k well above median &#36;425k (red line vs blue line). A handful of star salaries past &#36;1.8M form the long tail. A log transform pulls skewness to −0.18 — near-symmetric — which is why salary regressions often model log(Salary)."
+famLinear = (getComputedStyle(document.documentElement).getPropertyValue('--family-linear').trim() || "#2E86AB")
+salaryHist = [
+  {lo: 0, hi: 200, count: 69}, {lo: 200, hi: 400, count: 55}, {lo: 400, hi: 600, count: 42},
+  {lo: 600, hi: 800, count: 42}, {lo: 800, hi: 1000, count: 22}, {lo: 1000, hi: 1200, count: 11},
+  {lo: 1200, hi: 1400, count: 9}, {lo: 1400, hi: 1600, count: 2}, {lo: 1600, hi: 1800, count: 2},
+  {lo: 1800, hi: 2000, count: 6}, {lo: 2000, hi: 2200, count: 1}, {lo: 2200, hi: 2400, count: 0},
+  {lo: 2400, hi: 2600, count: 2}
+]
+salaryMean = 535.9
+salaryMedian = 425.0
+Plot.plot({
+  height: 300, marginLeft: 45, grid: true,
+  x: {label: "Salary ($1000s)", domain: [0, 2600]},
+  y: {label: "Number of players"},
+  marks: [
+    Plot.rectY(salaryHist, {x1: "lo", x2: "hi", y: "count", fill: famLinear, fillOpacity: 0.8}),
+    Plot.ruleX([salaryMedian], {stroke: "#2E86AB", strokeWidth: 2}),
+    Plot.ruleX([salaryMean], {stroke: "#c0392b", strokeWidth: 2}),
+    Plot.text([{x: salaryMedian, y: 65, t: "median 425"}], {x: "x", y: "y", text: "t", dx: -6, textAnchor: "end", fontSize: 10, fill: "#2E86AB"}),
+    Plot.text([{x: salaryMean, y: 58, t: "mean 535.9"}], {x: "x", y: "y", text: "t", dx: 6, textAnchor: "start", fontSize: 10, fill: "#c0392b"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+**Where this steers you.** A balanced target (seeds, digits) ⇒ accuracy is fine; an imbalanced one (Titanic, and worse) ⇒ precision/recall/F1 and stratified splits ([Pattern E](workflow_patterns.qmd#sec-wp-e)). A skewed regression target (Hitters' `Salary`) ⇒ consider a log transform and remember that squared-error loss in [OLS](../methods/ols.qmd) is pulled by the high-salary tail.
+
+## Diagnostic 4 — Feature scales (why standardize) {#sec-rd-scale}
+
+Distance-based and variance-based methods — [kNN](../methods/knn.qmd), [K-Means](../methods/kmeans.qmd), [PCA](../methods/pca.qmd), and penalized regressions — are *not scale-invariant*: a feature with a large numeric range dominates the distance or the variance budget purely because of its units. So you must check, per dataset, whether the feature scales differ.
+
+**seeds** — same family of measurements, but spread differs by orders of magnitude *(per-feature std computed)*:
+
+| seeds feature | std | range (max − min) |
+|---|---|---|
+| area | 2.406 | 9.95 |
+| asymmetry_coefficient | 1.272 | 5.92 |
+| perimeter | 1.099 | 4.62 |
+| grove_length | 0.535 | 2.03 |
+| length | 0.407 | 1.77 |
+| width | 0.283 | 1.18 |
+| compactness | **0.016** | 0.079 |
+
+The largest standard deviation (`area`, 2.41) is **≈ 150× the smallest** (`compactness`, 0.016, computed). Untouched, `area` would single-handedly drive any Euclidean distance and the first principal component.
+
+**WholesaleCustomers** — the scale problem is even starker because the spend columns are raw kroner-like counts *(computed)*:
+
+| Wholesale feature | mean | median | max | std |
+|---|---|---|---|---|
+| Fresh | 12 000 | 8 504 | 112 151 | 12 647 |
+| Grocery | 7 951 | 4 756 | 92 780 | 9 503 |
+| Milk | 5 796 | 3 627 | 73 498 | 7 380 |
+| Frozen | 3 072 | 1 526 | 60 869 | 4 855 |
+| Detergents_Paper | 2 882 | 817 | 40 827 | 4 768 |
+| Delicassen | 1 525 | 966 | 47 943 | 2 820 |
+
+Means differ by **≈ 8×** across columns and the standard deviations by **≈ 4.5×** (computed) — and on top of that the spends are wildly right-skewed (Diag 3's logic: `Delicassen` skew +11.1, `Frozen` +5.9, computed). By contrast, **digits** has every feature on the *same* 0–16 pixel scale, so standardizing matters far less there — a useful counter-example.
+
+::: {.callout-intuition}
+**Scale before any distance- or variance-based method — full stop.** Fit a `StandardScaler` (mean 0, std 1) *inside the pipeline* before [K-Means](../methods/kmeans.qmd), [PCA](../methods/pca.qmd), [kNN](../methods/knn.qmd), or a penalized [regression](../methods/regularization.qmd). Without it, PCA on WholesaleCustomers would return "the `Fresh` axis" as PC1 — a units artefact, not structure — and K-Means clusters would just sort customers by total `Fresh` spend. This is *the* reason the exam's clustering task ([Pattern C](workflow_patterns.qmd#sec-wp-c)/[D](workflow_patterns.qmd#sec-wp-d)) begins `StandardScaler → PCA → KMeans`. Tree-based methods ([trees](../methods/decision_trees.qmd), [random forests](../methods/random_forests.qmd)) are the exception — they split one feature at a time and are scale-invariant, so they need no scaling.
+:::
+
+**Where this steers you.** Differing scales (seeds, WholesaleCustomers) ⇒ `StandardScaler` is mandatory before [PCA](../methods/pca.qmd) / [K-Means](../methods/kmeans.qmd) / [kNN](../methods/knn.qmd) / [regularization](../methods/regularization.qmd). Uniform scale (digits' pixels) ⇒ scaling is optional. Tree-based learners ⇒ skip scaling entirely.
+
+## Diagnostic 5 — Feature correlations / multicollinearity {#sec-rd-corr}
+
+When predictors carry the same information, a linear model's coefficients become unstable (large variance, "wrong" signs) even though predictions may be fine. The cure is to *measure* it before fitting. **Hitters** is the course's poster child: its career-total columns are near-duplicates *(Pearson correlations computed)*:
+
+| Pair | Correlation |
+|---|---|
+| `CAtBat` ↔ `CHits` | **0.995** |
+| `CHits` ↔ `CRuns` | 0.985 |
+| `CAtBat` ↔ `CRuns` | 0.983 |
+| `CAtBat` ↔ `CRBI` | 0.951 |
+| `CRuns` ↔ `CRBI` | 0.946 |
+| `AtBat` ↔ `Hits` (single-season) | 0.964 |
+
+A correlation of **0.995** between `CAtBat` and `CHits` means they are essentially the same column — a player with more career at-bats has, almost deterministically, more career hits. **WholesaleCustomers** shows the same thing on its spend columns: `Grocery` ↔ `Detergents_Paper` correlate **0.925**, `Milk` ↔ `Grocery` **0.728** (computed) — retail co-purchasing. seeds and digits are comparatively benign.
+
+::: {.callout-pitfall}
+**Multicollinearity is why OLS coefficients flip sign.** On Hitters, [OLS](../methods/ols.qmd#sec-ols-hitters) returns a *negative* coefficient for `HmRun` once `Hits`/`RBI` are in the model (computed on the OLS page) — not because home runs lower salary, but because the redundant predictors fight over a shared signal. This is the textbook cue for [**Ridge**](../methods/regularization.qmd), which shares the coefficient across correlated predictors instead of letting them blow up, and the train–test $R^2$ gap (0.55 → 0.36) it produces is variance you can shrink away. **Lasso**, faced with a *correlated group*, arbitrarily keeps one and zeros the rest — useful for sparsity but unstable; **Elastic Net** is the compromise. See the [regularization decision callout](../methods/regularization.qmd#sec-reg-diag).
+:::
+
+**Where this steers you.** Strong multicollinearity (Hitters' career totals, Wholesale's `Grocery`/`Detergents_Paper`) ⇒ prefer [Ridge](../methods/regularization.qmd) over [OLS](../methods/ols.qmd), or compress with [PCA](../methods/pca.qmd) (which *turns* correlated features into uncorrelated components by construction). This is the heart of [workflow Pattern B (regression with many predictors)](workflow_patterns.qmd#sec-wp-b).
+
+## Diagnostic 6 — A linearity check {#sec-rd-linearity}
+
+A linear model assumes the target moves *proportionally* with each feature. Two cheap checks tell you whether that holds: does a feature relate to the target **monotonically and straight**, and does a **transform** improve the linear fit?
+
+**Titanic — survival is non-monotone in age** *(survival rate by age band, computed)*:
+
+| Age band | Survival rate | n |
+|---|---|---|
+| 0–12 | **0.580** | 69 |
+| 12–18 | 0.429 | 70 |
+| 18–30 | 0.356 | 270 |
+| 30–45 | 0.426 | 202 |
+| 45–60 | 0.407 | 81 |
+| 60+ | **0.227** | 22 |
+
+Survival is high for children, dips for young adults, recovers in middle age, then falls for the elderly — a **U-then-down** shape, not a straight line. A purely linear-in-`Age` term would miss the "children first" effect; this is a cue that a [tree](../methods/decision_trees.qmd) (which splits `Age` at a threshold automatically) or an engineered `is_child` feature may beat a raw linear term.
+
+**Hitters — a transform straightens the relationship** *(correlations computed)*. `Years` correlates with raw `Salary` at 0.40 but with `log(Salary)` at **0.54**; `CHits` correlates 0.55 with `Salary` and **0.62** with `log(Salary)`. The lift from logging the target is the signature of a multiplicative (curved) relationship that a transform makes linear — the same skew finding from Diag 3, now framed as a modelling decision.
+
+::: {.callout-intuition}
+**Linearity decides linear-vs-flexible.** Straight, monotone feature–target relationships (or ones a log/polynomial transform straightens) ⇒ [OLS](../methods/ols.qmd) / [logistic regression](../methods/logistic.qmd) / [LDA](../methods/lda.qmd) are appropriate and interpretable. Visible curvature or non-monotonicity that you don't want to hand-engineer (Titanic survival in age) ⇒ reach for [decision trees](../methods/decision_trees.qmd) or [random forests](../methods/random_forests.qmd), which capture thresholds and interactions automatically. The fastest check is a scatter (regression) or a binned-rate table (classification) like the one above — and remember a penalty *cannot* fix a wrong functional form, only over-fitting.
+:::
+
+**Where this steers you.** Roughly linear / transformable ⇒ [linear family](../methods/ols.qmd); curved or interaction-heavy ⇒ [tree family](../methods/decision_trees.qmd). This is the top fork of the [decision dashboard](../cross_method/decision_dashboard.qmd).
+
+## Putting it together {#sec-rd-together}
+
+Read across the six diagnostics and each dataset *announces* its method before you fit a thing:
+
+| Dataset | Headline reading | Method it points to |
+|---|---|---|
+| **Titanic** | mild imbalance (62/38), `Cabin` 77% / `Age` 20% missing, non-linear in age | impute + [logistic](../methods/logistic.qmd)/[tree](../methods/decision_trees.qmd)/[RF](../methods/random_forests.qmd); F1 not just accuracy |
+| **Hitters** | 263 rows, career totals corr ≈ 0.99, `Salary` skew +1.58 | [Ridge/Lasso](../methods/regularization.qmd) over [OLS](../methods/ols.qmd); maybe log target |
+| **seeds** | balanced 70/70, scales differ ≈ 150×, no missing | scale → [K-Means](../methods/kmeans.qmd)/[PCA](../methods/pca.qmd) (ground truth to check against) |
+| **WholesaleCustomers** | scales ≈ 8× / skew to +11, `Grocery`↔`Detergents` 0.93, no labels | scale → [PCA](../methods/pca.qmd) → [K-Means](../methods/kmeans.qmd) |
+| **digits** | 64-dim, balanced 10-class, uniform 0–16 scale | [PCA](../methods/pca.qmd) for dim-reduction, then [kNN](../methods/knn.qmd) |
+
+::: {.callout-bigpicture}
+**This page is step zero of every workflow.** Once you have read the data, hand off to the two cross-method pages: the [**decision dashboard**](../cross_method/decision_dashboard.qmd) maps your reading (target type, $n$ vs $p$, balance, scale) to a shortlist of methods, and the [**workflow patterns**](workflow_patterns.qmd) page gives the runnable recipe — load → inspect → handle missing → encode/scale → split → baseline → tune by CV → evaluate with the right metric. The diagnostics here are exactly the inputs both of those need. Read first, then choose, then build.
+:::
+
+::: {.callout-exam}
+**Reading the data *is* graded.** Every Spring-2025 assignment opens with an inspection step that earns marks on its own (`phase0/exam_spring2025_notebook.md`): Assignment 1 must notice the missing salaries and the correlated career totals before regularizing `Hitters`; Assignment 2 must standardize `WholesaleCustomers` before PCA/K-Means because of the scale gap shown in [Diag 4](#sec-rd-scale); Assignments 3–4 must check class balance and choose precision/recall/F1 over accuracy. Stating *what you see and why it dictates the next step* is the cheap, reliable way to bank points — do the EDA out loud.
 :::
