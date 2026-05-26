@@ -1,6 +1,6 @@
 # Lecture 1 — Introduction and Working with Data
 
-**Source:** `Lecture slides/lecture1 (2).pdf` (32 PDF pages = 17 logical slides; progressive-build deck, cite by slide number `n/17`). Instructor: Vegard Høghaug Larsen. Date: Jan 7 2026.
+**Source:** `course_materials/Lecture slides/lecture1 (2).pdf` (32 PDF pages = 17 logical slides; progressive-build deck, cite by slide number `n/17`). Instructor: Vegard Høghaug Larsen. Date: Jan 7 2026.
 
 ## Topic
 Course intro, ML workflow, train/val/test, over/underfitting, working with data in Jupyter.

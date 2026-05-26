@@ -5,8 +5,8 @@ This is the single source of truth for the workspace. The master prompt's
 Phase 0 produces richer per-source documentation.
 
 > **Layout note:** Source files are **not** at the working-directory root.
-> They are organized into subfolders (`Data/`, `Exercises and solutions(VHL)/`,
-> `Lecture notebooks/`, `Lecture slides/`, `Lecture slides/Past exams/`).
+> They are organized into subfolders (`course_materials/Data/`, `course_materials/Exercises and solutions(VHL)/`,
+> `course_materials/Lecture notebooks/`, `course_materials/Lecture slides/`, `course_materials/Lecture slides/Past exams/`).
 > The setup prompt's `ls -la` examples assumed a flat root; paths below are the
 > real locations the master prompt must read from.
 
@@ -17,12 +17,12 @@ Phase 0 produces richer per-source documentation.
 | Category | Count | Location |
 |---|---|---|
 | Reference texts (ESL + ISL) | 2 | root |
-| Lecture slide PDFs | 10 | `Lecture slides/` |
-| Lecture notebooks | 20 | `Lecture notebooks/` |
-| Exercise/solution notebooks | 11 | `Exercises and solutions(VHL)/` |
-| Past-exam PDFs | 5 | `Lecture slides/Past exams/` |
-| Exam guideline PDFs | 2 | `Lecture slides/Past exams/` |
-| Spring-2025 exam notebook | 1 | `Lecture slides/Past exams/GRA4160_2025-05-26_kl_09_EP_2/` |
+| Lecture slide PDFs | 10 | `course_materials/Lecture slides/` |
+| Lecture notebooks | 20 | `course_materials/Lecture notebooks/` |
+| Exercise/solution notebooks | 11 | `course_materials/Exercises and solutions(VHL)/` |
+| Past-exam PDFs | 5 | `course_materials/Lecture slides/Past exams/` |
+| Exam guideline PDFs | 2 | `course_materials/Lecture slides/Past exams/` |
+| Spring-2025 exam notebook | 1 | `course_materials/Lecture slides/Past exams/GRA4160_2025-05-26_kl_09_EP_2/` |
 | Datasets (CSV / .data / .txt) | 14 | multiple (see below) |
 
 ---
@@ -31,15 +31,15 @@ Phase 0 produces richer per-source documentation.
 
 | File | Size | Role |
 |---|---|---|
-| `An Introduction to Statistical Learning Python.pdf` | 20,053,984 B (~19.1 MB) | **ISL** (Python edition) — PRESENT |
-| `The Elements of Statistical Learning 2.E..pdf` | 13,303,613 B (~12.7 MB) | **ESL** 2nd ed. — PRESENT |
+| `course_materials/An Introduction to Statistical Learning Python.pdf` | 20,053,984 B (~19.1 MB) | **ISL** (Python edition) — PRESENT |
+| `course_materials/The Elements of Statistical Learning 2.E..pdf` | 13,303,613 B (~12.7 MB) | **ESL** 2nd ed. — PRESENT |
 
 > Filenames differ from the setup prompt's expectations:
-> ESL is `The Elements of Statistical Learning 2.E..pdf` (spaces, trailing dot),
+> ESL is `course_materials/The Elements of Statistical Learning 2.E..pdf` (spaces, trailing dot),
 > **not** `The_Elements_of_Statistical_Learning_2_E_.pdf`. ISL is present and is the
 > Python edition (the prompt only asked to "check" for it).
 
-## Lecture slide PDFs — `Lecture slides/` (10)
+## Lecture slide PDFs — `course_materials/Lecture slides/` (10)
 
 | File | Size |
 |---|---|
@@ -57,7 +57,7 @@ Phase 0 produces richer per-source documentation.
 > Filenames carry download suffixes (` (2)`, `_260521_184932`). All 10 lectures
 > present (1–10). No `lectureN.pdf` clean names exist — master prompt must glob.
 
-## Lecture notebooks — `Lecture notebooks/` (20)
+## Lecture notebooks — `course_materials/Lecture notebooks/` (20)
 
 | File | Size |
 |---|---|
@@ -84,9 +84,9 @@ Phase 0 produces richer per-source documentation.
 
 > Note: two `07_` notebooks (`07_Decision_trees`, `07_Predicting_income`).
 > The setup prompt's smoke-test default `02_OLS__1_.ipynb` does **not** exist;
-> the real file is `Lecture notebooks/02_OLS (1).ipynb`.
+> the real file is `course_materials/Lecture notebooks/02_OLS (1).ipynb`.
 
-## Exercise / solution notebooks — `Exercises and solutions(VHL)/` (11)
+## Exercise / solution notebooks — `course_materials/Exercises and solutions(VHL)/` (11)
 
 | File | Size |
 |---|---|
@@ -105,7 +105,7 @@ Phase 0 produces richer per-source documentation.
 > `_VHL` files are the worked solutions; the plain files are the exercise stubs.
 > Six exercise topics, each with a stub + solution pair.
 
-## Past exams & guidelines — `Lecture slides/Past exams/`
+## Past exams & guidelines — `course_materials/Lecture slides/Past exams/`
 
 | File | Size | Type |
 |---|---|---|
@@ -116,7 +116,7 @@ Phase 0 produces richer per-source documentation.
 | `GRA4160_2025-05-26_kl_09_EP.pdf` | 98,289 B | Past exam (2025) |
 | `GRA4160_2025-05-26_kl_09_EP_2.zip` | 125,844 B | Zip (already extracted, see below) |
 
-### Extracted exam bundle — `Lecture slides/Past exams/GRA4160_2025-05-26_kl_09_EP_2/`
+### Extracted exam bundle — `course_materials/Lecture slides/Past exams/GRA4160_2025-05-26_kl_09_EP_2/`
 
 | File | Size | Type |
 |---|---|---|
@@ -135,14 +135,14 @@ Phase 0 produces richer per-source documentation.
 
 | File | Size | Location |
 |---|---|---|
-| `seeds.csv` | 6,284 B | `Data/` |
-| `gender_submission.csv` | 3,258 B | `Data/Titanic data/` |
-| `test.csv` | 28,629 B | `Data/Titanic data/` |
-| `train.csv` | 61,194 B | `Data/Titanic data/` |
-| `data_description.txt` | 13,370 B | `Data/house-prices data/` |
-| `sample_submission.csv` | 31,939 B | `Data/house-prices data/` |
-| `test.csv` | 451,405 B | `Data/house-prices data/` |
-| `train.csv` | 460,676 B | `Data/house-prices data/` |
+| `seeds.csv` | 6,284 B | `course_materials/Data/` |
+| `gender_submission.csv` | 3,258 B | `course_materials/Data/Titanic data/` |
+| `test.csv` | 28,629 B | `course_materials/Data/Titanic data/` |
+| `train.csv` | 61,194 B | `course_materials/Data/Titanic data/` |
+| `data_description.txt` | 13,370 B | `course_materials/Data/house-prices data/` |
+| `sample_submission.csv` | 31,939 B | `course_materials/Data/house-prices data/` |
+| `test.csv` | 451,405 B | `course_materials/Data/house-prices data/` |
+| `train.csv` | 460,676 B | `course_materials/Data/house-prices data/` |
 | `Hitters.csv` | 20,906 B | exam bundle (above) |
 | `SimulatedData.csv` | 102,154 B | exam bundle (above) |
 | `WholesaleCustomers.csv` | 15,021 B | exam bundle (above) |
@@ -154,9 +154,9 @@ Phase 0 produces richer per-source documentation.
 
 | Required item | Status | Note |
 |---|---|---|
-| Lecture PDFs (`lecture*.pdf`) | OK | 10 found in `Lecture slides/` (suffixed names) |
+| Lecture PDFs (`lecture*.pdf`) | OK | 10 found in `course_materials/Lecture slides/` (suffixed names) |
 | Method & exercise notebooks (`*.ipynb`) | OK | 20 lecture + 11 exercise = 31 total |
-| Datasets (`*.csv`) | OK | 14 data files across `Data/` + exam bundle |
+| Datasets (`*.csv`) | OK | 14 data files across `course_materials/Data/` + exam bundle |
 | Past exam PDFs | OK | 3 question papers + 1 (2025) |
 | `Exam_GRA4160_spring2025.ipynb` | OK | in extracted exam bundle |
 | ESL PDF | OK | spaces in filename, not underscores |

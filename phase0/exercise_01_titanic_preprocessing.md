@@ -1,6 +1,6 @@
 # Exercise extract: Data preprocessing (Titanic) (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)\01_Data_preprocessing_titanic.ipynb`   **Solution path:** none (stub-only; no `_VHL` file exists for Topic 01)
+**Stub path:** `course_materials\Exercises and solutions(VHL)\01_Data_preprocessing_titanic.ipynb`   **Solution path:** none (stub-only; no `_VHL` file exists for Topic 01)
 **Cell counts:** stub=1 (1 markdown, 0 code), solution=0
 
 ## What the exercise teaches (1-2 sentences)

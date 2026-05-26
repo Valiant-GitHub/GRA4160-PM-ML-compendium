@@ -1,6 +1,6 @@
 # Lecture 2 — Machine Learning Basics and Supervised Learning
 
-**Source:** `Lecture slides/lecture2 (2).pdf` (32 PDF pages = 10 logical slides; progressive-build, cite `n/10`). Date: Jan 14 2026.
+**Source:** `course_materials/Lecture slides/lecture2 (2).pdf` (32 PDF pages = 10 logical slides; progressive-build, cite `n/10`). Date: Jan 14 2026.
 
 ## Topic
 ML paradigms, bias-variance, linear regression (OLS), kNN, parametric vs non-parametric, Naive Bayes.

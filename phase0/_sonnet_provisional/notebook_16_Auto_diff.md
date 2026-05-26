@@ -1,6 +1,6 @@
 # Notebook extract: 16_Auto_diff.ipynb
 
-**Source path:** `Lecture notebooks/16_Auto_diff.ipynb`
+**Source path:** `course_materials/Lecture notebooks/16_Auto_diff.ipynb`
 **Cell count:** 10 cells (markdown + code)
 
 ---

@@ -1,6 +1,6 @@
 # Notebook extract: 14_Adaline.ipynb
 
-**Source path:** Lecture notebooks/14_Adaline.ipynb
+**Source path:** course_materials/Lecture notebooks/14_Adaline.ipynb
 **Cell count:** 28 cells (cell ids: 5eb5ea15, 4bbbb7fc, 399d5e4c, e53f1686, ea56b3e2, 100854b8, 13cf7108, 598c94f5, 44efc974, dab6b4ad, 0d71e0f7, 72811869, 44873e7a, bc0dfdff, 58261aed, ba5b2a36, 0bca99de, ae48d679, c77b191c, 408aa8ea, 2a2a0f26, 3394230d, 56451c18, 07f941ef, 1886dd9a, 85f85d5f, f91035c3, 6d2dd11a, 5d52fa76 — last cell empty). Numbered references below use sequential cell index 0-28.
 
 ## Dataset(s) loaded

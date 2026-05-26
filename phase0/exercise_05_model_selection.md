@@ -1,6 +1,6 @@
 # Exercise extract: Model selection, evaluation, and assessment (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)\05_Model_selection_evaluation_and_assessment.ipynb`   **Solution path:** `Exercises and solutions(VHL)\05_Model_selection_evaluation_and_assessment_VHL.ipynb`
+**Stub path:** `course_materials\Exercises and solutions(VHL)\05_Model_selection_evaluation_and_assessment.ipynb`   **Solution path:** `course_materials\Exercises and solutions(VHL)\05_Model_selection_evaluation_and_assessment_VHL.ipynb`
 **Cell counts:** stub=2 (2 markdown, 0 code), solution=7 (markdown cells-0,1; code cells-2,3,4,5; trailing empty cell-6)
 
 ## What the exercise teaches (1-2 sentences)

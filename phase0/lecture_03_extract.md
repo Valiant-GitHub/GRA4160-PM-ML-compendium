@@ -1,6 +1,6 @@
 # Lecture 3 — LDA and Regularized Regression
 
-**Source:** `Lecture slides/lecture3_260521_184932.pdf` (24 PDF pages = 20 logical slides; cite `n/20`). Date: Jan 21 2026.
+**Source:** `course_materials/Lecture slides/lecture3_260521_184932.pdf` (24 PDF pages = 20 logical slides; cite `n/20`). Date: Jan 21 2026.
 
 ## Topic
 Linear Discriminant Analysis (classification + dim reduction); Ridge, Lasso, Elastic Net regularization.

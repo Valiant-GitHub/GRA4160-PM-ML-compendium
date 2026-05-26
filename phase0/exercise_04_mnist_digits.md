@@ -1,6 +1,6 @@
 # Exercise extract: Recognising handwritten digits (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)\04_Recognising_handwritten_digits.ipynb`   **Solution path:** `Exercises and solutions(VHL)\04_Recognising_handwritten_digits_VHL.ipynb`
+**Stub path:** `course_materials\Exercises and solutions(VHL)\04_Recognising_handwritten_digits.ipynb`   **Solution path:** `course_materials\Exercises and solutions(VHL)\04_Recognising_handwritten_digits_VHL.ipynb`
 **Cell counts:** stub=2 (2 markdown, 0 code), solution=32 (markdown intro/Q&A cells interleaved; code cells-2,3,6,8,10,12,15,16,19,21,23,25,28,30)
 
 ## What the exercise teaches (1-2 sentences)

@@ -1,6 +1,6 @@
 # ESL — section → PDF-page map (reconciled)
 
-**File:** `The Elements of Statistical Learning 2.E..pdf` — 764 PDF pages, **no embedded bookmarks**.
+**File:** `course_materials/The Elements of Statistical Learning 2.E..pdf` — 764 PDF pages, **no embedded bookmarks**.
 
 Reconciled from (a) a heading search (consecutive-page *clusters* are the reliable signal — single hits are cross-references) and (b) ESL 2nd-ed structure with the consistent offset **PDF page ≈ printed page + 19**. Page estimates are **start pages**; read a handful of pages forward to reach the full derivation. **Always verify the heading on arrival** (Rule 1) — these are navigation aids, not citations.
 

@@ -1,5 +1,5 @@
 # ISL — Table of Contents
-# file: An Introduction to Statistical Learning Python.pdf
+# file: course_materials/An Introduction to Statistical Learning Python.pdf
 # pages: 613
 # Use these page numbers with Read(pages=...) to reach a section, then read the derivation.
 

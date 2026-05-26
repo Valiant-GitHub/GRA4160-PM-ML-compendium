@@ -1,6 +1,6 @@
 # Notebook extract: 13_Random_forests.ipynb
 
-**Source path:** Lecture notebooks\13_Random_forests.ipynb
+**Source path:** course_materials\Lecture notebooks\13_Random_forests.ipynb
 **Cell count:** 19 (cell-0 through cell-18)
 
 ## Dataset(s) loaded

@@ -1,6 +1,6 @@
 # Notebook extract: 03_Supervised_learning_with_kNN (1).ipynb
 
-**Source path:** `Lecture notebooks/03_Supervised_learning_with_kNN (1).ipynb`
+**Source path:** `course_materials/Lecture notebooks/03_Supervised_learning_with_kNN (1).ipynb`
 **Cell count:** 14 (cell-0 through cell-13)
 
 ## Dataset(s) loaded

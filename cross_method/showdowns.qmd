@@ -14,7 +14,7 @@ body-classes: fam-cross
 The setup is deliberately minimal so the boundary *shape* is the whole story. We load the Titanic training set, keep the two numeric features **Age** and **Fare** (dropping rows missing either — **714 of 891 rows survive**), and predict `Survived`. Five classifiers are fit on the standardized features, then asked to predict the class at every point of a coarse **40×40 grid** spanning the Age/Fare range; colouring the grid by predicted class draws each model's decision region *(all computed via `./.venv/Scripts/python.exe`, fixed `random_state=1`)*:
 
 ```python
-sub = pd.read_csv("Data/Titanic data/train.csv")[["Age","Fare","Survived"]].dropna()  # 891 → 714
+sub = pd.read_csv("course_materials/Data/Titanic data/train.csv")[["Age","Fare","Survived"]].dropna()  # 891 → 714
 X, y = sub[["Age","Fare"]].values, sub["Survived"].values
 Xs = StandardScaler().fit_transform(X)                       # scale so kNN distance is fair
 models = {

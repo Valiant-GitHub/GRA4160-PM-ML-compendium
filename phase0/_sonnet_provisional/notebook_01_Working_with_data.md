@@ -1,6 +1,6 @@
 # Notebook extract: 01_Working_with_data_in_jupyter_notebooks.ipynb
 
-**Source path:** `Lecture notebooks/01_Working_with_data_in_jupyter_notebooks.ipynb`
+**Source path:** `course_materials/Lecture notebooks/01_Working_with_data_in_jupyter_notebooks.ipynb`
 **Cell count:** 24 (cell-0 through cell-23)
 
 ## Dataset(s) loaded

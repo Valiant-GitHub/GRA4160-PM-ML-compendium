@@ -1,6 +1,6 @@
 # Notebook extract: 19_Build_a_NN.ipynb
 
-**Source path:** Lecture notebooks/19_Build_a_NN.ipynb
+**Source path:** course_materials/Lecture notebooks/19_Build_a_NN.ipynb
 **Cell count:** 31 cells (ids cell-0 ... cell-30; cell-30 empty). Title: "Beginner's Guide to Deep Learning in PyTorch: Multi-Layer Networks, Mini-Batches, MNIST, L2 Regularization, and Dropout."
 
 ## Dataset(s) loaded

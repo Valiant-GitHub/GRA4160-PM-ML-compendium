@@ -1,5 +1,5 @@
 # Exam extract: Spring 2025 take-home (representative format)
-**Source:** `Lecture slides\Past exams\GRA4160_2025-05-26_kl_09_EP_2\Exam_GRA4160_spring2025.ipynb` (dataset description: `wdbc.names` in the same folder)   **Cell count:** 16
+**Source:** `course_materials\Lecture slides\Past exams\GRA4160_2025-05-26_kl_09_EP_2\Exam_GRA4160_spring2025.ipynb` (dataset description: `wdbc.names` in the same folder)   **Cell count:** 16
 
 > LENS NOTE: This extract catalogues the representative take-home exam format ONLY to frame the drill section. It is NOT a content source for method pages, and the exercises below are NOT to be solved or copied as drill questions. Do not invent additional exam questions.
 

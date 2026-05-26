@@ -1,6 +1,6 @@
 # Notebook extract: 19_Build_a_NN.ipynb
 
-**Source path:** `Lecture notebooks/19_Build_a_NN.ipynb`
+**Source path:** `course_materials/Lecture notebooks/19_Build_a_NN.ipynb`
 **Cell count:** 30 cells (markdown + code, includes markdown pseudocode cell)
 
 ---

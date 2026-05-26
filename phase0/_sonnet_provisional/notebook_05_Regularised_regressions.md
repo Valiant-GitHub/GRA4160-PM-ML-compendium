@@ -1,6 +1,6 @@
 # Notebook extract: 05_Regularised_regressions (1).ipynb
 
-**Source path:** `Lecture notebooks/05_Regularised_regressions (1).ipynb`
+**Source path:** `course_materials/Lecture notebooks/05_Regularised_regressions (1).ipynb`
 **Cell count:** 22 (cell-0 through cell-21)
 
 ## Dataset(s) loaded

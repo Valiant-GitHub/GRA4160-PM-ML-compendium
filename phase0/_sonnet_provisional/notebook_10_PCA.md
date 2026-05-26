@@ -1,6 +1,6 @@
 # Notebook extract: 10_PCA.ipynb
 
-**Source path:** Lecture notebooks\10_PCA.ipynb
+**Source path:** course_materials\Lecture notebooks\10_PCA.ipynb
 **Cell count:** 16 (cell-0 through cell-15)
 
 ## Dataset(s) loaded

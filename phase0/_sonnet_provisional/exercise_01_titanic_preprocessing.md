@@ -1,6 +1,6 @@
 # Exercise extract: Titanic data preprocessing (stub only)
 
-**Stub path:** `Exercises and solutions(VHL)/01_Data_preprocessing_titanic.ipynb`
+**Stub path:** `course_materials/Exercises and solutions(VHL)/01_Data_preprocessing_titanic.ipynb`
 **Solution path:** none
 **Cell counts:** stub=1 (single markdown cell containing all 7 exercise prompts)
 

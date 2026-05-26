@@ -1,6 +1,6 @@
 # Notebook extract: 14_Adaline.ipynb
 
-**Source path:** `Lecture notebooks/14_Adaline.ipynb`
+**Source path:** `course_materials/Lecture notebooks/14_Adaline.ipynb`
 **Cell count:** 27 cells (markdown + code)
 
 ---

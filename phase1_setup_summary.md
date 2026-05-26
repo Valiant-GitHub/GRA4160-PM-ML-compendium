@@ -33,8 +33,8 @@ pre-existed in the working directory (G2 not triggered).
 
 **Not touched.** All lecture PDFs, notebooks, datasets, exam PDFs, and the two
 reference texts (ESL, ISL) remain read-only per G1. They live in subfolders
-(`Data/`, `Exercises and solutions(VHL)/`, `Lecture notebooks/`,
-`Lecture slides/`, `Lecture slides/Past exams/`), not at the root — see
+(`course_materials/Data/`, `course_materials/Exercises and solutions(VHL)/`, `course_materials/Lecture notebooks/`,
+`course_materials/Lecture slides/`, `course_materials/Lecture slides/Past exams/`), not at the root — see
 `workspace_inventory.md` for full paths.
 
 ## Version control (Phase 1.4)

@@ -1,6 +1,6 @@
 # Notebook extract: 11_K_means.ipynb
 
-**Source path:** Lecture notebooks/11_K_means.ipynb
+**Source path:** course_materials/Lecture notebooks/11_K_means.ipynb
 **Cell count:** 12 (cells 0-11)
 
 ## Dataset(s) loaded

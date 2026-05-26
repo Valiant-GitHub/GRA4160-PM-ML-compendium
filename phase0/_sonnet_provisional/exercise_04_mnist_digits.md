@@ -1,7 +1,7 @@
 # Exercise extract: Recognising handwritten digits (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)/04_Recognising_handwritten_digits.ipynb`
-**Solution path:** `Exercises and solutions(VHL)/04_Recognising_handwritten_digits_VHL.ipynb`
+**Stub path:** `course_materials/Exercises and solutions(VHL)/04_Recognising_handwritten_digits.ipynb`
+**Solution path:** `course_materials/Exercises and solutions(VHL)/04_Recognising_handwritten_digits_VHL.ipynb`
 **Cell counts:** stub=2 (cells 0-1 markdown); solution=31 cells (cells 0-1 markdown, cells 2-30 code/markdown interleaved)
 
 ## What the exercise teaches (1-2 sentences)

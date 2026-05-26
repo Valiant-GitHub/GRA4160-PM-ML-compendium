@@ -1,6 +1,6 @@
 # Notebook extract: 02_OLS (1).ipynb
 
-**Source path:** Lecture notebooks/02_OLS (1).ipynb
+**Source path:** course_materials/Lecture notebooks/02_OLS (1).ipynb
 **Cell count:** 15 cells (indices cell-0 through cell-14 as reported by Read; cell-14 empty)
 
 ## Dataset(s) loaded

@@ -1,6 +1,6 @@
 # Notebook extract: 04_Linear_discriminant_analysis.ipynb
 
-**Source path:** `Lecture notebooks/04_Linear_discriminant_analysis.ipynb`
+**Source path:** `course_materials/Lecture notebooks/04_Linear_discriminant_analysis.ipynb`
 **Cell count:** 21 (cell-0 through cell-20)
 
 ## Dataset(s) loaded

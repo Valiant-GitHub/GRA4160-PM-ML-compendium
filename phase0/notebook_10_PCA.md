@@ -1,6 +1,6 @@
 # Notebook extract: 10_PCA.ipynb
 
-**Source path:** Lecture notebooks/10_PCA.ipynb
+**Source path:** course_materials/Lecture notebooks/10_PCA.ipynb
 **Cell count:** 16 (cells 0-15; cell 15 is empty)
 
 ## Dataset(s) loaded
@@ -51,5 +51,5 @@
 - Markdown formulas [cell 1]: $\bar{X} = X - mean(X)$; $\Sigma = (1/n)\bar{X}'\bar{X}$; $\Lambda, V = eig(\Sigma)$; projection $\hat{X} = \bar{X}V$. SVD: $X = U\Sigma V'$, $\hat{X} = XV$.
 - **[VERIFY] indexing bug in plot [cell 12]:** the unscaled plot uses `X_train[y_train == l, 0]` and `X_train[y_train == l, 1]` — i.e. it plots the first two RAW features, not the first two PCA components, even though `ax1` is titled "Training dataset after PCA". The scaled plot (`X_train_std`) correctly uses PCA-transformed data. So the left panel is mislabeled / does not actually show PCA output. This is a genuine code/prose (title) mismatch.
 - **Non-reproducible:** `train_test_split` [cell 12] has no `random_state`, so accuracy printout [cell 14] varies run to run.
-- Seeds confirmed against the real file `Data/seeds.csv`: columns are exactly `area,perimeter,compactness,length,width,asymmetry_coefficient,grove_length,type`; `type` has exactly 2 classes (values 1 and 2, 70 rows each, 140 total) — matches markdown [cell 3]. NOTE: the notebook path `../data/seeds.csv` (lowercase) differs from the repo's actual `Data/seeds.csv` (capital D); on case-insensitive Windows this works, but is a path-case discrepancy.
+- Seeds confirmed against the real file `course_materials/Data/seeds.csv`: columns are exactly `area,perimeter,compactness,length,width,asymmetry_coefficient,grove_length,type`; `type` has exactly 2 classes (values 1 and 2, 70 rows each, 140 total) — matches markdown [cell 3]. NOTE: the notebook path `../data/seeds.csv` (lowercase) differs from the repo's actual `course_materials/Data/seeds.csv` (capital D); on case-insensitive Windows this works, but is a path-case discrepancy.
 - Cell 15 is empty.

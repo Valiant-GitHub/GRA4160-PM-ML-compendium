@@ -1,6 +1,6 @@
 # Notebook extract: 17_Neural_nets_basics.ipynb
 
-**Source path:** `Lecture notebooks/17_Neural_nets_basics.ipynb`
+**Source path:** `course_materials/Lecture notebooks/17_Neural_nets_basics.ipynb`
 **Cell count:** 16 cells (markdown + code)
 
 ---

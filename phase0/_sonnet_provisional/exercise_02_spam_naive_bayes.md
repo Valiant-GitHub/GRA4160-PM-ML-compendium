@@ -1,7 +1,7 @@
 # Exercise extract: Spam filtering with naive Bayes (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)/02_Spam_filtering_with_naive_bayes (1).ipynb`
-**Solution path:** `Exercises and solutions(VHL)/02_Spam_filtering_with_naive_bayes_VHL.ipynb`
+**Stub path:** `course_materials/Exercises and solutions(VHL)/02_Spam_filtering_with_naive_bayes (1).ipynb`
+**Solution path:** `course_materials/Exercises and solutions(VHL)/02_Spam_filtering_with_naive_bayes_VHL.ipynb`
 **Cell counts:** stub=4 (cells 0-3 markdown + cell-4 empty); solution=21 (cells 0-20, cells 5-20 are code)
 
 ## What the exercise teaches (1-2 sentences)

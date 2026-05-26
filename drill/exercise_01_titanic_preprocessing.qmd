@@ -15,7 +15,7 @@ Hands-on preprocessing and EDA on a real, messy tabular dataset: load and inspec
 
 ## 2. Setup
 
-- **Dataset:** the Kaggle Titanic training set, `train.csv` (891 passengers). Locally it lives at `Data/Titanic data/train.csv` (note the space in the folder name), so a loader call is `pd.read_csv("Data/Titanic data/train.csv")`. The stub itself names only the bare filename `train.csv` and gives no loader.
+- **Dataset:** the Kaggle Titanic training set, `train.csv` (891 passengers). Locally it lives at `course_materials/Data/Titanic data/train.csv` (note the space in the folder name), so a loader call is `pd.read_csv("course_materials/Data/Titanic data/train.csv")`. The stub itself names only the bare filename `train.csv` and gives no loader.
 - **Columns referenced by the prompt:** `Fare`, `Sex`, `Embarked`, `Survived` (the 0/1 target), and passenger class. The actual CSV header is `PassengerId, Survived, Pclass, Name, Sex, Age, SibSp, Parch, Ticket, Fare, Cabin, Embarked` (verified against the local file).
 - **Target (implied):** `Survived` (0/1) — the survival-probability questions are means of this column.
 - **Task:** preprocessing + descriptive analysis. No train/test split, no estimator, no fit.

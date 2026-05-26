@@ -1,6 +1,6 @@
 # Notebook extract: 09_Bias_variance_tradeoff.ipynb
 
-**Source path:** Lecture notebooks\09_Bias_variance_tradeoff.ipynb
+**Source path:** course_materials\Lecture notebooks\09_Bias_variance_tradeoff.ipynb
 **Cell count:** 14 (cell-0 through cell-13)
 
 ## Dataset(s) loaded

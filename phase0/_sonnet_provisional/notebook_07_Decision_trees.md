@@ -1,6 +1,6 @@
 # Notebook extract: 07_Decision_trees.ipynb
 
-**Source path:** Lecture notebooks\07_Decision_trees.ipynb
+**Source path:** course_materials\Lecture notebooks\07_Decision_trees.ipynb
 **Cell count:** 22 (cell-0 through cell-21)
 
 ## Dataset(s) loaded

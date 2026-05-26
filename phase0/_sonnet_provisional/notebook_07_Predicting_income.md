@@ -1,6 +1,6 @@
 # Notebook extract: 07_Predicting_income.ipynb
 
-**Source path:** Lecture notebooks\07_Predicting_income.ipynb
+**Source path:** course_materials\Lecture notebooks\07_Predicting_income.ipynb
 **Cell count:** 7 (cell-0 through cell-6)
 
 ## Dataset(s) loaded

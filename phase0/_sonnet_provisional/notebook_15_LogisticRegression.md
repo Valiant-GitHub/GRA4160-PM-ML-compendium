@@ -1,6 +1,6 @@
 # Notebook extract: 15_LogisticRegression.ipynb
 
-**Source path:** `Lecture notebooks/15_LogisticRegression.ipynb`
+**Source path:** `course_materials/Lecture notebooks/15_LogisticRegression.ipynb`
 **Cell count:** 30 cells (markdown + code)
 
 ---

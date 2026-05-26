@@ -1,6 +1,6 @@
 # Notebook extract: 18_NN_with_PyTorch.ipynb
 
-**Source path:** Lecture notebooks/18_NN_with_PyTorch.ipynb
+**Source path:** course_materials/Lecture notebooks/18_NN_with_PyTorch.ipynb
 **Cell count:** 9 cells (ids cell-0 ... cell-8; cell-3 and cell-8 empty).
 
 ## Dataset(s) loaded

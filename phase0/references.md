@@ -4,8 +4,8 @@ Both Tier-2 reference texts are present at the working-directory root.
 
 | Text | File | Role |
 |---|---|---|
-| **ISL** — *An Introduction to Statistical Learning* (Python ed., James, Witten, Hastie, Tibshirani, 2021/2023) | `An Introduction to Statistical Learning Python.pdf` (~19.1 MB) | **Primary for Mode A** (course-level depth). The course lecturer explicitly cites ISL 2021 on Lecture 9 slide 9 for the activation-function figure, and the single-hidden-layer model matches **ISL Eq. 10.1**. ISL is the "gentle introduction" named on Lecture 1 slide 3. |
-| **ESL** — *The Elements of Statistical Learning* (2nd ed., Hastie, Tibshirani, Friedman, 2009) | `The Elements of Statistical Learning 2.E..pdf` (~12.7 MB) | **Primary for Mode B** (full rigor) and the formal notation anchor (GR1). Named as the **primary textbook** on Lecture 1 slide 3. Lecture 3 slide 16 attributes the Ridge/Lasso geometry figure to "Hastie, Tibshirani & Friedman (2009)" = ESL. |
+| **ISL** — *An Introduction to Statistical Learning* (Python ed., James, Witten, Hastie, Tibshirani, 2021/2023) | `course_materials/An Introduction to Statistical Learning Python.pdf` (~19.1 MB) | **Primary for Mode A** (course-level depth). The course lecturer explicitly cites ISL 2021 on Lecture 9 slide 9 for the activation-function figure, and the single-hidden-layer model matches **ISL Eq. 10.1**. ISL is the "gentle introduction" named on Lecture 1 slide 3. |
+| **ESL** — *The Elements of Statistical Learning* (2nd ed., Hastie, Tibshirani, Friedman, 2009) | `course_materials/The Elements of Statistical Learning 2.E..pdf` (~12.7 MB) | **Primary for Mode B** (full rigor) and the formal notation anchor (GR1). Named as the **primary textbook** on Lecture 1 slide 3. Lecture 3 slide 16 attributes the Ridge/Lasso geometry figure to "Hastie, Tibshirani & Friedman (2009)" = ESL. |
 
 **Both present** → per the prompt's rule: ISL primary for Mode A, ESL primary for Mode B. Neither read end-to-end in Phase 0 (per 0.5); they are queried per-method during Phase 3.
 

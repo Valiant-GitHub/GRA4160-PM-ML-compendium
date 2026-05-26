@@ -1,6 +1,6 @@
 # Notebook extract: 15_LogisticRegression.ipynb
 
-**Source path:** Lecture notebooks/15_LogisticRegression.ipynb
+**Source path:** course_materials/Lecture notebooks/15_LogisticRegression.ipynb
 **Cell count:** 31 cells (ids: 13ae256f, be029d55, 5a80f92a, c4af8a90, 5697a510, a342d4e2, f14d7969, fa0b4810, dde959c6, d60ccbaa, e05e5377, 73078bbc, bc676da2, 50ee34c8, 8affaafa, 08c79e90, 8f5cca9f, 44ecc01c, ee8326af, 5c284f92, a16d3295, d059cb11, 5f0d2408, 1132a520, fd1dd9c4, 9f10168e, 886ee02c, a75fd8c6, d6708f6b, 976cd468, f4432549, 6b3b3496, b896bc6b, d5cac4b4, 07ba1fb6, 0db01570, 587787f5, 835b264a, e6b31df0... — final cell empty). Sequential indices used below.
 
 ## Dataset(s) loaded

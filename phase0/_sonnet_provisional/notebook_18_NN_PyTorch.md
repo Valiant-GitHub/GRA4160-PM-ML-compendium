@@ -1,6 +1,6 @@
 # Notebook extract: 18_NN_with_PyTorch.ipynb
 
-**Source path:** `Lecture notebooks/18_NN_with_PyTorch.ipynb`
+**Source path:** `course_materials/Lecture notebooks/18_NN_with_PyTorch.ipynb`
 **Cell count:** 8 cells (markdown + code, plus one empty)
 
 ---

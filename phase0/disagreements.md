@@ -46,7 +46,7 @@ availability (C7); **[GR4-A]** slide↔notebook.
 
 **[NB-2] nb09_Bias_variance:** `cross_val_score(...)` called with no `scoring=`, so it returns the estimator's default (R²), but prose calls it "MSE". *Use:* when lifting, state it's R² (or set `scoring='neg_mean_squared_error'` and label the change).
 
-**[NB-3] nb10_PCA:** cell 12 scatter plots raw features 0/1 but is titled "after PCA"; `train_test_split` has no `random_state` (non-reproducible). Path uses `../data/seeds.csv` vs repo `Data/seeds.csv`. *Use:* fix labeling in the study-site figure; add a seed; reconcile path.
+**[NB-3] nb10_PCA:** cell 12 scatter plots raw features 0/1 but is titled "after PCA"; `train_test_split` has no `random_state` (non-reproducible). Path uses `../data/seeds.csv` vs repo `course_materials/Data/seeds.csv`. *Use:* fix labeling in the study-site figure; add a seed; reconcile path.
 
 **[NB-4] nb11_K_means:** cell 10 comment says "3 clusters" but call uses `n_clusters=2`; notebook selects K=2 despite Iris having 3 species. *Use:* note the elbow/silhouette led to 2; flag the 3-species ground truth as a teaching point.
 
@@ -70,7 +70,7 @@ availability (C7); **[GR4-A]** slide↔notebook.
 
 **[DATA-3] sklearn built-ins.** Many notebooks load `load_iris`, `load_digits`, `load_wine`, `load_breast_cancer`, `load_diabetes`, `fetch`/UCI-URL Iris/Adult. These need the venv at build time if any `{python}` cell recomputes; for embedded JS data (C8) prefer the local CSVs (Titanic, house-prices, seeds, Hitters, WholesaleCustomers, wdbc).
 
-**[DATA-4] Notebook paths vs repo layout.** Notebooks reference `../data/titanic/train.csv`, `../data/seeds.csv`, `../data/house-prices/...`. Repo has `Data/Titanic data/train.csv`, `Data/seeds.csv`, `Data/house-prices data/...` (spaces, different case). *Resolution:* the `data/` JS-export step (C8) reads the **real** repo paths from `file_manifest.md`, not the notebook paths.
+**[DATA-4] Notebook paths vs repo layout.** Notebooks reference `../data/titanic/train.csv`, `../data/seeds.csv`, `../data/house-prices/...`. Repo has `course_materials/Data/Titanic data/train.csv`, `course_materials/Data/seeds.csv`, `course_materials/Data/house-prices data/...` (spaces, different case). *Resolution:* the `data/` JS-export step (C8) reads the **real** repo paths from `file_manifest.md`, not the notebook paths.
 
 ## D. Slide ↔ notebook (GR4-A)
 No hard contradictions found: notebooks implement what slides describe. Complementary pairings (not conflicts), noted for code precedence (notebooks win for code/hyperparameters):

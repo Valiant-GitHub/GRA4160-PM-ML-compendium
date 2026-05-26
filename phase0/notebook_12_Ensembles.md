@@ -1,6 +1,6 @@
 # Notebook extract: 12_Introducing_ensemble_methods.ipynb
 
-**Source path:** Lecture notebooks/12_Introducing_ensemble_methods.ipynb
+**Source path:** course_materials/Lecture notebooks/12_Introducing_ensemble_methods.ipynb
 **Cell count:** 16 (cells 0-15; cell 15 is empty)
 
 ## Dataset(s) loaded

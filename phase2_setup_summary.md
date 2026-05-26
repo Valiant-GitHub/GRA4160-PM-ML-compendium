@@ -96,7 +96,7 @@ MathJax; KaTeX was requested explicitly so the math method matches the spec).
 | 1. Prose | paragraph text present | PASS |
 | 2. KaTeX math | `katex.min.js`, `katex.min.css`, `katex.render(...)`, `katex-math` class, `<span class="math inline">\hat{\beta}=…</span>` (KaTeX renders client-side, so static `class="katex"` spans appear at runtime, not in the file — "or similar" evidence is conclusive) | PASS |
 | 3. Observable JS chart | `<script type="module" src=".../quarto-ojs-runtime.js">` + container divs `ojs-cell-1-1`, `ojs-cell-1-2` | PASS |
-| 4. Python nbformat parse | `nbformat OK -- cell count: 15` from `Lecture notebooks\02_OLS (1).ipynb` (the spec's default `02_OLS__1_.ipynb` doesn't exist; globbed the real file) | PASS |
+| 4. Python nbformat parse | `nbformat OK -- cell count: 15` from `course_materials\Lecture notebooks\02_OLS (1).ipynb` (the spec's default `02_OLS__1_.ipynb` doesn't exist; globbed the real file) | PASS |
 
 Per §2.4, the smoke-test `.qmd`, its `.html`, the `_files/` support dir, and the
 `.quarto/` cache were deleted after verification.

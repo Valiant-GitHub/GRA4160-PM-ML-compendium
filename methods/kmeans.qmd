@@ -107,7 +107,7 @@ $K=3$ recovers the species almost perfectly (ARI 0.886 — only **6 of 150** flo
 
 ### Example 2 — clustering *with* a ground truth: seeds {#sec-km-seeds}
 
-The local **`seeds.csv`** (140 grain samples, 7 geometric features, with a `type` variety label) lets us check clustering against a known answer — the "clustering with ground truth" case (`Data/seeds.csv`; [DATA-2]). Crucially, *this* copy contains **two** wheat varieties (70 each), not the three of the full UCI set — so unlike Iris, the true count is 2. After `StandardScaler` (these features span very different units — area ~15, asymmetry ~2 — so scaling is mandatory), the elbow/silhouette loop gives *(computed via `.venv`, `random_state=0`)*:
+The local **`seeds.csv`** (140 grain samples, 7 geometric features, with a `type` variety label) lets us check clustering against a known answer — the "clustering with ground truth" case (`course_materials/Data/seeds.csv`; [DATA-2]). Crucially, *this* copy contains **two** wheat varieties (70 each), not the three of the full UCI set — so unlike Iris, the true count is 2. After `StandardScaler` (these features span very different units — area ~15, asymmetry ~2 — so scaling is mandatory), the elbow/silhouette loop gives *(computed via `.venv`, `random_state=0`)*:
 
 ```python
 from sklearn.preprocessing import StandardScaler
@@ -119,7 +119,7 @@ The silhouette peaks at **$K=2$ (0.440)**, falling to 0.299 at $K=3$ — and her
 
 ### Example 3 — the exam pipeline: scale → PCA → K-means on Wholesale customers {#sec-km-wholesale}
 
-The Spring-2025 exam's clustering task (Assignment 2) is customer segmentation on **`WholesaleCustomers.csv`** — 440 clients, 6 annual-spend categories (`Fresh`, `Milk`, `Grocery`, `Frozen`, `Detergents_Paper`, `Delicassen`) *(`Lecture slides/Past exams/.../WholesaleCustomers.csv`)*. The exam pipeline is **standardize → [PCA](pca.qmd) → K-means with elbow + silhouette to choose $K$** — PCA both denoises and lets you visualize the clusters in 2-D:
+The Spring-2025 exam's clustering task (Assignment 2) is customer segmentation on **`WholesaleCustomers.csv`** — 440 clients, 6 annual-spend categories (`Fresh`, `Milk`, `Grocery`, `Frozen`, `Detergents_Paper`, `Delicassen`) *(`course_materials/Lecture slides/Past exams/.../WholesaleCustomers.csv`)*. The exam pipeline is **standardize → [PCA](pca.qmd) → K-means with elbow + silhouette to choose $K$** — PCA both denoises and lets you visualize the clusters in 2-D:
 
 ```python
 from sklearn.preprocessing import StandardScaler

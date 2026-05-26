@@ -15,9 +15,9 @@ The course's datasets span every problem type you will be asked about — one of
 
 | Dataset | Path | Shape | Type mix | Task | Used by |
 |---|---|---|---|---|---|
-| **Titanic** | `Data/Titanic data/train.csv` | 891 × 12 | 5 int, 2 float, 5 text | Binary classification (`Survived`) | [logistic](../methods/logistic.qmd), [RF](../methods/random_forests.qmd), [trees](../methods/decision_trees.qmd) |
+| **Titanic** | `course_materials/Data/Titanic data/train.csv` | 891 × 12 | 5 int, 2 float, 5 text | Binary classification (`Survived`) | [logistic](../methods/logistic.qmd), [RF](../methods/random_forests.qmd), [trees](../methods/decision_trees.qmd) |
 | **Hitters** | `…/GRA4160_…_EP_2/Hitters.csv` | 322 × 20 | 16 int, 1 float, 3 text | Regression (`Salary`) | [OLS](../methods/ols.qmd), [Ridge/Lasso](../methods/regularization.qmd) |
-| **seeds** | `Data/seeds.csv` | 140 × 8 | 7 float, 1 int label | Clustering / classification (`type`) | [K-Means](../methods/kmeans.qmd), [PCA](../methods/pca.qmd) |
+| **seeds** | `course_materials/Data/seeds.csv` | 140 × 8 | 7 float, 1 int label | Clustering / classification (`type`) | [K-Means](../methods/kmeans.qmd), [PCA](../methods/pca.qmd) |
 | **WholesaleCustomers** | `…/GRA4160_…_EP_2/WholesaleCustomers.csv` | 440 × 8 | 8 int | Clustering (no ground-truth label) | [PCA](../methods/pca.qmd), [K-Means](../methods/kmeans.qmd) |
 | **digits** | sklearn `load_digits()` | 1797 × 64 | all numeric (0–16) | Multiclass (10 classes) | [kNN](../methods/knn.qmd), high-dim example for [PCA](../methods/pca.qmd) |
 
@@ -40,7 +40,7 @@ The first two questions are *how many columns of each kind?* and *how does $p$ c
 \* Hitters has 322 rows but 59 have a missing `Salary`; the modelling frame is 263 (Diag 2).
 
 ::: {.callout-intuition}
-**Three type traps to catch on sight.** (i) An **ID column** (`PassengerId`, row index) correlates with nothing and must be dropped — feeding it to a model is a classic silent bug. (ii) **Integer-coded categoricals** lie about their type: WholesaleCustomers' `Channel` (1/2) and `Region` (1/2/3) read as `int64` but are *nominal* — treating `Region=3` as "three times Region=1" is wrong; one-hot or leave them out of distance/PCA. (iii) **Text that is secretly a feature** — Titanic's `Name` hides a title (Mr/Mrs/Master) and `Cabin`'s deck letter is informative; raw, they're unusable, so the course's preprocessing exercise drops or engineers them (`Exercises and solutions(VHL)/01_Data_preprocessing_titanic.ipynb`).
+**Three type traps to catch on sight.** (i) An **ID column** (`PassengerId`, row index) correlates with nothing and must be dropped — feeding it to a model is a classic silent bug. (ii) **Integer-coded categoricals** lie about their type: WholesaleCustomers' `Channel` (1/2) and `Region` (1/2/3) read as `int64` but are *nominal* — treating `Region=3` as "three times Region=1" is wrong; one-hot or leave them out of distance/PCA. (iii) **Text that is secretly a feature** — Titanic's `Name` hides a title (Mr/Mrs/Master) and `Cabin`'s deck letter is informative; raw, they're unusable, so the course's preprocessing exercise drops or engineers them (`course_materials/Exercises and solutions(VHL)/01_Data_preprocessing_titanic.ipynb`).
 :::
 
 **Where this steers you.** When $p$ is large or rivals $n$ — or when many columns are near-duplicates as in Hitters — plain [OLS](../methods/ols.qmd) has too much variance; move to [Ridge/Lasso](../methods/regularization.qmd) (shrink/select) or [PCA](../methods/pca.qmd) (compress). digits' 64 dimensions are the cue for dimensionality reduction before visualization or a distance-based classifier — exactly [workflow Pattern D](workflow_patterns.qmd#sec-wp-d).
@@ -62,7 +62,7 @@ You cannot fit on `NaN`. *Which* columns are missing, and *how much*, decides wh
 ```{ojs}
 //| echo: false
 //| label: fig-rd-missing
-//| fig-cap: "Titanic missingness by column (counts computed from Data/Titanic data/train.csv, n=891). Cabin is 77.1% missing → drop the column; Age is 19.9% missing → impute (too predictive to discard); Embarked is 2 rows → trivial. Every other column is complete. The shape of this bar chart is the whole missing-data decision: tall bars get dropped, medium bars get imputed, the rest get left alone."
+//| fig-cap: "Titanic missingness by column (counts computed from course_materials/Data/Titanic data/train.csv, n=891). Cabin is 77.1% missing → drop the column; Age is 19.9% missing → impute (too predictive to discard); Embarked is 2 rows → trivial. Every other column is complete. The shape of this bar chart is the whole missing-data decision: tall bars get dropped, medium bars get imputed, the rest get left alone."
 famUnsup = (getComputedStyle(document.documentElement).getPropertyValue('--family-unsup').trim() || "#F18F01")
 famCross = (getComputedStyle(document.documentElement).getPropertyValue('--family-cross').trim() || "#3D405B")
 titanicMissing = [

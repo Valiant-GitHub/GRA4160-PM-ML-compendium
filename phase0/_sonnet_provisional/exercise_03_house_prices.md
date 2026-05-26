@@ -1,7 +1,7 @@
 # Exercise extract: Predicting house prices (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)/03_Predicting_house_prices.ipynb`
-**Solution path:** `Exercises and solutions(VHL)/03_Predicting_house_prices_VHL.ipynb`
+**Stub path:** `course_materials/Exercises and solutions(VHL)/03_Predicting_house_prices.ipynb`
+**Solution path:** `course_materials/Exercises and solutions(VHL)/03_Predicting_house_prices_VHL.ipynb`
 **Cell counts:** stub=1 (single markdown cell); solution=20 cells (cells 0-1 markdown, cells 2-18 code, cells 19-20 empty)
 
 ## What the exercise teaches (1-2 sentences)

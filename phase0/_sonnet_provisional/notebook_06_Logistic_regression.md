@@ -1,6 +1,6 @@
 # Notebook extract: 06_Logistic_regression.ipynb
 
-**Source path:** Lecture notebooks\06_Logistic_regression.ipynb
+**Source path:** course_materials\Lecture notebooks\06_Logistic_regression.ipynb
 **Cell count:** 17 (cell-0 through cell-16)
 
 ## Dataset(s) loaded

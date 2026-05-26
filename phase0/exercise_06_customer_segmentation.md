@@ -1,6 +1,6 @@
 # Exercise extract: Customer segmentation (Bank Marketing) (stub + VHL solution)
 
-**Stub path:** `Exercises and solutions(VHL)\06_Customer_segmentation (1).ipynb`   **Solution path:** `Exercises and solutions(VHL)\06_Customer_segmentation_VHL.ipynb`
+**Stub path:** `course_materials\Exercises and solutions(VHL)\06_Customer_segmentation (1).ipynb`   **Solution path:** `course_materials\Exercises and solutions(VHL)\06_Customer_segmentation_VHL.ipynb`
 **Cell counts:** stub=3 (2 markdown, 0 code; trailing empty cell-2), solution=16 (markdown cells-0,1,3,5,7,9,11,13,15; code cells-2,4,6,8,10,12,14)
 
 ## What the exercise teaches (1-2 sentences)

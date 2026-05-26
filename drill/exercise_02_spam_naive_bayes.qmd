@@ -16,7 +16,7 @@ It turns Bayes' theorem into running code: estimate class priors and per-word co
 ## 2. Setup
 
 ::: {.callout-pitfall}
-**Dataset is not present locally ([DATA-1]).** The `_VHL` solution loads `../../data/smsspamcollection/SMSSpamCollection.csv`, but the local `Data/` folder contains only the Titanic, house-prices, and seeds files — **no SMS spam file**. Source cited in the notebook: <https://archive.ics.uci.edu/ml/datasets/sms+spam+collection>. Because the data is unavailable, **no outputs (accuracies, top words) are reproduced below** — the VHL export also stored no numeric outputs, so there is nothing to quote. The code idioms below are transcribed near-verbatim from the solution; the numbers are honestly absent.
+**Dataset is not present locally ([DATA-1]).** The `_VHL` solution loads `../../data/smsspamcollection/SMSSpamCollection.csv`, but the local `course_materials/Data/` folder contains only the Titanic, house-prices, and seeds files — **no SMS spam file**. Source cited in the notebook: <https://archive.ics.uci.edu/ml/datasets/sms+spam+collection>. Because the data is unavailable, **no outputs (accuracies, top words) are reproduced below** — the VHL export also stored no numeric outputs, so there is nothing to quote. The code idioms below are transcribed near-verbatim from the solution; the numbers are honestly absent.
 :::
 
 - **Dataset (per notebook):** SMS Spam Collection — 5,572 labelled English SMS messages, tab-separated, two columns `label` (`ham`/`spam`) and `message`.

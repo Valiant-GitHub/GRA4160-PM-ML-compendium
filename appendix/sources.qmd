@@ -11,8 +11,8 @@ body-classes: fam-cross
 
 **Tier 1 — Lecture material (canonical).**
 
-- **Lecture slides** (10 PDFs, `Lecture slides/`) — Vegard Høghaug Larsen, GRA 4160, spring 2026. Lectures 1–10. Cited by *logical slide number* (the `n/N` footer), since the decks are progressive-build.
-- **Course notebooks** — 20 lecture notebooks (`Lecture notebooks/`) + 11 exercise notebooks (`Exercises and solutions(VHL)/`). Cited by *cell index*. Notebooks win for code, hyperparameters, and dataset details; slides win for conceptual framing and notation.
+- **Lecture slides** (10 PDFs, `course_materials/Lecture slides/`) — Vegard Høghaug Larsen, GRA 4160, spring 2026. Lectures 1–10. Cited by *logical slide number* (the `n/N` footer), since the decks are progressive-build.
+- **Course notebooks** — 20 lecture notebooks (`course_materials/Lecture notebooks/`) + 11 exercise notebooks (`course_materials/Exercises and solutions(VHL)/`). Cited by *cell index*. Notebooks win for code, hyperparameters, and dataset details; slides win for conceptual framing and notation.
 
 **Tier 2 — Reference texts.**
 

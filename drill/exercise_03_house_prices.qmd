@@ -15,7 +15,7 @@ The full regularized-regression workflow on real, messy data: clean to numeric a
 
 ## 2. Setup
 
-- **Dataset:** Kaggle "House Prices — Advanced Regression Techniques" (Ames, Iowa). 1,460 rows, 81 columns. Locally at `Data/house-prices data/train.csv` (note the space in the folder name; the notebook's own path is `../../data/house-prices/train.csv`).
+- **Dataset:** Kaggle "House Prices — Advanced Regression Techniques" (Ames, Iowa). 1,460 rows, 81 columns. Locally at `course_materials/Data/house-prices data/train.csv` (note the space in the folder name; the notebook's own path is `../../data/house-prices/train.csv`).
 - **Loader (solution cell-2):** `data = pd.read_csv('../../data/house-prices/train.csv')`.
 - **Target:** `SalePrice`.
 - **Feature set after cleaning:** the 37 numeric columns (the categorical columns are dropped entirely).

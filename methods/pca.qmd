@@ -68,7 +68,7 @@ std_clf.named_steps['pca'].explained_variance_ratio_   # reach into a pipeline s
 ```
 
 ::: {.callout-pitfall}
-**The reproducibility + labeling traps in the lecture notebook (`phase0/disagreements.md` [NB-3]).** Three things in `10_PCA.ipynb` cell 12 are worth fixing when you reuse it: (i) its `train_test_split(features, target, test_size=0.30)` has **no `random_state`**, so the accuracy printout changes every run — *always* set a seed (the §4 numbers below use `random_state=42`). (ii) The left "Training dataset after PCA" panel actually plots `X_train[..., 0]` and `X_train[..., 1]` — the first two **raw features**, not the PCA projection — so it is **mislabeled**; only the right (standardized) panel truly shows PCA output. (iii) The notebook loads `../data/seeds.csv` (lowercase) while the repo file is `Data/seeds.csv` (capital D) — harmless on Windows but a real path-case mismatch.
+**The reproducibility + labeling traps in the lecture notebook (`phase0/disagreements.md` [NB-3]).** Three things in `10_PCA.ipynb` cell 12 are worth fixing when you reuse it: (i) its `train_test_split(features, target, test_size=0.30)` has **no `random_state`**, so the accuracy printout changes every run — *always* set a seed (the §4 numbers below use `random_state=42`). (ii) The left "Training dataset after PCA" panel actually plots `X_train[..., 0]` and `X_train[..., 1]` — the first two **raw features**, not the PCA projection — so it is **mislabeled**; only the right (standardized) panel truly shows PCA output. (iii) The notebook loads `../data/seeds.csv` (lowercase) while the repo file is `course_materials/Data/seeds.csv` (capital D) — harmless on Windows but a real path-case mismatch.
 :::
 
 ## 4. Worked examples

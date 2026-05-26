@@ -1,6 +1,6 @@
 # Notebook extract: 16_Auto_diff.ipynb
 
-**Source path:** Lecture notebooks/16_Auto_diff.ipynb
+**Source path:** course_materials/Lecture notebooks/16_Auto_diff.ipynb
 **Cell count:** 11 cells (ids cell-0 ... cell-10; cell-10 empty).
 
 ## Dataset(s) loaded

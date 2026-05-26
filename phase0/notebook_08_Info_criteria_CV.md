@@ -1,6 +1,6 @@
 # Notebook extract: 08_Information_criteria_and_cross_validation (1).ipynb
 
-**Source path:** Lecture notebooks/08_Information_criteria_and_cross_validation (1).ipynb
+**Source path:** course_materials/Lecture notebooks/08_Information_criteria_and_cross_validation (1).ipynb
 **Cell count:** 13 (cells 0-12)
 
 ## Dataset(s) loaded
