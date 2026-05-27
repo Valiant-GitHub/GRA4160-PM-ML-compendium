@@ -95,6 +95,9 @@ website:
           - appendix/math_appendix.qmd
           - appendix/sources.qmd
           - appendix/build_log.qmd
+  page-footer:
+    left: "Built by Vilijam Cekov · GRA 4160 Study Companion"
+    right: "[Source on GitHub](https://github.com/REPLACE-WITH-USERNAME/REPLACE-WITH-REPO)"
 
 format:
   html:
