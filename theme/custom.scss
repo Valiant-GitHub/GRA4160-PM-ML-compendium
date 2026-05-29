@@ -1,19 +1,19 @@
 /*-- scss:defaults --*/
-// GRA 4160 study companion — theme defaults
-// Typography: a readable serif for body prose (practitioner reading), a crisp
-// sans for headings/UI, monospace for code. Avoids generic Bootstrap defaults.
-$font-family-sans-serif: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif !default;
-$font-family-serif: "Source Serif 4", Georgia, "Times New Roman", serif !default;
-$font-family-monospace: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace !default;
+// GRA 4160 study companion — Ocean Depths theme defaults (ported from ELE3915).
+// DejaVu Sans for body + headings, DejaVu Sans Mono for code. Pure-white base,
+// cool slate surfaces, navy text — no warm off-whites anywhere.
+$font-family-sans-serif: "DejaVu Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !default;
+$font-family-serif: "DejaVu Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !default;
+$font-family-monospace: "DejaVu Sans Mono", Consolas, "Liberation Mono", "Courier New", monospace !default;
 
-$primary: #2E86AB;        // linear-family blue as the site primary
-$body-color: #1f2430;
-$link-color: #2E86AB;
-$code-color: #b3306b;
+$primary: #0A64FF;        // Ocean Depths ocean-blue as the site primary
+$body-color: #1a2332;     // navy body text
+$link-color: #0A64FF;
+$code-color: #2d8b8b;     // teal-base inline-code text (readable on cool slate bg)
 $border-radius: 0.5rem;
 
 // Sidebar / nav
-$sidebar-bg: #f7f8fa;
+$sidebar-bg: #f1f5f9;     // cool slate (surface-1)
 
 /*-- scss:rules --*/
 
@@ -22,12 +22,38 @@ $sidebar-bg: #f7f8fa;
 // Dimension A: method family.  Dimension B: content callout.
 // ---------------------------------------------------------------------------
 :root {
-  /* Dimension A — method family */
-  --family-linear:  #2E86AB;
-  --family-tree:    #06A77D;
-  --family-neural:  #7B2CBF;
-  --family-unsup:   #F18F01;
-  --family-cross:   #3D405B;
+  /* ----- Ocean Depths base palette (ported from ELE3915) ----- */
+  --navy:          #1a2332;   /* headers, dark surfaces, body text */
+  --ocean-blue:    #0A64FF;   /* gradient endpoint, vivid accent */
+  --teal-base:     #2d8b8b;   /* site-wide accent */
+  --teal-brighter: #43c2c2;   /* secondary accent */
+  --teal-darker:   #5fcc8f;   /* tertiary accent (greens) */
+  --seafoam:       #a8dadc;   /* legacy accent (retained for subtle decorative use) */
+  --cream:         #ffffff;   /* light text on dark surfaces (pure white; name kept) */
+  --paper:         #ffffff;   /* base page background (pure white; name kept) */
+  --surface-1:     #f1f5f9;   /* cool light gray — elevated surfaces */
+  --surface-2:     #e2e8f0;   /* stronger cool gray — borders, dividers */
+  --text:          #1a2332;   /* body text */
+  --text-muted:    #556070;   /* secondary text */
+  --border:        #d7e0e0;   /* subtle borders */
+  --code-bg:       #f1f5f9;   /* inline code bg (cool slate, matches surface-1) */
+  --code-border:   #cbd5e1;   /* inline code border (cool slate) */
+
+  /* Signature gradient — nav, landing title, card titles */
+  --gradient-signature: linear-gradient(90deg, #093F82 0%, #0A64FF 100%);
+
+  /* Typography tokens */
+  --header-font: "DejaVu Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --body-font:   "DejaVu Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --mono-font:   "DejaVu Sans Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Dimension A — method family (vibrant palette harmonized with Ocean Depths;
+     token names unchanged so all downstream references auto-pick-up new values) */
+  --family-linear:  #0A64FF;   /* reuses Ocean Depths ocean-blue */
+  --family-tree:    #10B981;   /* vibrant emerald */
+  --family-neural:  #A855F7;   /* electric purple */
+  --family-unsup:   #F97316;   /* vibrant orange */
+  --family-cross:   #1a2332;   /* reuses Ocean Depths navy (foundational/neutral) */
 
   /* Dimension B — content callout backgrounds */
   --cl-intuition-bg: #FFF8DC;
@@ -49,10 +75,13 @@ $sidebar-bg: #f7f8fa;
 
   /* the active page's family color; overridden per page via .fam-* classes */
   --page-family: var(--family-cross);
+  /* alias so ported ELE rules can reference the page accent by its source name */
+  --accent-current: var(--page-family);
 }
 
-body { font-family: $font-family-serif; font-size: 1.02rem; line-height: 1.65; }
-h1, h2, h3, h4, h5, .navbar, .sidebar, .quarto-title-block { font-family: $font-family-sans-serif; }
+body { font-family: var(--body-font); font-size: 1.02rem; line-height: 1.65;
+  background: var(--paper); color: var(--text); }
+h1, h2, h3, h4, h5, .navbar, .sidebar, .quarto-title-block { font-family: var(--header-font); }
 h1, h2, h3 { letter-spacing: -0.01em; }
 
 // ---------------------------------------------------------------------------
@@ -258,4 +287,96 @@ figure figcaption, .figure-caption, .quarto-figure figcaption {
 @media (max-width: 768px) {
   .dash-grid { grid-template-columns: 1fr; gap: 1rem; }
   .dash-output { position: static; top: auto; max-height: none; overflow-y: visible; }
+}
+
+// ===========================================================================
+// OCEAN DEPTHS SIGNATURES (ported from ELE3915). Additive — none of the blocks
+// above are modified. Accent work keys off --page-family (per-page family color).
+// ===========================================================================
+
+// 1) Top navigation — signature blue gradient, light text -------------------
+.navbar {
+  background: var(--gradient-signature) !important;
+  border-bottom: none;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-title,
+.navbar .quarto-navbar-tools .quarto-navigation-tool {
+  color: var(--cream) !important;
+}
+.navbar .nav-link:hover,
+.navbar .navbar-brand:hover { color: var(--seafoam) !important; }
+
+// 2) Landing-page H1 — gradient text (home only) ----------------------------
+body.home-landing h1.title {
+  background: var(--gradient-signature);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  border-bottom: none;
+}
+
+// 3) Section-number counters (mono, family-colored) on content H2s -----------
+main#quarto-document-content { counter-reset: section; }
+main#quarto-document-content section.level2 > h2 {
+  counter-increment: section;
+  display: flex; align-items: baseline; gap: 0.6rem;
+}
+main#quarto-document-content section.level2 > h2::before {
+  content: counter(section, decimal-leading-zero);
+  font-family: var(--mono-font);
+  font-size: 0.72em; font-weight: 600;
+  color: var(--page-family);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+// 4) H3 subsection marker glyph (‣, family color at 60%) --------------------
+main#quarto-document-content section.level3 > h3 {
+  position: relative; padding-left: 1.1rem;
+}
+main#quarto-document-content section.level3 > h3::before {
+  content: "‣";
+  position: absolute; left: 0; top: 0;
+  color: color-mix(in srgb, var(--page-family) 60%, transparent);
+  font-weight: 700;
+}
+
+// 5) Code blocks — family-color accent left-edge (dark bg + readable tokens
+//    come from highlight-style: nord set in _quarto.yml) ---------------------
+main#quarto-document-content div.sourceCode {
+  border-left: 3px solid var(--page-family);
+  border-radius: 0 6px 6px 0;
+  overflow: hidden;
+}
+// inline code — cool slate surface (matches the pure-white base)
+:not(pre) > code {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 4px;
+  padding: 0.08em 0.34em;
+}
+
+// 6) Right per-page TOC — navy dark surface, light text, accent hover/active --
+#quarto-margin-sidebar nav#TOC {
+  background: var(--navy);
+  border-left: 3px solid var(--page-family);
+  border-radius: 6px;
+  padding: 0.9rem 0.85rem;
+  box-shadow: 0 4px 18px rgba(26,35,50,0.12);
+}
+#quarto-margin-sidebar nav#TOC #toc-title { color: var(--cream); }
+#quarto-margin-sidebar nav#TOC .nav-link { color: #b8c6d4 !important; }
+#quarto-margin-sidebar nav#TOC .nav-link:hover {
+  color: var(--cream) !important;
+  background: color-mix(in srgb, var(--page-family) 16%, transparent);
+}
+#quarto-margin-sidebar nav#TOC .nav-link.active {
+  color: var(--page-family) !important;
+  border-left-color: var(--page-family);
+  font-weight: 600;
 }

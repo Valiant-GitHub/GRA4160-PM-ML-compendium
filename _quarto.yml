@@ -22,7 +22,7 @@ website:
   page-navigation: true
   back-to-top-navigation: true
   navbar:
-    background: light
+    background: dark
     pinned: true
     search: true
     left:
@@ -104,6 +104,8 @@ format:
     theme:
       - cosmo
       - theme/custom.scss
+    # Dark code highlighting (cohesive with the Ocean Depths dark code blocks).
+    highlight-style: nord
     toc: true
     toc-depth: 3
     toc-expand: true
