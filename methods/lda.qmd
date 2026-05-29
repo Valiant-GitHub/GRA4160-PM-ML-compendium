@@ -146,7 +146,7 @@ ldaMidpoint = {
 Plot.plot({
   height: 260, marginLeft: 50, grid: true,
   x: {label: "projection onto LDA discriminant axis (LD1)"},
-  y: {label: "class", domain: [-0.6, 1.6], ticks: [0, 1], tickFormat: d => "class " + d},
+  y: {label: "class", domain: [0, 1], type: "band", tickFormat: d => "class " + d},
   marks: [
     Plot.ruleX([ldaMidpoint], {stroke: "#888", strokeDasharray: "4,3"}),
     Plot.tickX(ldaProj.filter(d=>d.c===0), {x: "v", y: () => 0, stroke: "#E8A33D", strokeOpacity: 0.55}),
