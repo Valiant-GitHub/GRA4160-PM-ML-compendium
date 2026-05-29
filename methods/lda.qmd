@@ -143,39 +143,18 @@ ldaMidpoint = {
   const m1 = d3.mean(ldaProj.filter(d=>d.c===1), d=>d.v);
   return (m0 + m1) / 2;
 }
-{
-  console.log("[DIAG-LDA] ldaProj length:", ldaProj.length);
-  console.log("[DIAG-LDA] ldaProj sample (first 3):", ldaProj.slice(0, 3));
-  console.log("[DIAG-LDA] ldaProj has NaN?", ldaProj.some(d => isNaN(d.v) || isNaN(d.c)));
-  console.log("[DIAG-LDA] famLinear resolved value:", JSON.stringify(famLinear));
-  console.log("[DIAG-LDA] famLinear typeof:", typeof famLinear);
-  console.log("[DIAG-LDA] ldaMidpoint:", ldaMidpoint);
-  const plotResult = Plot.plot({
-    height: 260, marginLeft: 50, grid: true,
-    x: {label: "projection onto LDA discriminant axis (LD1)"},
-    y: {label: "class", domain: [-0.6, 1.6], ticks: [0, 1], tickFormat: d => "class " + d},
-    color: {legend: false},
-    marks: [
-      Plot.ruleX([ldaMidpoint], {stroke: "#888", strokeDasharray: "4,3"}),
-      Plot.tickX(ldaProj.filter(d=>d.c===0), {x: "v", y: () => 0, stroke: "#E8A33D", strokeOpacity: 0.55}),
-      Plot.tickX(ldaProj.filter(d=>d.c===1), {x: "v", y: () => 1, stroke: famLinear, strokeOpacity: 0.55}),
-      Plot.dot(ldaProj, {x: "v", y: "c", fill: d => d.c === 1 ? famLinear : "#E8A33D", fillOpacity: 0.7, r: 4})
-    ]
-  });
-  const diag = {
-    ldaProjLength: ldaProj.length,
-    hasNaN: ldaProj.some(d => isNaN(d.v) || isNaN(d.c)),
-    famLinear: famLinear,
-    famLinearType: typeof famLinear,
-    ldaMidpoint: ldaMidpoint,
-    svgTag: plotResult && plotResult.tagName,
-    circles: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("circle").length : "n/a",
-    lines: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("line").length : "n/a",
-    paths: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("path").length : "n/a"
-  };
-  console.log("[DIAG-LDA]", diag);
-  return html`<div>${plotResult}<pre id="diag-lda-panel" style="background:#ffffff;color:#111;border:2px solid red;padding:8px;font-size:12px;line-height:1.4;white-space:pre-wrap;overflow:auto;">[DIAG-LDA] ${JSON.stringify(diag, null, 2)}</pre></div>`;
-}
+Plot.plot({
+  height: 260, marginLeft: 50, grid: true,
+  x: {label: "projection onto LDA discriminant axis (LD1)"},
+  y: {label: "class", domain: [-0.6, 1.6], ticks: [0, 1], tickFormat: d => "class " + d},
+  marks: [
+    Plot.ruleX([ldaMidpoint], {stroke: "#888", strokeDasharray: "4,3"}),
+    Plot.tickX(ldaProj.filter(d=>d.c===0), {x: "v", y: () => 0, stroke: "#E8A33D", strokeOpacity: 0.55}),
+    Plot.tickX(ldaProj.filter(d=>d.c===1), {x: "v", y: () => 1, stroke: famLinear, strokeOpacity: 0.55}),
+    Plot.dot(ldaProj.filter(d=>d.c===0), {x: "v", y: "c", fill: "#E8A33D", fillOpacity: 0.7, r: 4}),
+    Plot.dot(ldaProj.filter(d=>d.c===1), {x: "v", y: "c", fill: famLinear, fillOpacity: 0.7, r: 4})
+  ]
+})
 ```
 
 Static prose can assert "LDA maximizes between-class over within-class variance"; only the picture shows the consequence — two clouds that LDA has pried apart as far as a single linear axis allows, with a stubborn overlap in the middle that caps accuracy at 0.74.

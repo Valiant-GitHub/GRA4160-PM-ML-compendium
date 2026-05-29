@@ -134,39 +134,20 @@ screeData = [
   {pc: 6, evr: 0.0014, cum: 0.9999},
   {pc: 7, evr: 0.0001, cum: 1.0000}
 ]
-{
-  console.log("[DIAG-PCA] screeData length:", screeData.length);
-  console.log("[DIAG-PCA] screeData sample (first 3):", screeData.slice(0, 3));
-  console.log("[DIAG-PCA] screeData has NaN?", screeData.some(d => isNaN(d.pc) || isNaN(d.cum)));
-  console.log("[DIAG-PCA] famUnsup resolved value:", JSON.stringify(famUnsup));
-  console.log("[DIAG-PCA] famUnsup typeof:", typeof famUnsup);
-  const plotResult = Plot.plot({
-    height: 320, marginLeft: 55, marginRight: 20, grid: true,
-    x: {label: "number of principal components kept", domain: [0.5, 7.5], ticks: [1,2,3,4,5,6,7]},
-    y: {label: "cumulative variance retained", domain: [0, 1.02], percent: true},
-    marks: [
-      Plot.ruleY([0.90], {stroke: "#888", strokeDasharray: "5,4"}),
-      Plot.text([{x: 6.4, y: 0.90}], {x: "x", y: "y", text: ["90% budget"], dy: -8, fontSize: 11, fill: "#666"}),
-      Plot.areaY(screeData, {x: "pc", y: "cum", fill: famUnsup, fillOpacity: 0.12}),
-      Plot.line(screeData, {x: "pc", y: "cum", stroke: famUnsup, strokeWidth: 2.5}),
-      Plot.dot(screeData, {x: "pc", y: "cum", fill: famUnsup, r: 4}),
-      Plot.ruleX([3], {y1: 0, y2: 0.9848, stroke: famUnsup, strokeDasharray: "2,3", strokeOpacity: 0.6}),
-      Plot.text(screeData, {x: "pc", y: "cum", text: d => (d.cum*100).toFixed(0) + "%", dy: -12, fontSize: 9, fill: "#444"})
-    ]
-  });
-  const diag = {
-    screeDataLength: screeData.length,
-    hasNaN: screeData.some(d => isNaN(d.pc) || isNaN(d.cum)),
-    famUnsup: famUnsup,
-    famUnsupType: typeof famUnsup,
-    svgTag: plotResult && plotResult.tagName,
-    circles: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("circle").length : "n/a",
-    lines: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("line").length : "n/a",
-    paths: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("path").length : "n/a"
-  };
-  console.log("[DIAG-PCA]", diag);
-  return html`<div>${plotResult}<pre id="diag-pca-panel" style="background:#ffffff;color:#111;border:2px solid red;padding:8px;font-size:12px;line-height:1.4;white-space:pre-wrap;overflow:auto;">[DIAG-PCA] ${JSON.stringify(diag, null, 2)}</pre></div>`;
-}
+Plot.plot({
+  height: 320, marginLeft: 55, marginRight: 20, grid: true,
+  x: {label: "number of principal components kept", domain: [0.5, 7.5], ticks: [1,2,3,4,5,6,7]},
+  y: {label: "cumulative variance retained", domain: [0, 1.02], tickFormat: d => (d * 100).toFixed(0) + "%"},
+  marks: [
+    Plot.ruleY([0.90], {stroke: "#888", strokeDasharray: "5,4"}),
+    Plot.text([{x: 6.4, y: 0.90}], {x: "x", y: "y", text: ["90% budget"], dy: -8, fontSize: 11, fill: "#666"}),
+    Plot.areaY(screeData, {x: "pc", y: "cum", fill: famUnsup, fillOpacity: 0.12}),
+    Plot.line(screeData, {x: "pc", y: "cum", stroke: famUnsup, strokeWidth: 2.5}),
+    Plot.dot(screeData, {x: "pc", y: "cum", fill: famUnsup, r: 4}),
+    Plot.ruleX([3], {y1: 0, y2: 0.9848, stroke: famUnsup, strokeDasharray: "2,3", strokeOpacity: 0.6}),
+    Plot.text(screeData, {x: "pc", y: "cum", text: d => (d.cum*100).toFixed(0) + "%", dy: -12, fontSize: 9, fill: "#444"})
+  ]
+})
 ```
 
 Static prose can say "keep components until you reach 90 %"; only the picture shows *which* count that is, and that the answer changes the moment you standardize — the elbow after PC3 is where the remaining components carry almost no variance (the noise tail you can safely discard for [K-Means](kmeans.qmd) or any downstream model).
