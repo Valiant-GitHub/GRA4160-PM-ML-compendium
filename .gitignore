@@ -3,6 +3,7 @@
 .quarto/
 /.quarto/
 _freeze/
+_site/
 __pycache__/
 .ipynb_checkpoints/
 node_modules/
@@ -30,6 +31,3 @@ Data/
 Final exam 2026/
 *.pdf
 Exam_GRA4160_*.ipynb
-
-# NOTE: _site/ is intentionally NOT ignored — the rendered site is the
-# deliverable and is committed so visitors see HTML without rebuilding.

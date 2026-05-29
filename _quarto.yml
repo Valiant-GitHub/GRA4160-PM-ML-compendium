@@ -1,6 +1,6 @@
 project:
   type: website
-  output-dir: _site
+  output-dir: docs
   resources:
     - assets/katex/**
   # Explicit whitelist so Quarto does NOT render build artifacts (phase0/*.md,
