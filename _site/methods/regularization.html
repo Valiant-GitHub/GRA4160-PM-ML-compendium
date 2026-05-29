@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Regularization — Ridge, Lasso, Elastic Net – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/bias_variance.html" rel="next">
+<link href="../methods/adaline.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-linear quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/regularization.html">Regularization — Ridge, Lasso, Elastic Net</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#sec-reg-when" id="toc-sec-reg-when" class="nav-link" data-scroll-target="#sec-reg-when">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#sec-reg-code" id="toc-sec-reg-code" class="nav-link" data-scroll-target="#sec-reg-code">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-reg-synth" id="toc-sec-reg-synth" class="nav-link" data-scroll-target="#sec-reg-synth">Example 1 — Lasso recovers the zeros that OLS only shrinks (synthetic)</a></li>
+  <li><a href="#sec-reg-hitters" id="toc-sec-reg-hitters" class="nav-link" data-scroll-target="#sec-reg-hitters">Example 2 — Ridge and Lasso close the Hitters train–test gap</a></li>
+  <li><a href="#sec-reg-alpha" id="toc-sec-reg-alpha" class="nav-link" data-scroll-target="#sec-reg-alpha">Example 3 — choosing <code>alpha</code> by AIC/BIC and by cross-validation (diabetes)</a></li>
+  </ul></li>
+  <li><a href="#sec-reg-viz" id="toc-sec-reg-viz" class="nav-link" data-scroll-target="#sec-reg-viz">5. Visualization</a></li>
+  <li><a href="#sec-reg-diag" id="toc-sec-reg-diag" class="nav-link" data-scroll-target="#sec-reg-diag">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#past-exam-lens" id="toc-past-exam-lens" class="nav-link" data-scroll-target="#past-exam-lens">7. Past-exam lens</a></li>
+  <li><a href="#sec-reg-math" id="toc-sec-reg-math" class="nav-link" data-scroll-target="#sec-reg-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/regularization.html">Regularization — Ridge, Lasso, Elastic Net</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Regularization — Ridge, Lasso, Elastic Net</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Linear family</strong></span> · <a href="../methods/ols.html">OLS</a> with a penalty on coefficient size — the fix you reach for when predictors are many, correlated, or rival the sample size. Three siblings, one idea: Ridge (L2) shrinks, Lasso (L1) shrinks <em>and</em> selects, Elastic Net mixes the two. They sit between plain <a href="../methods/ols.html">OLS</a> (the <span class="math inline">\lambda=0</span> limit) and dimensionality reduction by <a href="../methods/pca.html">PCA</a>; their tuning is pure <a href="../methods/cv_info_criteria.html">cross-validation</a> and their pay-off is read through the <a href="../methods/bias_variance.html">bias–variance</a> lens.</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p>Regularized regression is ordinary least squares with one extra clause in the objective: alongside “make the residuals small,” it also says “keep the coefficients small.” You add a <strong>penalty term</strong> to the least-squares cost, scaled by a strength <span class="math inline">\lambda</span>, that grows with the size of the coefficients — so the fit now balances fidelity to the data against coefficient magnitude (Lecture 3, slide 13/20). Turning <span class="math inline">\lambda</span> up trades a little <strong>bias</strong> for a large drop in <strong>variance</strong>: the coefficients stop chasing the noise in the training sample, and the model generalizes better. At <span class="math inline">\lambda = 0</span> you are back to <a href="../methods/ols.html">OLS</a>; as <span class="math inline">\lambda \to \infty</span> every coefficient is crushed toward zero (Lecture 3, slide 19/20).</p>
+<p>The three family members differ only in <em>how</em> they measure coefficient size. <strong>Ridge</strong> penalizes the sum of squared coefficients (the L2 norm); it shrinks everything smoothly toward zero but essentially never <em>to</em> zero, and it is the natural cure for <strong>multicollinearity</strong> because it shares a coefficient out across correlated predictors instead of letting them blow up against each other (Lecture 3, slide 14/20). <strong>Lasso</strong> penalizes the sum of absolute coefficients (the L1 norm); its geometry has corners, so the optimum often lands exactly on an axis — driving some coefficients to <em>exactly zero</em> and thereby performing automatic <strong>feature selection</strong> (Lecture 3, slide 15/20). <strong>Elastic Net</strong> uses a weighted blend of both, governed by a mixing ratio <span class="math inline">\alpha</span>, to get Lasso-style sparsity while keeping Ridge-style stability when predictors are correlated (Lecture 3, slide 17/20).</p>
+<p>Like OLS, all three are <strong>parametric</strong> linear models — fast, interpretable, one weight per predictor — but where OLS has no hyperparameters worth tuning, regularization lives or dies by the choice of <span class="math inline">\lambda</span> (and, for Elastic Net, <span class="math inline">\alpha</span>). That choice is made by <a href="../methods/cv_info_criteria.html">cross-validation</a>, and getting it right is the whole skill (Lecture 3, slide 19/20).</p>
+</section>
+<section id="sec-reg-when" class="level2">
+<h2 class="anchored" data-anchor-id="sec-reg-when">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for regularization when…</strong></p>
+<ul>
+<li><strong>Predictors are many, correlated, or rival the sample size</strong> (<span class="math inline">p \gtrsim n</span>, or strong multicollinearity). This is exactly where plain <a href="../methods/ols.html">OLS</a> overfits — the Hitters baseline in <a href="#sec-reg-hitters">§4</a> shows the symptom (train <span class="math inline">R^2</span> well above test <span class="math inline">R^2</span>).</li>
+<li><strong>You want to <em>select</em> features automatically</strong> → <strong>Lasso</strong> (or Elastic Net) zeros out the irrelevant ones, giving a sparse, more interpretable model. The synthetic example in <a href="#sec-reg-synth">§4</a> shows Lasso recovering true-zero coefficients that OLS leaves as small non-zero noise.</li>
+<li><strong>Many small, genuinely-present effects, none worth discarding</strong> → <strong>Ridge</strong> keeps them all but shrinks them together, the right move under multicollinearity (Lecture 3, slide 14/20).</li>
+<li><strong>You have correlated predictors <em>and</em> want sparsity</strong> → <strong>Elastic Net</strong>: Lasso alone tends to arbitrarily pick one of a correlated group and drop the rest; Elastic Net keeps the group together (notebook <code>05_Regularised_regressions (1).ipynb</code>, cell 13).</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else when…</strong></p>
+<ul>
+<li><strong><span class="math inline">p \ll n</span>, predictors uncorrelated, you want unbiased inference</strong> → plain <a href="../methods/ols.html"><strong>OLS</strong></a> is the <span class="math inline">\lambda=0</span> limit and is BLUE under Gauss–Markov; a penalty would only add bias for no variance gain.</li>
+<li><strong>The relationship is clearly non-linear</strong> → a penalty cannot fix a wrong functional form; use <a href="../methods/random_forests.html"><strong>Decision Trees / Random Forests</strong></a> or another flexible learner.</li>
+<li><strong>You want to compress correlated predictors into a few uncorrelated directions</strong> rather than zero some out → <a href="../methods/pca.html"><strong>PCA</strong></a> is the dimensionality-reduction alternative (and can be combined with regression).</li>
+<li><strong>Choosing among Ridge / Lasso / Elastic Net:</strong> Lasso <em>struggles with correlated predictors</em> — it picks one and zeros its neighbors, so the choice is unstable; Ridge keeps all of them; Elastic Net balances. See the <a href="#sec-reg-diag">big-picture callout in §6</a>.</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>The single most common regularization bug — <code>alpha</code> is not <span class="math inline">\alpha</span>.</strong> In the course’s math (Lecture 3) and most textbooks, <strong><span class="math inline">\lambda</span></strong> is the penalty <em>strength</em> and <strong><span class="math inline">\alpha \in [0,1]</span></strong> is the Elastic-Net L1/L2 <em>mixing ratio</em>. In <strong>scikit-learn the argument named <code>alpha</code> is the penalty strength <span class="math inline">\lambda</span></strong> — not the mixing ratio — and the mixing ratio is the separate argument <strong><code>l1_ratio</code></strong>. The course notebook states this explicitly: <em>“in scikit-learn the parameter <code>alpha</code> is the same as we here call <span class="math inline">\lambda</span>. What we call <span class="math inline">\alpha</span> is called <code>l1_ratio</code> in scikit-learn”</em> (notebook <code>05_Regularised_regressions (1).ipynb</code>, cell 13). Mixing these up silently changes which model you fit. See [disagreements R9-13] and the <a href="../appendix/notation_table.html">notation table</a> item 3.</p>
+</div>
+<div class="callout-pitfall">
+<p><strong>Standardize <em>before</em> you penalize.</strong> A penalty on coefficient size is meaningful only if the coefficients are on a comparable scale — otherwise a predictor measured in small units gets an artificially large coefficient and is penalized harder for no good reason. Always fit a <a href="../methods/cv_info_criteria.html"><code>StandardScaler</code></a> (or center+scale) <em>inside the cross-validation pipeline</em> so the scaling is learned on training folds only. Lecture 3 stresses this twice (slides 19–20). The penalty does <strong>not</strong> apply to the intercept <span class="math inline">\beta_0</span>.</p>
+</div>
+</section>
+<section id="sec-reg-code" class="level2">
+<h2 class="anchored" data-anchor-id="sec-reg-code">3. Code idiom</h2>
+<p>The canonical course idiom is <code>scikit-learn</code>’s <code>Ridge</code>, <code>Lasso</code>, and <code>ElasticNet</code>, all from <code>sklearn.linear_model</code>. They share OLS’s <code>.fit</code> / <code>.coef_</code> / <code>.predict</code> API; the one new thing is the penalty argument <code>alpha</code> (<span class="math inline">=\lambda</span>).</p>
+<p><strong>The three estimators</strong> — <em>(notebook <code>05_Regularised_regressions (1).ipynb</code>, cells 10, 12, 14)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge, Lasso, ElasticNet</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>ridge <span class="op">=</span> Ridge(alpha<span class="op">=</span><span class="fl">0.8</span>)                       <span class="co"># alpha = λ (penalty strength); L2</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>ridge.fit(X_train, y_train)<span class="op">;</span> ridge.coef_</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>lasso <span class="op">=</span> Lasso(alpha<span class="op">=</span><span class="fl">0.1</span>)                        <span class="co"># alpha = λ; L1 → can zero coefficients</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>lasso.fit(X_train, y_train)<span class="op">;</span> lasso.coef_</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>en <span class="op">=</span> ElasticNet(alpha<span class="op">=</span><span class="fl">0.1</span>, l1_ratio<span class="op">=</span><span class="fl">0.5</span>)       <span class="co"># alpha = λ; l1_ratio = α (mix). 0.5 = even L1/L2 split</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>en.fit(X_train, y_train)<span class="op">;</span> en.coef_</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Every hyperparameter, annotated: <code>alpha</code> is the penalty strength <span class="math inline">\lambda</span> (default <code>1.0</code>; larger ⇒ more shrinkage); <code>l1_ratio</code> is the Elastic-Net mixing ratio (the math’s <span class="math inline">\alpha</span>; <code>0.0</code> ⇒ pure Ridge, <code>1.0</code> ⇒ pure Lasso, <code>0.5</code> ⇒ even split). The <code>0.8</code> / <code>0.1</code> / <code>0.1</code> values are the course’s <em>teaching</em> settings on the synthetic data — in practice you tune <code>alpha</code> by cross-validation (see below).</p>
+<p><strong>The Lasso path with LARS</strong> <em>(notebook <code>05_Regularised_regressions (1).ipynb</code>, cell 19)</em> — Least Angle Regression computes the <em>entire</em> sequence of Lasso solutions as <span class="math inline">\lambda</span> varies, in one pass, so you can see the order in which features enter:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> lars_path</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>_, _, coefs <span class="op">=</span> lars_path(X_train, y_train, method<span class="op">=</span><span class="st">"lasso"</span>, verbose<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>xx <span class="op">=</span> np.<span class="bu">sum</span>(np.<span class="bu">abs</span>(coefs.T), axis<span class="op">=</span><span class="dv">1</span>)<span class="op">;</span> xx <span class="op">/=</span> xx[<span class="op">-</span><span class="dv">1</span>]   <span class="co"># normalized L1 norm on the x-axis</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>plt.plot(xx, coefs.T, lw<span class="op">=</span><span class="dv">2</span>)                           <span class="co"># each line = one coefficient's trajectory</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Tuning <code>alpha</code> by cross-validation, with scaling baked in</strong> <em>(notebook <code>08_Information_criteria_and_cross_validation (1).ipynb</code>, cells 6, 11, 12)</em>. The <code>*CV</code> estimators search a grid of <code>alpha</code> internally; wrapping them in a <code>make_pipeline</code> with <code>StandardScaler</code> guarantees the standardize-before-penalty rule and leaks no test information:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> make_pipeline</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LassoCV, LassoLarsCV, LassoLarsIC</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Cross-validated alpha (coordinate descent), 10 folds:</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> make_pipeline(StandardScaler(), LassoCV(cv<span class="op">=</span><span class="dv">10</span>)).fit(X, y)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>model[<span class="op">-</span><span class="dv">1</span>].alpha_          <span class="co"># the selected λ;  .mse_path_, .alphas_ for the CV curve</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Cross-validated alpha (LARS solver), 20 folds — note .cv_alphas_ (not .alphas_):</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>make_pipeline(StandardScaler(), LassoLarsCV(cv<span class="op">=</span><span class="dv">20</span>)).fit(X, y)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Pick alpha by information criterion instead of CV (no hold-out needed):</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>ic <span class="op">=</span> make_pipeline(StandardScaler(), LassoLarsIC(criterion<span class="op">=</span><span class="st">"aic"</span>)).fit(X, y)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>ic.set_params(lassolarsic__criterion<span class="op">=</span><span class="st">"bic"</span>).fit(X, y)   <span class="co"># switch a pipeline step's param</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout-pitfall">
+<p><strong>Two small API traps from notebook 08.</strong> (i) <code>LassoCV</code> exposes its grid as <code>.alphas_</code>, but <code>LassoLarsCV</code> exposes it as <code>.cv_alphas_</code> — a genuine attribute-name difference, not a typo. (ii) The notebook itself uses <code>cv=10</code> for <code>LassoCV</code> but <code>cv=20</code> for <code>LassoLarsCV</code> (cells 11–12), a small code/prose inconsistency — pick one fold count for a fair comparison. <em>(notebook <code>08_...</code>, [VERIFY] cv=20 intended for LARS — see notebook 08 extract.)</em></p>
+</div>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<section id="sec-reg-synth" class="level3">
+<h3 class="anchored" data-anchor-id="sec-reg-synth">Example 1 — Lasso recovers the zeros that OLS only shrinks (synthetic)</h3>
+<p>The course builds a <strong>sparse</strong> data-generating process where the truth is known, so you can check which method recovers it <em>(notebook <code>05_Regularised_regressions (1).ipynb</code>, cell 3)</em>. The true coefficient vector is <code>[5.5, 1.75, 1, 0, -2, 0, 0.6, 0, -9.6, 0]</code> — features 3, 5, 7, 9 (0-indexed) have <strong>exactly zero</strong> true effect:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">15</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.random.rand(<span class="dv">100</span>, <span class="dv">10</span>)                     <span class="co"># 100×10, Uniform(0,1)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> (<span class="fl">5.5</span><span class="op">*</span>X[:,<span class="dv">0</span>] <span class="op">+</span> <span class="fl">1.75</span><span class="op">*</span>X[:,<span class="dv">1</span>] <span class="op">+</span> <span class="dv">1</span><span class="op">*</span>X[:,<span class="dv">2</span>] <span class="op">-</span> <span class="dv">2</span><span class="op">*</span>X[:,<span class="dv">4</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>     <span class="op">+</span> <span class="fl">0.6</span><span class="op">*</span>X[:,<span class="dv">6</span>] <span class="op">-</span> <span class="fl">9.6</span><span class="op">*</span>X[:,<span class="dv">8</span>] <span class="op">+</span> <span class="fl">5.0</span><span class="op">*</span>np.random.randn(<span class="dv">100</span>))   <span class="co"># noise std 5</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fitting all four models on this fixed draw, the coefficients tell the story <em>(notebook cells 6, 10, 12, 14)</em>. OLS leaves the four true-zero features as small but <strong>non-zero</strong> noise (e.g.&nbsp;<code>-2.247</code>, <code>-4.097</code>, <code>0.898</code>, <code>-0.195</code> at indices 3, 5, 7, 9); Ridge shrinks every coefficient a little but still leaves all ten non-zero. <strong>Lasso (<code>alpha=0.1</code>) drives three coefficients to exactly <code>0.</code></strong> (indices 6, 7, 9), and <strong>Elastic Net</strong> zeros indices 6 and 9 — both performing the feature selection OLS and Ridge cannot. (Note: neither perfectly recovers the true zero-set {3,5,7,9} — features here are <em>unscaled</em> and the noise is large; this is itself the lesson that selection is imperfect under noise, and the cue to standardize.)</p>
+<p>On the held-out test set the regularized models all beat OLS <em>(notebook cell 16, stored outputs)</em>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Test MSE <em>(stored, nb05 cell 16)</em></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Linear (OLS)</td>
+<td>20.7316</td>
+</tr>
+<tr class="even">
+<td>Ridge (<code>alpha=0.8</code>)</td>
+<td>19.9094</td>
+</tr>
+<tr class="odd">
+<td>Lasso (<code>alpha=0.1</code>)</td>
+<td>19.7805</td>
+</tr>
+<tr class="even">
+<td>Elastic Net (<code>alpha=0.1, l1_ratio=0.5</code>)</td>
+<td><strong>19.7715</strong></td>
+</tr>
+</tbody>
+</table>
+<p>OLS <span class="math inline">20.73</span> &gt; Ridge <span class="math inline">19.91</span> &gt; Lasso <span class="math inline">19.78</span> &gt; Elastic Net <span class="math inline">19.77</span>: a small but consistent improvement, with Elastic Net lowest here. The LARS path (cell 20, stored) confirms the ordering: feature 8 (true coefficient <span class="math inline">-9.6</span>, the strongest effect) enters first, feature 0 (true <span class="math inline">5.5</span>) second — strongest effects enter earliest, as the <a href="#sec-reg-viz">§5 visualization</a> shows.</p>
+</section>
+<section id="sec-reg-hitters" class="level3">
+<h3 class="anchored" data-anchor-id="sec-reg-hitters">Example 2 — Ridge and Lasso close the Hitters train–test gap</h3>
+<p>This continues the <a href="../methods/ols.html#sec-ols-hitters">OLS page’s Hitters baseline</a> — the Spring-2025 take-home (Assignment 1) regression task on <code>Hitters.csv</code> (263 players after dropping missing salaries, 16 numeric predictors, 75/25 split, <code>random_state=1</code>). OLS there fit <strong>train <span class="math inline">R^2 = 0.55</span> but test <span class="math inline">R^2 = 0.36</span></strong> — a wide gap signalling variance from partly-redundant career-total predictors. We now add Ridge and Lasso with cross-validated <code>alpha</code> inside a scaling pipeline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> RidgeCV, LassoCV</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> make_pipeline</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>ridge <span class="op">=</span> make_pipeline(StandardScaler(), RidgeCV(alphas<span class="op">=</span>np.logspace(<span class="op">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">100</span>))).fit(Xtr, ytr)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>lasso <span class="op">=</span> make_pipeline(StandardScaler(), LassoCV(cv<span class="op">=</span><span class="dv">10</span>, max_iter<span class="op">=</span><span class="dv">100000</span>, random_state<span class="op">=</span><span class="dv">1</span>)).fit(Xtr, ytr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Results <em>(computed via the course <code>.venv</code>; OLS row reproduces the <a href="../methods/ols.html#sec-ols-hitters">OLS page</a>)</em>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Selected <code>alpha</code> (=λ)</th>
+<th>Train <span class="math inline">R^2</span></th>
+<th>Test <span class="math inline">R^2</span></th>
+<th>Test RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OLS</td>
+<td>—</td>
+<td>0.55</td>
+<td>0.36</td>
+<td>$377k</td>
+</tr>
+<tr class="even">
+<td>Ridge (CV)</td>
+<td>2.48</td>
+<td>0.54</td>
+<td><strong>0.39</strong></td>
+<td>$370k</td>
+</tr>
+<tr class="odd">
+<td>Lasso (CV)</td>
+<td>2.15</td>
+<td>0.54</td>
+<td>0.38</td>
+<td>$373k</td>
+</tr>
+</tbody>
+</table>
+<p>Both shrink the <strong>train</strong> <span class="math inline">R^2</span> slightly (0.55 → 0.54) while <strong>raising test</strong> <span class="math inline">R^2</span> (0.36 → 0.38–0.39) and lowering test RMSE — the train–test gap narrows from 0.19 to about 0.15. That is the bias–variance trade-off made concrete: a touch more bias, a useful cut in variance, better generalization (computed). Lasso additionally <strong>zeros 2 of the 16 coefficients</strong> (<code>CAtBat</code>, <code>CRBI</code>) — two correlated career totals it judges redundant given the others, exactly the feature-selection behaviour OLS lacks (computed). See the <a href="../cross_method/showdowns.html">regression showdown</a> for OLS vs Ridge vs Lasso vs Tree vs RF on this same dataset.</p>
+<div class="callout-bigpicture">
+<p>This is <em>why</em> the exam pairs OLS with regularization: the gain is modest in <span class="math inline">R^2</span> but the <em>reasoning</em> — diagnose variance, shrink, re-check the gap, interpret the surviving coefficients — is the graded skill.</p>
+</div>
+</section>
+<section id="sec-reg-alpha" class="level3">
+<h3 class="anchored" data-anchor-id="sec-reg-alpha">Example 3 — choosing <code>alpha</code> by AIC/BIC and by cross-validation (diabetes)</h3>
+<p>To show how <span class="math inline">\lambda</span> is <em>selected</em> (not guessed), notebook 08 takes the sklearn <strong>diabetes</strong> dataset (442 samples, 10 real features) and deliberately appends <strong>8 random noise features</strong> — a clean test of whether selection drops the junk <em>(notebook <code>08_...</code>, cells 2–3)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> load_diabetes(return_X_y<span class="op">=</span><span class="va">True</span>, as_frame<span class="op">=</span><span class="va">True</span>)<span class="op">;</span> X <span class="op">=</span> X<span class="op">/</span>X.std()</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">10</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>X_random <span class="op">=</span> pd.DataFrame(rng.randn(X.shape[<span class="dv">0</span>], <span class="dv">8</span>), columns<span class="op">=</span>[<span class="ss">f"random_</span><span class="sc">{</span>i<span class="sc">:02d}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>)])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> pd.concat([X, X_random], axis<span class="op">=</span><span class="dv">1</span>)            <span class="co"># 10 real + 8 noise = 18 features</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Two selection routes, both inside <code>make_pipeline(StandardScaler(), ...)</code>:</p>
+<ul>
+<li><strong>Information criteria</strong> <em>(cell 6)</em>: <code>LassoLarsIC(criterion="aic")</code>, then <code>set_params(lassolarsic__criterion="bic")</code>. AIC (<span class="math inline">=2k - 2\ln L</span>) and BIC (<span class="math inline">=k\ln n - 2\ln L</span>) each pick the <code>alpha</code> minimizing the criterion; BIC’s heavier penalty (<span class="math inline">\ln n</span> per parameter) prefers a sparser model. Read off <code>alpha_aic = ...[-1].alpha_</code> and the features sent to zero via <code>np.where(coefs == 0)[0]</code>. Reproducing the notebook <em>(computed via the course <code>.venv</code>, <code>RandomState(10)</code>)</em>: <strong>AIC selects <code>alpha</code> ≈ 1.52 and keeps 8 of the 18 features</strong> — 7 of the 10 real features plus <strong>1 noise feature (<code>random_07</code>) that survives</strong>; <strong>BIC selects the larger <code>alpha</code> ≈ 4.35 and keeps just 5 features</strong> — all 5 real, with <strong>none of the 8 noise features surviving</strong>. This is the textbook contrast made concrete: BIC’s stiffer <span class="math inline">\ln n</span> penalty drives the sparser, cleaner selection (zero junk), while the lighter AIC lets one noise feature slip through.</li>
+<li><strong>Cross-validation</strong> <em>(cells 11–12)</em>: <code>LassoCV(cv=10)</code> (coordinate descent) and <code>LassoLarsCV(cv=20)</code> (LARS). Each averages the MSE over folds for every <code>alpha</code> and picks the minimizing <code>lasso.alpha_</code>; the CV curve (<code>mse_path_</code> per fold, mean in black, vertical line at the chosen <code>alpha</code>) is the canonical diagnostic. The information-criterion route is cheaper (no hold-out) but leans on the asymptotic AIC/BIC approximations; CV is more robust but costs <span class="math inline">V</span> refits. See <a href="../methods/cv_info_criteria.html">CV &amp; Information Criteria</a> for the full treatment.</li>
+</ul>
+</section>
+</section>
+<section id="sec-reg-viz" class="level2">
+<h2 class="anchored" data-anchor-id="sec-reg-viz">5. Visualization</h2>
+<p>The one figure that earns its place is the <strong>regularization (Lasso/LARS) path</strong>: each coefficient’s value as the penalty relaxes from full strength (left, everything zero) to none (right, the OLS solution). It makes the family’s defining behaviour visible — coefficients enter <em>one at a time</em>, the strongest effects first, and Lasso holds the weak ones at exactly zero until late. The data below is the course’s own stored LARS path on the synthetic sparse DGP <em>(notebook <code>05_Regularised_regressions (1).ipynb</code>, cell 20)</em>, transcribed verbatim.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb7" data-startfrom="176" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 175;"><span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>famLinear <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-linear'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#2E86AB"</span>)</span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>larsCoefs <span class="op">=</span> [</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span>  <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">3.092265</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">0.174416</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">3.275173</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">1.181394</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.559653</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">3.840422</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">2.553196</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">1.463054</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">1.903741</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">5.370857</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">2.975713</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">1.860554</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.260872</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">2.172456</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">5.689768</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">3.318728</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">2.183332</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.395880</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.176759</span><span class="op">,</span> <span class="op">-</span><span class="fl">2.334114</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">5.913308</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">3.975818</span><span class="op">,</span> <span class="fl">0.650795</span><span class="op">,</span> <span class="fl">2.665311</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.681418</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.651251</span><span class="op">,</span> <span class="op">-</span><span class="fl">2.803097</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="op">-</span><span class="fl">6.480425</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">4.304610</span><span class="op">,</span> <span class="fl">1.010091</span><span class="op">,</span> <span class="fl">2.831657</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.865436</span><span class="op">,</span> <span class="op">-</span><span class="fl">1.052757</span><span class="op">,</span> <span class="op">-</span><span class="fl">3.071430</span><span class="op">,</span> <span class="fl">0.000000</span><span class="op">,</span> <span class="fl">0.472077</span><span class="op">,</span> <span class="op">-</span><span class="fl">6.907407</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">4.747332</span><span class="op">,</span> <span class="fl">1.513213</span><span class="op">,</span> <span class="fl">2.760231</span><span class="op">,</span> <span class="op">-</span><span class="fl">1.427747</span><span class="op">,</span> <span class="op">-</span><span class="fl">1.596931</span><span class="op">,</span> <span class="op">-</span><span class="fl">3.406949</span><span class="op">,</span> <span class="fl">0.759838</span><span class="op">,</span> <span class="fl">1.048090</span><span class="op">,</span> <span class="op">-</span><span class="fl">7.575558</span><span class="op">,</span> <span class="fl">0.000000</span>]<span class="op">,</span></span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a>  [<span class="fl">5.005053</span><span class="op">,</span> <span class="fl">1.752460</span><span class="op">,</span> <span class="fl">2.673898</span><span class="op">,</span> <span class="op">-</span><span class="fl">1.778166</span><span class="op">,</span> <span class="op">-</span><span class="fl">1.955299</span><span class="op">,</span> <span class="op">-</span><span class="fl">3.627604</span><span class="op">,</span> <span class="fl">1.191412</span><span class="op">,</span> <span class="fl">1.387944</span><span class="op">,</span> <span class="op">-</span><span class="fl">8.024196</span><span class="op">,</span> <span class="fl">0.250065</span>]</span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>pathData <span class="op">=</span> {</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> rows <span class="op">=</span> larsCoefs<span class="op">.</span><span class="fu">map</span>(step <span class="kw">=&gt;</span> step<span class="op">.</span><span class="fu">reduce</span>((s<span class="op">,</span>c)<span class="kw">=&gt;</span>s<span class="op">+</span><span class="bu">Math</span><span class="op">.</span><span class="fu">abs</span>(c)<span class="op">,</span> <span class="dv">0</span>))<span class="op">;</span></span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> xmax <span class="op">=</span> rows[rows<span class="op">.</span><span class="at">length</span><span class="op">-</span><span class="dv">1</span>]<span class="op">;</span></span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> out <span class="op">=</span> []<span class="op">;</span></span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a>  larsCoefs<span class="op">.</span><span class="fu">forEach</span>((step<span class="op">,</span> i) <span class="kw">=&gt;</span> {</span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> xx <span class="op">=</span> rows[i] <span class="op">/</span> xmax<span class="op">;</span></span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a>    step<span class="op">.</span><span class="fu">forEach</span>((c<span class="op">,</span> j) <span class="kw">=&gt;</span> out<span class="op">.</span><span class="fu">push</span>({xx<span class="op">,</span> <span class="dt">coef</span><span class="op">:</span> c<span class="op">,</span> <span class="dt">feature</span><span class="op">:</span> <span class="st">"β"</span> <span class="op">+</span> j<span class="op">,</span> <span class="dt">fidx</span><span class="op">:</span> j}))<span class="op">;</span></span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> out<span class="op">;</span></span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">360</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">55</span><span class="op">,</span> <span class="dt">marginRight</span><span class="op">:</span> <span class="dv">70</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Σ|β| / max Σ|β|  (penalty relaxes →)"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">1</span>]}<span class="op">,</span></span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Coefficient value"</span>}<span class="op">,</span></span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span> <span class="dt">scheme</span><span class="op">:</span> <span class="st">"tableau10"</span>}<span class="op">,</span></span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>([<span class="dv">0</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#999"</span>})<span class="op">,</span></span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(pathData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"xx"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"coef"</span><span class="op">,</span> <span class="dt">z</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">curve</span><span class="op">:</span> <span class="st">"linear"</span>})<span class="op">,</span></span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(pathData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"xx"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"coef"</span><span class="op">,</span> <span class="dt">z</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">r</span><span class="op">:</span> <span class="dv">2</span>})<span class="op">,</span></span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>(pathData<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">xx</span> <span class="op">===</span> <span class="dv">1</span>)<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"xx"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"coef"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">dx</span><span class="op">:</span> <span class="dv">14</span><span class="op">,</span> <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"feature"</span>})</span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-reg-path" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-reg-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-reg-path-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-reg-path-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-reg-path-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-reg-path-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-reg-path-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-reg-path-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-reg-path-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-reg-path-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-reg-path-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-reg-path-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-reg-path-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-4" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-reg-path-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-reg-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Lasso/LARS regularization path on the synthetic sparse DGP (nb05, cell 20, stored coefficients). x-axis: normalized L1 norm Σ|β|/max Σ|β| — left = strong penalty (all coefficients zero), right = no penalty (full OLS fit). Each line is one coefficient’s trajectory. Feature 8 (true coef −9.6) enters first and feature 0 (true 5.5) second — strongest effects enter earliest; the four true-zero features (3,5,7,9) stay near zero longest. This is exactly what Lasso’s L1 corner geometry produces.
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="sec-reg-diag" class="level2">
+<h2 class="anchored" data-anchor-id="sec-reg-diag">6. Diagnostics &amp; interpretation</h2>
+<p>What to report and inspect to judge a regularized model:</p>
+<ul>
+<li><strong>Train vs test <span class="math inline">R^2</span>/MSE</strong> — the headline. Regularization should <em>narrow</em> the train–test gap relative to OLS even if train error rises slightly (Hitters: gap 0.19 → ~0.15). A gap that stays wide means <span class="math inline">\lambda</span> is too small; train error that collapses toward test with both near-useless means <span class="math inline">\lambda</span> is too large (underfitting).</li>
+<li><strong>The CV curve of error vs <code>alpha</code></strong> — plot <code>mse_path_</code> per fold with the mean and a line at the selected <code>alpha</code> (notebook 08, cells 11–12). The minimum is your <span class="math inline">\lambda</span>; consider the <strong>1-SE rule</strong> (the largest <span class="math inline">\lambda</span> within one standard error of the minimum) for a simpler model (Lecture 3, slide 19/20).</li>
+<li><strong>The coefficient path / which features survive</strong> — for Lasso/Elastic Net, list the zeroed coefficients (<code>np.where(coef_ == 0)[0]</code>, notebook 08 cell 6). The surviving set <em>is</em> the selected model; interpret it, but remember selection is unstable under correlation.</li>
+<li><strong>Coefficient magnitudes only after scaling</strong> — penalized coefficients are comparable across predictors <em>only</em> because you standardized; never read raw-scale penalized coefficients as effect sizes without that caveat.</li>
+</ul>
+<div class="callout-bigpicture">
+<p><strong>Ridge vs Lasso vs Elastic Net — the choice in one breath.</strong> <strong>Ridge</strong> shrinks all coefficients, keeps every predictor, and is the multicollinearity specialist — but it never simplifies the model. <strong>Lasso</strong> zeros coefficients (built-in feature selection) but, faced with a <em>group of correlated predictors, arbitrarily keeps one and drops the rest</em> — unstable selection. <strong>Elastic Net</strong> blends them: enough L1 to get sparsity, enough L2 to keep correlated groups together. Decision rule from Lecture 3: many small effects / collinearity ⇒ Ridge; need a sparse interpretable model ⇒ Lasso; correlated predictors <em>and</em> want sparsity ⇒ Elastic Net. Versus the <a href="../methods/pca.html">PCA</a> alternative, regularization keeps the original (interpretable) feature axes; PCA replaces them with uncorrelated components.</p>
+</div>
+</section>
+<section id="past-exam-lens" class="level2">
+<h2 class="anchored" data-anchor-id="past-exam-lens">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How regularization shows up — this is core.</strong> In the <strong>Spring-2025 take-home (Assignment 1, on <code>Hitters.csv</code>)</strong>, regularization is the heart of the regression task: fit <a href="../methods/ols.html">OLS</a> as the baseline, then <strong>Ridge and Lasso with cross-validated <code>alpha</code></strong>, and <strong>interpret the change in coefficients and the bias–variance trade-off</strong> (<code>phase0/exam_spring2025_notebook.md</code>). Expect to (i) write the <code>Ridge</code>/<code>Lasso</code> idiom from <a href="#sec-reg-code">§3</a> — <em>with <code>StandardScaler</code> in a pipeline</em>; (ii) <strong>tune <code>alpha</code> by cross-validation</strong> (<code>LassoCV</code>/<code>RidgeCV</code> or <code>GridSearchCV</code>) and justify the value, possibly with the 1-SE rule; (iii) report and interpret in/out-of-sample <span class="math inline">R^2</span>/MSE, connecting the <strong>narrowed train–test gap to reduced variance</strong>; and (iv) read off which coefficients Lasso zeros and explain the feature selection. The grade rests on the <em>justification</em> — why shrinkage helps here — at least as much as the code. The classic slip to avoid: confusing sklearn’s <code>alpha</code> (<span class="math inline">=\lambda</span>) with the Elastic-Net mixing <span class="math inline">\alpha</span> (<code>l1_ratio</code>) — see the <a href="#sec-reg-when">pitfall in §2</a>.</p>
+</div>
+</section>
+<section id="sec-reg-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-reg-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> Each family member is plain least squares plus a penalty on coefficient size; they differ only in <em>how</em> size is measured. The course writes all three with the same <span class="math inline">\tfrac{1}{2n}</span> prefactor on the squared-error term and an <em>un-penalized</em> intercept <span class="math inline">\beta_0</span> (Lecture 3, slides 14/15/17; notebook <code>05_Regularised_regressions (1).ipynb</code> markdown cells 9/11/13). <strong>Ridge</strong> penalizes the squared (L2) coefficients, <span class="math display">J^{\text{ridge}}(\beta)=\tfrac{1}{2n}\sum_i\Big(y_i-\beta_0-\sum_j\beta_j x_{ij}\Big)^2+\lambda_r\sum_j\beta_j^2,</span> <strong>Lasso</strong> penalizes the absolute (L1) coefficients, <span class="math display">J^{\text{lasso}}(\beta)=\tfrac{1}{2n}\sum_i\Big(y_i-\beta_0-\sum_j\beta_j x_{ij}\Big)^2+\lambda_\ell\sum_j|\beta_j|,</span> and <strong>Elastic Net</strong> takes a convex blend of the two, governed by the mixing ratio <span class="math inline">\alpha\in[0,1]</span>, <span class="math display">J^{\text{EN}}(\beta)=\tfrac{1}{2n}\sum_i\Big(y_i-\beta_0-\sum_j\beta_j x_{ij}\Big)^2+\lambda_e\Big[(1-\alpha)\sum_j\beta_j^2+\alpha\sum_j|\beta_j|\Big],</span> with <span class="math inline">\alpha=0\Rightarrow</span> Ridge and <span class="math inline">\alpha=1\Rightarrow</span> Lasso (Lecture 3, slide 17/20). <strong>Reading it:</strong> the penalty pulls every <span class="math inline">\beta_j</span> toward zero; the squared L2 term shrinks smoothly and never quite reaches zero, while the kinked L1 term can set coefficients <em>exactly</em> to zero — the source of Lasso’s feature selection (the geometry behind this is in Mode B).</p>
+<p><strong>Choosing <span class="math inline">\lambda</span>.</strong> The strength <span class="math inline">\lambda</span> is not guessed but selected on held-out data: fit over a grid of candidate <span class="math inline">\lambda</span> and pick the value minimizing the cross-validated error, or — for a simpler model — the largest <span class="math inline">\lambda</span> whose CV error is within one standard error of the minimum (the <strong>1-SE rule</strong>) (Lecture 3, slide 19/20; the LARS path of <a href="#sec-reg-viz">§5</a> and the IC route of <a href="#sec-reg-alpha">Example 3</a> are the companion tools). The two endpoints anchor the range: at <span class="math inline">\lambda=0</span> the penalty vanishes and the objective is exactly the <a href="../methods/ols.html">OLS</a> sum of squares; as <span class="math inline">\lambda\to\infty</span> the penalty dominates and every <span class="math inline">\beta_j\to0</span>, so the fit collapses to the intercept-only model (Lecture 3, slide 19/20).</p>
+<p><strong>Convention notes.</strong> The <span class="math inline">\tfrac{1}{2n}</span> prefactor and explicit un-penalized <span class="math inline">\beta_0</span> are the slide/sklearn convention; ESL §3.4 drops the <span class="math inline">\tfrac{1}{2n}</span> and centers the data so <span class="math inline">\beta_0</span> vanishes — the two are equivalent up to a rescaling of <span class="math inline">\lambda</span> ([disagreements R9-12]). And recall the notation trap: in this math <span class="math inline">\lambda</span> is the penalty strength and <span class="math inline">\alpha</span> is the EN mix, but <strong>scikit-learn’s <code>alpha</code> argument is <span class="math inline">\lambda</span></strong> (the mix is <code>l1_ratio</code>). Scikit-learn’s exact <code>ElasticNet</code> objective, <span class="math inline">\tfrac{1}{2n}\lVert y-X\beta\rVert_2^2 + \lambda\cdot\texttt{l1\_ratio}\cdot\lVert\beta\rVert_1 + \tfrac12\lambda(1-\texttt{l1\_ratio})\lVert\beta\rVert_2^2</span>, matches the slide form once you identify <span class="math inline">\texttt{l1\_ratio}=\alpha</span> but writes the L2 term with a <span class="math inline">\tfrac12</span> factor ([disagreements NB-8]). See the <a href="../appendix/math_appendix.html#sec-kkt">MAP/Bayes and KKT treatment in the math appendix</a>.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor.</strong> <em>(Anchored to ESL §3.4 “Shrinkage Methods”: Ridge §3.4.1, Lasso §3.4.2, eqs 3.41–3.52; data assumed centered so the intercept is handled separately and <span class="math inline">\mathbf X</span> has <span class="math inline">p</span> columns.)</em></p>
+<p><strong>Ridge: penalized ⇔ constrained, and the closed form.</strong> ESL defines ridge by the penalized criterion <span class="math display">\hat\beta^{\text{ridge}}=\arg\min_\beta\Big\{\textstyle\sum_{i=1}^N\big(y_i-\beta_0-\sum_j x_{ij}\beta_j\big)^2+\lambda\sum_j\beta_j^2\Big\}\quad(\text{ESL 3.41}),</span> which is <em>equivalent</em> to the size-constrained problem <span class="math inline">\min\sum_i(\cdot)^2</span> subject to <span class="math inline">\sum_j\beta_j^2\le t</span> — there is a one-to-one correspondence between <span class="math inline">\lambda</span> and <span class="math inline">t</span> (ESL 3.42). The penalized form is the Lagrangian of the constrained form. In matrix notation <span class="math inline">\mathrm{RSS}(\lambda)=(y-X\beta)^\top(y-X\beta)+\lambda\beta^\top\beta</span> (ESL 3.43); differentiating and setting to zero gives the <strong>closed form</strong> <span class="math display">\hat\beta^{\text{ridge}}=(X^\top X+\lambda I)^{-1}X^\top y\qquad(\text{ESL 3.44}).</span> Why this is the multicollinearity cure: adding <span class="math inline">\lambda I</span> (a positive constant on the diagonal) makes <span class="math inline">X^\top X+\lambda I</span> <strong>nonsingular even when <span class="math inline">X^\top X</span> is singular or near-singular</strong> — i.e.&nbsp;when columns are perfectly or nearly collinear and the <a href="../methods/ols.html">OLS</a> inverse <span class="math inline">(X^\top X)^{-1}</span> blows up or fails to exist (ESL p64; Hoerl &amp; Kennard, 1970). Geometrically (ESL 3.47, via the SVD <span class="math inline">X=UDV^\top</span>) ridge shrinks the coordinate along the <span class="math inline">j</span>-th principal direction by <span class="math inline">d_j^2/(d_j^2+\lambda)</span>, so the low-variance directions (small singular values <span class="math inline">d_j</span>) — exactly the ill-determined ones — are shrunk most. The intercept <span class="math inline">\beta_0</span> is deliberately left out of the penalty: penalizing it would make the solution depend on the origin chosen for <span class="math inline">y</span>, so one centers the inputs, estimates <span class="math inline">\beta_0=\bar y</span>, and fits the rest without an intercept (ESL p64, Exercise 3.5).</p>
+<p><strong>Lasso: same constraint geometry, but L1 — and the exact zeros.</strong> Replacing the L2 ball by the L1 ball gives the lasso, <span class="math display">\hat\beta^{\text{lasso}}=\arg\min_\beta\textstyle\sum_i\big(y_i-\beta_0-\sum_j x_{ij}\beta_j\big)^2\ \text{ s.t. }\ \sum_j|\beta_j|\le t\quad(\text{ESL 3.51}),</span> equivalently the Lagrangian form <span class="math inline">\arg\min_\beta\{\tfrac12\sum_i(\cdot)^2+\lambda\sum_j|\beta_j|\}</span> (ESL 3.52). Because <span class="math inline">|\beta_j|</span> is <strong>non-differentiable at <span class="math inline">\beta_j=0</span></strong>, there is no closed form; the optimum is characterized by the <strong>KKT / sub-gradient conditions</strong>. For the orthonormal-design case ESL solves them exactly: ridge does proportional shrinkage <span class="math inline">\hat\beta_j/(1+\lambda)</span> while lasso does <strong>soft-thresholding</strong> <span class="math inline">\operatorname{sign}(\hat\beta_j)\,(|\hat\beta_j|-\lambda)_+</span> (ESL Table 3.4) — the <span class="math inline">(\cdot)_+</span> truncates to <em>exactly zero</em> any coefficient whose unpenalized magnitude is below <span class="math inline">\lambda</span>. That truncation is the algebraic statement of the geometry in ESL Figure 3.11: the elliptical RSS contours first touch the L1 <strong>diamond</strong> at a corner (where some <span class="math inline">\beta_j=0</span>), whereas they touch the smooth L2 <strong>circle</strong> generically off-axis (no exact zeros) — Lasso’s corners are why it <em>selects</em>, Ridge’s roundness is why it merely shrinks (Lecture 3, slide 16/20, which credits this figure to ESL).</p>
+<p><strong>The Bayesian/MAP reading.</strong> ESL notes (p64) that ridge is the <strong>posterior mode (and mean)</strong> under a Gaussian model: with <span class="math inline">y_i\sim N(\beta_0+x_i^\top\beta,\sigma^2)</span> and an independent <strong>Gaussian prior</strong> <span class="math inline">\beta_j\sim N(0,\tau^2)</span>, the negative log-posterior equals the ridge criterion (3.41) with <span class="math inline">\lambda=\sigma^2/\tau^2</span> (ESL p64, Exercise 3.6). By the same logic, swapping in a <strong>Laplace (double-exponential) prior</strong> <span class="math inline">\propto e^{-|\beta_j|/b}</span> yields the L1 penalty, so <strong>Lasso is the MAP estimate under a Laplace prior</strong> — the heavier-tailed, sharply-peaked-at-zero prior is what produces sparse modes. See the <a href="../appendix/math_appendix.html#sec-kkt">MAP-as-penalized-MLE and KKT entries in the math appendix</a> and the <a href="../methods/ols.html#sec-ols-math">OLS Mode B</a> for the <span class="math inline">\lambda=0</span> baseline this generalizes.</p>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbUxpbmVhciA9IChnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmRvY3VtZW50RWxlbWVudCkuZ2V0UHJvcGVydHlWYWx1ZSgnLS1mYW1pbHktbGluZWFyJykudHJpbSgpIHx8IFwiIzJFODZBQlwiKVxubGFyc0NvZWZzID0gW1xuICBbMC4wMDAwMDAsIDAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIDAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIDAuMDAwMDAwLCAgMC4wMDAwMDAsIDAuMDAwMDAwXSxcbiAgWzAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIDAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIDAuMDAwMDAwLCAwLjAwMDAwMCwgLTMuMDkyMjY1LCAwLjAwMDAwMF0sXG4gIFswLjE3NDQxNiwgMC4wMDAwMDAsIDAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIDAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIC0zLjI3NTE3MywgMC4wMDAwMDBdLFxuICBbMS4xODEzOTQsIDAuMDAwMDAwLCAwLjAwMDAwMCwgMC4wMDAwMDAsIDAuMDAwMDAwLCAtMC41NTk2NTMsIDAuMDAwMDAwLCAwLjAwMDAwMCwgLTMuODQwNDIyLCAwLjAwMDAwMF0sXG4gIFsyLjU1MzE5NiwgMC4wMDAwMDAsIDEuNDYzMDU0LCAwLjAwMDAwMCwgMC4wMDAwMDAsIC0xLjkwMzc0MSwgMC4wMDAwMDAsIDAuMDAwMDAwLCAtNS4zNzA4NTcsIDAuMDAwMDAwXSxcbiAgWzIuOTc1NzEzLCAwLjAwMDAwMCwgMS44NjA1NTQsIC0wLjI2MDg3MiwgMC4wMDAwMDAsIC0yLjE3MjQ1NiwgMC4wMDAwMDAsIDAuMDAwMDAwLCAtNS42ODk3NjgsIDAuMDAwMDAwXSxcbiAgWzMuMzE4NzI4LCAwLjAwMDAwMCwgMi4xODMzMzIsIC0wLjM5NTg4MCwgLTAuMTc2NzU5LCAtMi4zMzQxMTQsIDAuMDAwMDAwLCAwLjAwMDAwMCwgLTUuOTEzMzA4LCAwLjAwMDAwMF0sXG4gIFszLjk3NTgxOCwgMC42NTA3OTUsIDIuNjY1MzExLCAtMC42ODE0MTgsIC0wLjY1MTI1MSwgLTIuODAzMDk3LCAwLjAwMDAwMCwgMC4wMDAwMDAsIC02LjQ4MDQyNSwgMC4wMDAwMDBdLFxuICBbNC4zMDQ2MTAsIDEuMDEwMDkxLCAyLjgzMTY1NywgLTAuODY1NDM2LCAtMS4wNTI3NTcsIC0zLjA3MTQzMCwgMC4wMDAwMDAsIDAuNDcyMDc3LCAtNi45MDc0MDcsIDAuMDAwMDAwXSxcbiAgWzQuNzQ3MzMyLCAxLjUxMzIxMywgMi43NjAyMzEsIC0xLjQyNzc0NywgLTEuNTk2OTMxLCAtMy40MDY5NDksIDAuNzU5ODM4LCAxLjA0ODA5MCwgLTcuNTc1NTU4LCAwLjAwMDAwMF0sXG4gIFs1LjAwNTA1MywgMS43NTI0NjAsIDIuNjczODk4LCAtMS43NzgxNjYsIC0xLjk1NTI5OSwgLTMuNjI3NjA0LCAxLjE5MTQxMiwgMS4zODc5NDQsIC04LjAyNDE5NiwgMC4yNTAwNjVdXG5dXG5wYXRoRGF0YSA9IHtcbiAgY29uc3Qgcm93cyA9IGxhcnNDb2Vmcy5tYXAoc3RlcCA9PiBzdGVwLnJlZHVjZSgocyxjKT0+cytNYXRoLmFicyhjKSwgMCkpO1xuICBjb25zdCB4bWF4ID0gcm93c1tyb3dzLmxlbmd0aC0xXTtcbiAgY29uc3Qgb3V0ID0gW107XG4gIGxhcnNDb2Vmcy5mb3JFYWNoKChzdGVwLCBpKSA9PiB7XG4gICAgY29uc3QgeHggPSByb3dzW2ldIC8geG1heDtcbiAgICBzdGVwLmZvckVhY2goKGMsIGopID0+IG91dC5wdXNoKHt4eCwgY29lZjogYywgZmVhdHVyZTogXCLOslwiICsgaiwgZmlkeDogan0pKTtcbiAgfSk7XG4gIHJldHVybiBvdXQ7XG59XG5QbG90LnBsb3Qoe1xuICBoZWlnaHQ6IDM2MCwgbWFyZ2luTGVmdDogNTUsIG1hcmdpblJpZ2h0OiA3MCwgZ3JpZDogdHJ1ZSxcbiAgeDoge2xhYmVsOiBcIs6jfM6yfCAvIG1heCDOo3zOsnwgIChwZW5hbHR5IHJlbGF4ZXMg4oaSKVwiLCBkb21haW46IFswLCAxXX0sXG4gIHk6IHtsYWJlbDogXCJDb2VmZmljaWVudCB2YWx1ZVwifSxcbiAgY29sb3I6IHtsZWdlbmQ6IHRydWUsIHNjaGVtZTogXCJ0YWJsZWF1MTBcIn0sXG4gIG1hcmtzOiBbXG4gICAgUGxvdC5ydWxlWShbMF0sIHtzdHJva2U6IFwiIzk5OVwifSksXG4gICAgUGxvdC5saW5lKHBhdGhEYXRhLCB7eDogXCJ4eFwiLCB5OiBcImNvZWZcIiwgejogXCJmZWF0dXJlXCIsIHN0cm9rZTogXCJmZWF0dXJlXCIsIHN0cm9rZVdpZHRoOiAyLCBjdXJ2ZTogXCJsaW5lYXJcIn0pLFxuICAgIFBsb3QuZG90KHBhdGhEYXRhLCB7eDogXCJ4eFwiLCB5OiBcImNvZWZcIiwgejogXCJmZWF0dXJlXCIsIGZpbGw6IFwiZmVhdHVyZVwiLCByOiAyfSksXG4gICAgUGxvdC50ZXh0KHBhdGhEYXRhLmZpbHRlcihkID0+IGQueHggPT09IDEpLCB7eDogXCJ4eFwiLCB5OiBcImNvZWZcIiwgdGV4dDogXCJmZWF0dXJlXCIsIGR4OiAxNCwgZm9udFNpemU6IDEwLCBmaWxsOiBcImZlYXR1cmVcIn0pXG4gIF1cbn0pXG4ifV19
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/adaline.html" class="pagination-link" aria-label="Adaline">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Adaline</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/bias_variance.html" class="pagination-link" aria-label="Bias–Variance Trade-off">
+        <span class="nav-page-text">Bias–Variance Trade-off</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

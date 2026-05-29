@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Family Comparisons – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../cross_method/showdowns.html" rel="next">
+<link href="../cross_method/decision_dashboard.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-cross quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../cross_method/decision_dashboard.html">Cross-method</a></li><li class="breadcrumb-item"><a href="../cross_method/family_comparisons.html">Family Comparisons</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#linear-regressors" id="toc-linear-regressors" class="nav-link active" data-scroll-target="#linear-regressors">Linear regressors</a></li>
+  <li><a href="#linear-classifiers" id="toc-linear-classifiers" class="nav-link" data-scroll-target="#linear-classifiers">Linear classifiers</a></li>
+  <li><a href="#instance-based" id="toc-instance-based" class="nav-link" data-scroll-target="#instance-based">Instance-based</a></li>
+  <li><a href="#tree-based" id="toc-tree-based" class="nav-link" data-scroll-target="#tree-based">Tree-based</a></li>
+  <li><a href="#unsupervised" id="toc-unsupervised" class="nav-link" data-scroll-target="#unsupervised">Unsupervised</a></li>
+  <li><a href="#neural" id="toc-neural" class="nav-link" data-scroll-target="#neural">Neural</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../cross_method/decision_dashboard.html">Cross-method</a></li><li class="breadcrumb-item"><a href="../cross_method/family_comparisons.html">Family Comparisons</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Family Comparisons</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The course’s sixteen methods are not sixteen unrelated tools — they cluster into a handful of <strong>families</strong>, and inside each family the members are siblings that solve the <em>same</em> problem with a different lever. This page is the family-by-family rollup: for every method, its one defining <strong>strength</strong>, its one defining <strong>weakness</strong>, and the situation in which you’d pick it <strong>over its own siblings</strong>. Every cell is paraphrased from that method’s own page — its §1 Essence, §2 <em>When to use / when not to use</em>, and §6 Diagnostics — so a claim here is the compressed version of a claim you can verify there. For the <em>cross</em>-family choice (linear vs tree vs net on one dataset) see the <a href="../cross_method/showdowns.html">showdowns</a> and the <a href="../cross_method/decision_dashboard.html">decision dashboard</a>; this page stays <em>within</em> the family.</p>
+<div class="callout-bigpicture">
+<p><strong>The three axes every family choice rides on.</strong> Whatever the family, the same three trade-offs decide which member fits:</p>
+<ul>
+<li><strong>Parametric vs non-parametric.</strong> Parametric models (<a href="../methods/ols.html">OLS</a>, <a href="../methods/logistic.html">logistic</a>, <a href="../methods/lda.html">LDA</a>, <a href="../methods/adaline.html">Adaline</a>, the regularizers, neural nets) commit to a fixed functional form and a fixed parameter count — fast, data-thrifty, interpretable, but wrong if the form is wrong. Non-parametric models (<a href="../methods/knn.html">kNN</a>, <a href="../methods/decision_trees.html">Decision Trees</a> and their ensembles) assume no form; their complexity grows with the data — flexible, but hungry and harder to read.</li>
+<li><strong>The bias-variance lever.</strong> Each family has a single knob that <em>is</em> the <a href="../methods/bias_variance.html">bias-variance</a> dial: <span class="math inline">\lambda</span> for the regularizers, <span class="math inline">K</span> for kNN, depth/number-of-trees for the tree family, width/depth for nets, <span class="math inline">k</span> for K-Means. Turning it always trades a little bias for a lot of variance, or the reverse.</li>
+<li><strong>Interpretability vs flexibility.</strong> Linear models hand you signed coefficients (“+1 unit ⇒ +β”); trees hand you a readable flowchart or feature-importance ranking; ensembles and nets trade that readability away for raw predictive power. Pick the output that answers <em>your</em> question.</li>
+</ul>
+<p>These axes are why the “when to prefer over its siblings” column reads the way it does: every preference is one of these three trade-offs made concrete.</p>
+</div>
+<div class="callout-exam">
+<p><strong>Which families the Spring-2025 take-home actually examined.</strong> Three of the six families below are <em>core</em> exam content; the neural family is not.</p>
+<ul>
+<li><strong>Linear regressors</strong> — Assignment 1 (Hitters): OLS baseline, then <strong>Ridge and Lasso with cross-validated <code>alpha</code></strong>, interpreting the coefficient change and bias-variance trade-off.</li>
+<li><strong>Tree-based</strong> — Assignment 3 (WDBC): single tree → <strong>Random Forest → gradient boosting</strong>, with task 3.8 contrasting RF-vs-GB (bagging vs boosting).</li>
+<li><strong>Unsupervised</strong> — Assignment 2 (WholesaleCustomers): standardize → <strong>PCA to 90 % variance → K-Means</strong> with elbow + silhouette.</li>
+<li><strong>Linear classifiers</strong> — partial: <a href="../methods/logistic.html">logistic regression</a> and <a href="../methods/knn.html">kNN</a> are <em>candidate</em> classifiers for Assignment 4; <a href="../methods/lda.html">LDA</a> and <a href="../methods/adaline.html">Adaline</a> were <strong>not examined</strong> (lecture-core scaffolding only).</li>
+<li><strong>Neural</strong> — <strong>not examined at all.</strong> The 2025 take-home has no neural-network assignment; the whole NN block is taught as conceptual scaffolding, so treat the neural table below as understanding, not drill.</li>
+</ul>
+</div>
+<section id="linear-regressors" class="level2">
+<h2 class="anchored" data-anchor-id="linear-regressors">Linear regressors</h2>
+<p>The continuous-target family: one weight per predictor, fit by least squares, judged against <a href="../methods/ols.html">OLS</a>. The three regularizers are all OLS-plus-a-penalty (the <a href="../methods/regularization.html">Regularization</a> page covers Ridge, Lasso and Elastic Net together).</p>
+<div class="cmp-table">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Key strength</th>
+<th>Key weakness</th>
+<th>When to prefer over its siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../methods/ols.html">OLS</a></td>
+<td>Interpretable, BLUE-optimal unbiased fit under Gauss-Markov; fast, transparent baseline (§1)</td>
+<td>Overfits / coefficients blow up when predictors are many or correlated (<span class="math inline">p\gtrsim n</span>); misleading if the truth is non-linear (§2)</td>
+<td>When <span class="math inline">p\ll n</span>, predictors uncorrelated, and you want <strong>unbiased</strong> inference — the <span class="math inline">\lambda=0</span> limit a penalty would only bias for no variance gain (§2)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/regularization.html">Ridge</a></td>
+<td>L2 shrinkage cures multicollinearity by sharing a coefficient across correlated predictors; smooth, stable (§1)</td>
+<td>Never zeros a coefficient, so it never simplifies the model — keeps every predictor (§6)</td>
+<td>Many small, genuinely-present effects / strong collinearity, none worth discarding (§2, §6)</td>
+</tr>
+<tr class="odd">
+<td><a href="../methods/regularization.html">Lasso</a></td>
+<td>L1 geometry drives coefficients to <em>exactly</em> zero — automatic feature selection, sparse model (§1)</td>
+<td>Unstable under correlation: faced with a correlated group it arbitrarily keeps one and drops the rest (§2, §6)</td>
+<td>When you want a <strong>sparse, interpretable</strong> model and the irrelevant predictors zeroed out (§2)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/regularization.html">Elastic Net</a></td>
+<td>Blends L1+L2: Lasso-style sparsity while keeping correlated groups together (§1)</td>
+<td>Two hyperparameters to tune (<span class="math inline">\lambda</span> and the mix <span class="math inline">\alpha</span>/<code>l1_ratio</code>), and the <code>alpha</code>-vs-<span class="math inline">\alpha</span> naming trap (§2)</td>
+<td>Correlated predictors <strong>and</strong> you want sparsity — Lasso alone would split the group, Ridge wouldn’t select (§2, §6)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="linear-classifiers" class="level2">
+<h2 class="anchored" data-anchor-id="linear-classifiers">Linear classifiers</h2>
+<p>Same linear machinery, aimed at a class label. <a href="../methods/logistic.html">Logistic</a> and <a href="../methods/lda.html">LDA</a> both draw a linear boundary; <a href="../methods/adaline.html">Adaline</a> is the gradient-descent template they share. (kNN is the non-parametric classifier baseline — it gets its own family below.)</p>
+<div class="cmp-table">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Key strength</th>
+<th>Key weakness</th>
+<th>When to prefer over its siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../methods/logistic.html">Logistic Regression</a></td>
+<td>Calibrated probabilities and interpretable coefficients (each <span class="math inline">e^{\beta_j}</span> an odds multiplier); few distributional assumptions (§1)</td>
+<td>Coefficients can diverge on perfectly separable classes; assumes a roughly linear boundary (§2)</td>
+<td>The safe default linear classifier when normality is doubtful — it models the log-odds directly without a Gaussian assumption (§2 vs LDA)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/lda.html">LDA</a></td>
+<td>Gives classification <strong>and</strong> supervised dimensionality reduction from one fit; low-variance, needs little data (§1)</td>
+<td>Assumes Gaussian classes with a <strong>shared covariance</strong>; the linear boundary underfits when class covariances differ (→ QDA) (§2)</td>
+<td>Well-separated classes with similar covariances, little data, or when you also want a supervised low-dim view (§2)</td>
+</tr>
+<tr class="odd">
+<td><a href="../methods/adaline.html">Adaline</a></td>
+<td>Cleanest from-scratch view of gradient descent; the bridge from <a href="../methods/ols.html">OLS</a> to logistic to neural nets (§1)</td>
+<td>MSE-on-net-input is the wrong loss for 0/1 labels (penalizes confident-correct points); only a linear boundary (§2, §6)</td>
+<td>Only as a <strong>teaching</strong> step — to see the GD update and the regression↔︎classification link; for real probabilistic work use logistic (§2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="instance-based" class="level2">
+<h2 class="anchored" data-anchor-id="instance-based">Instance-based</h2>
+<p>A family of one in this course: <a href="../methods/knn.html">kNN</a>, the non-parametric supervised baseline that stores the training set and votes among neighbors. Its siblings live in <em>other</em> families — the parametric linear classifiers above and the trees below.</p>
+<div class="cmp-table">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Key strength</th>
+<th>Key weakness</th>
+<th>When to prefer over its siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../methods/knn.html">kNN</a></td>
+<td>Assumption-free, instant “training,” follows irregular-but-local boundaries; a prediction is literally “these K labeled neighbors” (§1)</td>
+<td>Curse of dimensionality (nearest stops meaning anything in high <span class="math inline">p</span>); slow at predict time; <strong>demands feature scaling</strong> (§2, §6)</td>
+<td>Over a parametric classifier when the boundary is irregular but locally smooth, you have enough scaled data, and you want a flexible local fit rather than a global rule (§2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="tree-based" class="level2">
+<h2 class="anchored" data-anchor-id="tree-based">Tree-based</h2>
+<p>The non-parametric, axis-aligned family. A single <a href="../methods/decision_trees.html">Decision Tree</a> is the high-variance building block; <a href="../methods/random_forests.html">Random Forests</a> and the broader <a href="../methods/ensembles.html">Ensembles</a> exist to tame or sharpen it.</p>
+<div class="cmp-table">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Key strength</th>
+<th>Key weakness</th>
+<th>When to prefer over its siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../methods/decision_trees.html">Decision Tree</a></td>
+<td>Fully interpretable flowchart; no scaling/encoding; captures non-linear interactions for free (§1)</td>
+<td>High variance and unstable — grown unchecked it memorizes the data, and a few flipped rows reshape it (§1, §6)</td>
+<td>When you need a <strong>readable rule set</strong> a stakeholder can follow, and a single shallow tree already generalizes well enough (§2)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/random_forests.html">Random Forest</a></td>
+<td>Bagging + <span class="math inline">\sqrt p</span> feature randomness decorrelates trees, slashing variance at almost no bias cost; strong out-of-the-box, OOB error for free (§1, §6)</td>
+<td>Loses the readable flowchart — gives feature-importance <em>rankings</em>, not signed coefficients; importances biased toward high-cardinality features (§1, §6)</td>
+<td>When a single tree overfits and you want robust, low-tuning prediction with a driver ranking — variance reduction in <strong>parallel</strong> (§2, §6)</td>
+</tr>
+<tr class="odd">
+<td><a href="../methods/ensembles.html">Ensembles (bagging/boosting)</a></td>
+<td>A family of strategies (bagging, boosting, stacking, BMA) that beat any single member; <strong>boosting</strong> sharpens weak learners to cut <strong>bias</strong> (§1)</td>
+<td>Trade interpretability for performance; <strong>boosting can overfit</strong> noisy data if not regularized (small <span class="math inline">\eta</span>, shallow trees) (§2)</td>
+<td>Boosting when the symptom is <em>underfitting</em> (bias); stacking to fuse several diverse good models — vs RF/bagging which only attack <em>variance</em> (§2, §6)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="unsupervised" class="level2">
+<h2 class="anchored" data-anchor-id="unsupervised">Unsupervised</h2>
+<p>No labels — find structure instead. <a href="../methods/pca.html">PCA</a> re-describes the data along variance-maximizing axes; <a href="../methods/kmeans.html">K-Means</a> carves it into discrete groups. They are natural partners (reduce, then cluster) rather than rivals.</p>
+<div class="cmp-table">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Key strength</th>
+<th>Key weakness</th>
+<th>When to prefer over its siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../methods/pca.html">PCA</a></td>
+<td>Compresses many correlated features into a few uncorrelated directions; visualization, denoising, compression; explained-variance ratio quantifies what you keep (§1)</td>
+<td>Only finds <strong>linear</strong> directions; components are blends so harder to interpret; variance-driven, so outliers and unscaled features hijack it (§2, §6)</td>
+<td>When you want to <em>re-describe</em> / shrink dimensions and keep most variance — vs K-Means, which <em>partitions</em> rather than projects; vs <a href="../methods/lda.html">LDA</a>, use PCA when you have no labels (§1, §6)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/kmeans.html">K-Means</a></td>
+<td>Fast, scalable hard clustering by minimizing within-cluster sum of squares; finds segments with no labels (§1)</td>
+<td><span class="math inline">K</span> is not learned (elbow/silhouette only <em>guide</em> it); assumes spherical, equal-size clusters; sensitive to outliers and scale (§1, §2)</td>
+<td>When the goal is <strong>discrete groups/segments</strong> and clusters are roughly round — vs PCA, which gives continuous axes not groups; pair them (PCA then K-Means) rather than choosing (§1, §6)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="neural" class="level2">
+<h2 class="anchored" data-anchor-id="neural">Neural</h2>
+<p>The compose-simple-pieces family, taught from a scalar <a href="../methods/autodiff.html">autodiff</a> engine up to a high-level PyTorch workflow. The members differ less in <em>model</em> than in <strong>abstraction level</strong> — same forward-pass-and-backprop math, more or less boilerplate hidden.</p>
+<div class="cmp-table">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Key strength</th>
+<th>Key weakness</th>
+<th>When to prefer over its siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../methods/nn_basics.html">NN basics</a></td>
+<td>Builds the MLP from first principles on the course’s own engine — every gradient visible; a flexible non-linear universal approximator (§1)</td>
+<td>Data-hungry, slow, hard to interpret; overkill (and loses to trees) on small tabular data (§2)</td>
+<td>When you want to <em>understand</em> the architecture and forward pass before reaching for a framework — the conceptual seed of the rest (§1)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/autodiff.html">Autodiff</a></td>
+<td>Exact gradients of any scalar expression, computed mechanically by the graph + chain rule — demystifies backprop (§1)</td>
+<td>A scalar engine is unusably slow for real work; supports only the few ops you add by hand (§2)</td>
+<td>When the goal is to <em>see why a gradient has its value</em> node-by-node — vs a framework’s <code>autograd</code>, which hides exactly this (§2)</td>
+</tr>
+<tr class="odd">
+<td><a href="../methods/nn_pytorch.html">NN with PyTorch</a></td>
+<td>Autograd on whole tensors / GPU while you still hand-write the forward pass, loss, and SGD step — shows what a framework automates (§1)</td>
+<td>The manual loop invites silent bugs (forgetting <code>grad.zero_()</code> or <code>torch.no_grad()</code>); low-level, not for shipping (§2, §6)</td>
+<td>When you want autodiff <em>at scale</em> but still need to see the loop a framework hides — vs the high-level API for production (§1, §2)</td>
+</tr>
+<tr class="even">
+<td><a href="../methods/build_a_nn.html">Build a NN</a></td>
+<td>The practical <code>nn.Module</code> workflow — pre-built layers, loss, optimizer; depth buys a real accuracy jump (MNIST 92→97.5 %) (§1, §4)</td>
+<td>A black box you can’t read; on the MNIST run L2/dropout barely help because the net wasn’t overfitting (§4, §6)</td>
+<td>The level you’d actually <strong>ship</strong>: large unstructured data, when you want PyTorch to handle autograd/loss/optimizer — vs dropping down the ladder to learn mechanics (§2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../cross_method/decision_dashboard.html" class="pagination-link" aria-label="Decision Dashboard">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Decision Dashboard</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../cross_method/showdowns.html" class="pagination-link" aria-label="Showdowns">
+        <span class="nav-page-text">Showdowns</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

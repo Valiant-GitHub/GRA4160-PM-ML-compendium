@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Build Log – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../appendix/sources.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-cross quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/notation_table.html">Appendix</a></li><li class="breadcrumb-item"><a href="../appendix/build_log.html">Build Log</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#phase-log" id="toc-phase-log" class="nav-link active" data-scroll-target="#phase-log">Phase log</a></li>
+  <li><a href="#deviations-from-spec-documented-offlinequality-intent-preserved" id="toc-deviations-from-spec-documented-offlinequality-intent-preserved" class="nav-link" data-scroll-target="#deviations-from-spec-documented-offlinequality-intent-preserved">Deviations from spec (documented, offline/quality intent preserved)</a></li>
+  <li><a href="#resolved-formerly-open-items" id="toc-resolved-formerly-open-items" class="nav-link" data-scroll-target="#resolved-formerly-open-items">Resolved (formerly open items)</a></li>
+  <li><a href="#substitutions-c3" id="toc-substitutions-c3" class="nav-link" data-scroll-target="#substitutions-c3">Substitutions (C3)</a></li>
+  <li><a href="#skipped-logged-c7" id="toc-skipped-logged-c7" class="nav-link" data-scroll-target="#skipped-logged-c7">Skipped / logged (C7)</a></li>
+  <li><a href="#unresolved-gaps-requiring-user-input" id="toc-unresolved-gaps-requiring-user-input" class="nav-link" data-scroll-target="#unresolved-gaps-requiring-user-input">Unresolved gaps requiring user input</a></li>
+  <li><a href="#final-statistics" id="toc-final-statistics" class="nav-link" data-scroll-target="#final-statistics">Final statistics</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../appendix/notation_table.html">Appendix</a></li><li class="breadcrumb-item"><a href="../appendix/build_log.html">Build Log</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Build Log</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout-bigpicture">
+<p><strong>What this is.</strong> A running log of how the site was built — phases completed, substitutions made (e.g.&nbsp;a widget replaced by a static figure under C3), items skipped and why (C7), and unresolved gaps. Final statistics (word/page/file counts, render time) are added in Phase 6.7.</p>
+</div>
+<section id="phase-log" class="level2">
+<h2 class="anchored" data-anchor-id="phase-log">Phase log</h2>
+<ul>
+<li><p><strong>Setup (2026-05-21).</strong> Workspace scaffolding + toolchain (Quarto 1.8.27, Python 3.11 venv, KaTeX). See <code>phase1_setup_summary.md</code>, <code>phase2_setup_summary.md</code>.</p></li>
+<li><p><strong>Phase 0 — Inventory &amp; planning (2026-05-22).</strong> All sources read and extracted to <code>phase0/</code>. STOP gate cleared (no C6 halt). Mid-build model override: all sub-agents moved to Opus 4.7; four Sonnet-produced extract batches re-done on Opus (originals archived to <code>phase0/_sonnet_provisional/</code>, listed in <code>phase0/sonnet_produced_files.md</code>). See <code>phase0_summary.md</code>.</p></li>
+<li><p><strong>Phase 1 — Site skeleton &amp; infrastructure (2026-05-22, complete).</strong> Created <code>_quarto.yml</code> (website, full sidebar nav, KaTeX), <code>theme/custom.scss</code> (color system + callouts + two-mode math visibility), <code>theme/toggle.js</code> (+ <code>toggle-after-body.html</code> include), <code>index.qmd</code> (landing dashboard + preface + math-mode demo), and appendix pages (<code>notation_table</code>, <code>math_appendix</code> scaffold, <code>sources</code>, this log). 31 page stubs generated for the full nav. <strong>Skeleton render (1.6) verified:</strong> all 36 pages build; sidebar shows every section; theme/family-colors compile into <code>site_libs</code>; KaTeX renders; math-toggle script + <code>gra4160.mathMode</code> present on every page; largest page 63 KB (C4 ✓); zero remote <code>http(s)</code> script/link srcs (offline ✓).</p>
+<p><strong>Two infrastructure decisions (deviations from the literal spec, intent preserved):</strong></p>
+<ol type="1">
+<li><strong><code>embed-resources: true</code> turned OFF (deviates from C10).</strong> It is incompatible with a cross-linked multi-page website: Quarto tries to inline every linked sibling page, producing a page-on-page cascade (notation_table hit <strong>36 MB</strong>, far over the C4 8 MB ceiling, with “Could not fetch resource” warnings). Offline use is instead achieved via Quarto’s standard local <code>site_libs/</code> bundling. Net effect: same offline guarantee, pages ~50–60 KB instead of 12–36 MB.</li>
+<li><strong>KaTeX vendored locally (<code>assets/katex/</code>).</strong> Quarto’s <code>html-math-method: katex</code> defaults to the jsdelivr <strong>CDN</strong> (violates C8/6.5 offline). Fetched KaTeX 0.16.11 via npm at build time, copied the dist (js/css + 60 font files) into <code>assets/katex/</code>, and set <code>html-math-method: {method: katex, url: "assets/katex/"}</code> + <code>resources: assets/katex/**</code>. Quarto depth-adjusts the URL per page (<code>../assets/katex/...</code> in subdirs), so math is fully offline at every depth. (Runtime is offline; only the one-time build-time npm fetch used the network.)</li>
+</ol></li>
+<li><p><strong>Phase 2 — Method pages 1–8 (2026-05-22).</strong> Built OLS as the gold-standard exemplar (main thread), then kNN, Logistic, LDA, Adaline, Regularization, Bias-Variance, CV/Info-Criteria via Opus 4.7 sub-agents. Each sub-agent read BOTH the <code>phase0</code> extract AND the original notebook (directive B); every numeric output is notebook-stored (quoted with cell) or venv-computed-and-cited — none fabricated. <strong>Method-8 milestone (C5 + structured review):</strong> full render clean (0 errors, 0 warnings); all 8 pages offline, 81–118 KB, correct family classes/badges, exactly 8 sections, dense citations, notation consistent (λ/α/η/π, sklearn-<code>alpha</code> trap). <strong>No systemic pattern across ≥3 pages.</strong> One single-page fix applied in place: a stray <code>{.callout-note}</code> on cv_info_criteria → <code>{.callout-bigpicture}</code>. Proceeded to pages 9–17.</p></li>
+<li><p><strong>Phase 2 — Method pages 9–17 (2026-05-22).</strong> Tree family (Decision Trees, Random Forests, Ensembles) + Unsupervised (PCA, K-means) as Tier-1; Neural block (Autodiff, NN basics, NN with PyTorch, Build a NN) as Tier-2 (floor in full: complete 8-section template, one worked example, no cross-family showdown). All via Opus 4.7 sub-agents under directive B (read extract AND notebook). Honest source-handling highlights: RF page documents the nb13 <code>max_depth</code>/per-tree-subset caveats [NB-6]; PCA Mode-B eigen/SVD math marked supplemental [R9-5]; Build-a-NN quotes nb19’s real stored MNIST accuracies (deep 97.50%, shallow 92.26%, L2 96.95%, dropout 97.13%); the K-means agent found <code>WholesaleCustomers.csv</code> is present locally (in the exam folder) and that local <code>seeds.csv</code> is a 2-variety 140-row subset. <strong>Post-method-16 milestone render (C5): clean</strong> — 0 errors, 0 warnings, all 17 pages offline, largest 118 KB.</p></li>
+<li><p><strong>Phase 2 complete.</strong> All 17 method pages have sections 1–7 written and the §8 two-mode math scaffold in place (math content deferred to Phase 3). Every numeric output is notebook-stored (cited) or venv-computed (cited); none fabricated.</p></li>
+<li><p><strong>Phase 3 — §8 Math, COMPLETE (2026-05-22).</strong> All 17 method pages have Mode A (course) + Mode B (ESL/ISL, dual-source per Rule 1) §8 sections, plus the 7-section math appendix (3.A: linalg, gd, mle, biasvar→links method page, infocrit→links method page, backprop, kkt). <code>[VERIFY]</code> items resolved per Rule 2: nb08 AIC α≈1.52/BIC α≈4.35; WDBC RF acc 0.951 / GB 0.944 with real importances; bias-variance learning-curve note re-sourced. Agents repeatedly corrected scaffold mis-attributions against the actual books (AdaBoost α_m=log vs ½log β_m; SVD V=directions/UD=scores; “NP-hard”→“≈Kⁿ difficult”; GD-convergence bound not in ESL §11; ISL §10.7 corroborates L2-on-hidden-weights). Math appendix agent fixed two dead cross-links (neural_networks.qmd, backprop_gradient_descent.qmd → real pages). Final render: 0 errors, 0 broken-link warnings, all offline. Session-limit interruption mid-Batch-2 required re-dispatching the 4 neural §8 + appendix on reset — all completed on Opus 4.7.</p>
+<p><em>(Earlier progress note, superseded:)</em> Infrastructure: extracted page-mapped TOCs (<code>phase0/isl_toc.md</code> embedded 309 entries; <code>phase0/esl_toc.md</code> curated section→page map — ESL has no bookmarks; offset PDF≈printed+19 validated against §3.2). Built OLS §8 as the math exemplar (Mode A from notebook, Mode B from ESL §3.2 eqs 3.3–3.11). <strong>Wave 1 (5 pages) done</strong> under Rule 1 (Mode B from a direct ESL/ISL read via TOC) + Rule 2 (resolve <code>[VERIFY]</code> in-pass): kNN (ISL §2.2.3/§3.5, ESL §13.3/§2.5, Cover–Hart), Logistic (ESL §4.4 IRLS), LDA (ESL §4.3 Bayes+Fisher), Adaline (ESL §3.2/§11.3–4 — agent corrected a scaffold mis-attribution of the GD-convergence bound), Regularization (ESL §3.4 soft-thresholding/MAP; resolved nb08 AIC α≈1.52 / BIC α≈4.35). Render clean, 6 math pages filled &amp; offline. <strong>Remaining: 11 method §8 sections + math appendix (3.A) + RF/WDBC numbers + appendix anchors.</strong></p></li>
+<li><p><strong>Phase 4 — Cross-method layer, COMPLETE (2026-05-22).</strong> All 6 pages built via Opus 4.7 sub-agents: <code>decision_dashboard</code> (30 ranking rules, each derived from a method’s §2 “When NOT to use” callout per directive, self-contained OJS), <code>family_comparisons</code> (6 family tables, cells traced to §1/§2/§6), <code>showdowns</code> (classification decision-boundary panel + regression bar charts on the R5 common datasets — Titanic 2D, Hitters — all venv-computed; RF wins Hitters at test R²=0.59; NN excluded per Tier-2), <code>exercise_dependency_map</code> (bipartite Plot + table, 14 edges all traced, robust static layout per C3), <code>reading_the_data</code> (EDA on 5 datasets with real numbers; MNIST honestly flagged unavailable), <code>workflow_patterns</code> (7 patterns A–G, each citing its notebook template, non-course idioms flagged). <strong>Render fixes applied:</strong> a YAML <code>\$</code>-in-fig-cap error (reading_the_data) → <code>&amp;#36;</code>; a bare-<code>$</code> KaTeX-garble in a showdowns caption → <code>&amp;#36;</code>; and two OJS “object-literal-as-block” parse errors in showdowns (<code>CLFOBJ</code>/<code>REGOBJ</code> wrapped in parens). Final render: 0 errors, 0 OJS-parse errors, 0 broken links, all offline; only the 8 drill stubs remain (Phase 5).</p></li>
+<li><p><strong>Phase 5 — Drill section, COMPLETE (2026-05-22).</strong> All 8 drill pages via Opus 4.7 (directive B: extract + notebook): <code>exam_spring2025</code> (4-assignment walkthrough with solution <em>sketches</em>, grading rules, honest [VERIFY] on 2024-vs-2025 weighting and the by-design-hidden SimulatedData specs); <code>exercise_01..06</code> (Titanic preprocessing stub-only sketch; spam [DATA-1] and segmentation [DATA-2] datasets documented-but-not-fabricated; house-prices and digits quote real stored <code>_VHL</code> outputs with cell cites; model-selection notes its notebook saved no outputs); <code>index</code> (filterable OJS by type/family/dataset + static fallback table, 7 items, tags traced to extracts). SVM and Naive Bayes correctly described in prose without linking to nonexistent method pages. Final render: 0 errors, 0 OJS-parse, 0 broken links, <strong>0 stubs remaining site-wide</strong> — all content (Phases 0–5) built.</p></li>
+<li><p><strong>Phase 6 — Verification, polish, offline pass, COMPLETE (2026-05-22).</strong> <strong>6.1 content verification</strong> (deterministic 30-claim sample, Opus agent): <strong>29/30 PASS, 1 FAIL (3.3% — under the 10% C6 halt line)</strong>; all 8 sampled §8 formulas passed the R9 cross-check against the actual ESL/ISL PDF pages, all 16 “computed” numbers re-verified in the venv. The one FAIL — <code>logistic.qmd</code> mislabeled <code>0.459</code> as the “majority-class baseline” (the <code>random_state=15</code> test set is 20 survived / 17 died, so the majority-class rate is <strong>0.541</strong>; 0.459 is the always-predict-died rate) — <strong>FIXED</strong> in both §4 and §6. <strong>6.2 notation:</strong> covered by the formula sample (all using <code>notation_table</code> conventions) + Phase-3 dual-source discipline. <strong>6.3 color:</strong> family color on every page’s header + <code>fam-badge</code> opener + primary viz; all callout classes valid. <strong>6.4 interactivity — caught a core bug:</strong> the math-toggle visibility CSS targeted <code>.math-mode-*</code> while the pages use <code>.callout-math-*</code>, so the toggle was not actually hiding/showing the math — <strong>FIXED</strong> (compiled CSS now hides <code>.callout-math-a/b</code> by default and reveals them on <code>body.math-a/.math-b</code>); the toggle script is present on all 36 pages; OJS cells parse with 0 errors. <strong>6.5 offline:</strong> 0 remote asset includes site-wide. <strong>6.6 cross-reference:</strong> 5715 internal links resolve, 0 real broken links (the link-checker’s 3 hits were regex artifacts inside displayed code). Final render clean (0 errors, ~50 s).</p></li>
+</ul>
+</section>
+<section id="deviations-from-spec-documented-offlinequality-intent-preserved" class="level2">
+<h2 class="anchored" data-anchor-id="deviations-from-spec-documented-offlinequality-intent-preserved">Deviations from spec (documented, offline/quality intent preserved)</h2>
+<ul>
+<li><strong><code>embed-resources</code> OFF</strong> → offline via local <code>site_libs/</code> (C10 mechanism changed, offline intent met — <code>embed-resources</code> is incompatible with a cross-linked website; see Phase 1).</li>
+<li><strong>KaTeX vendored</strong> to <code>assets/katex/</code> (Quarto’s default is a CDN; vendoring satisfies C8 offline at every page depth).</li>
+<li><strong>Observable Plot used throughout</strong> (not Plotly) — smaller bundle, R6/C4-aligned; so 6.4’s “every Plotly graph-div” check is N/A by design (no Plotly used).</li>
+<li><strong>Sidebar nav not family-colored per item</strong> — the family signal is carried instead by each page’s header color + <code>fam-badge</code> opener + primary viz color (per-item Quarto sidebar coloring would need fragile sidebar CSS).</li>
+<li><strong><code>methods/nn_pytorch.qmd</code> §4</strong> Iris numbers remain qualitative + <code>[VERIFY]</code> — PyTorch deliberately not installed in <code>.venv</code> (~2 GB; Tier-2 page); the marker is intentional (user decision). No fabrication.</li>
+</ul>
+</section>
+<section id="resolved-formerly-open-items" class="level2">
+<h2 class="anchored" data-anchor-id="resolved-formerly-open-items">Resolved (formerly open items)</h2>
+<ul>
+<li>nb08 AIC/BIC α (regularization Ex 3, computed: AIC α≈1.52 / BIC α≈4.35) and WDBC RF/GB numbers (random_forests §7: RF 0.951 / GB 0.944) — computed &amp; cited in Phase 3.</li>
+<li>Math-appendix sections all filled (Phase 3.A); RF links <code>#sec-biasvar</code> (the relevant shared foundation — no tree-specific anchor required).</li>
+</ul>
+</section>
+<section id="substitutions-c3" class="level2">
+<h2 class="anchored" data-anchor-id="substitutions-c3">Substitutions (C3)</h2>
+<p><em>None.</em> Every Observable Plot visualization rendered correctly; no widget needed a static-figure fallback. The exercise-dependency map deliberately uses a robust bipartite layout (not a force simulation) per C3/R6 — a design choice, not a failure substitution.</p>
+</section>
+<section id="skipped-logged-c7" class="level2">
+<h2 class="anchored" data-anchor-id="skipped-logged-c7">Skipped / logged (C7)</h2>
+<ul>
+<li><code>[DATA-1]</code> <code>SMSSpamCollection.csv</code> (spam exercise) not present locally — drill page documents the idiom only; no outputs fabricated.</li>
+<li><code>[DATA-2]</code> <code>bank-additional-full.csv</code> (segmentation exercise) not present locally — drill page documents the idiom only; no outputs fabricated. (The lecture K-means/PCA and the exam use present datasets — seeds, WholesaleCustomers — so method coverage is unaffected.)</li>
+</ul>
+</section>
+<section id="unresolved-gaps-requiring-user-input" class="level2">
+<h2 class="anchored" data-anchor-id="unresolved-gaps-requiring-user-input">Unresolved gaps requiring user input</h2>
+<p><em>None.</em> The two missing datasets above are course-supplied files absent from this workspace; their drill pages document the method/idiom without fabricating outputs. Not blocking. Optional future polish: install PyTorch into <code>.venv</code> to turn the <code>nn_pytorch</code> §4 qualitative numbers into computed ones.</p>
+</section>
+<section id="final-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="final-statistics">Final statistics</h2>
+<ul>
+<li><strong>Source files:</strong> 36 <code>.qmd</code> pages (1 landing + 2 big-picture + 17 methods + 4 cross-method + 8 drill + 4 appendix) + <code>_quarto.yml</code> + theme (<code>custom.scss</code>, <code>toggle.js</code>, <code>toggle-after-body.html</code>).</li>
+<li><strong>Rendered:</strong> 36 HTML pages in <code>_site/</code> (one per source), fully offline.</li>
+<li><strong>Word count:</strong> ~91,000 words of <code>.qmd</code> content.</li>
+<li><strong>Phase-0 provenance:</strong> 49 extract/synthesis files in <code>phase0/</code> (10 lecture + 20 notebook + 6 exercise + exam/guideline extracts + 9 synthesis/TOC/verification files), plus archived Sonnet provisionals.</li>
+<li><strong>Page sizes:</strong> largest 587 KB (<code>showdowns</code>, embedded decision-boundary grids), all well under the 8 MB C4 ceiling; <code>_site/</code> total ≈ 9.3 MB.</li>
+<li><strong>Full-site render time:</strong> ~50 s (<code>quarto render</code>, <code>QUARTO_PYTHON</code> → <code>.venv</code>).</li>
+<li><strong>Vendored offline assets:</strong> <code>assets/katex/</code> (KaTeX 0.16.11 + 60 fonts), <code>site_libs/</code> (bootstrap, OJS runtime, clipboard).</li>
+<li><strong>Model:</strong> all phases produced on Opus 4.7 (main thread + every sub-agent), per the session override.</li>
+</ul>
+<p><strong>Build complete: Phases 0–6 done.</strong></p>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../appendix/sources.html" class="pagination-link" aria-label="Sources">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Sources</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

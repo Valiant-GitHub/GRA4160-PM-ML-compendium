@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Drill: Customer Segmentation – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../appendix/notation_table.html" rel="next">
+<link href="../drill/exercise_05_model_selection.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-cross quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../drill/index.html">Drill</a></li><li class="breadcrumb-item"><a href="../drill/exercise_06_customer_segmentation.html">Drill: Customer Segmentation</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-this-exercise-teaches" id="toc-what-this-exercise-teaches" class="nav-link active" data-scroll-target="#what-this-exercise-teaches">What this exercise teaches</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#walkthrough" id="toc-walkthrough" class="nav-link" data-scroll-target="#walkthrough">Walkthrough</a></li>
+  <li><a href="#common-pitfalls" id="toc-common-pitfalls" class="nav-link" data-scroll-target="#common-pitfalls">Common pitfalls</a></li>
+  <li><a href="#what-this-exercise-teaches-that-the-others-dont" id="toc-what-this-exercise-teaches-that-the-others-dont" class="nav-link" data-scroll-target="#what-this-exercise-teaches-that-the-others-dont">What this exercise teaches that the others don’t</a></li>
+  <li><a href="#links" id="toc-links" class="nav-link" data-scroll-target="#links">Links</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../drill/index.html">Drill</a></li><li class="breadcrumb-item"><a href="../drill/exercise_06_customer_segmentation.html">Drill: Customer Segmentation</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Drill: Customer Segmentation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Cross-cutting drill</strong></span> · The course’s only end-to-end <strong>unsupervised</strong> exercise: scale + one-hot a mixed customer table, choose the cluster count by elbow (WCSS) and silhouette, run <a href="../methods/kmeans.html">K-Means</a>, visualize the result in 2D with <a href="../methods/pca.html">PCA</a>, then interpret the segments against a held-aside label.</p>
+<section id="what-this-exercise-teaches" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-exercise-teaches">What this exercise teaches</h2>
+<p>The full unsupervised-segmentation pipeline: preprocess mixed numeric/categorical data, pick <code>k</code> <em>without</em> labels via elbow + silhouette, cluster with K-Means, project to 2D with PCA for a sanity-check picture, and interpret each cluster by its feature profile and subscription rate. It is the only exercise where there is no target to train against — <code>y</code> is set aside and used only afterwards to make sense of the clusters.</p>
+<div class="callout-pitfall">
+<p><strong>Dataset not available locally [DATA-2].</strong> The solution loads the UCI <strong>Bank Marketing</strong> file <code>bank-additional-full.csv</code> (41,188 rows, 20 inputs) from <code>../../data/bank_marketing_data_set/bank-additional/bank-additional-full.csv</code>. That file is <strong>not present</strong> in this repo’s <code>data/</code> folder (only Titanic, house-prices, and seeds are), and the VHL notebook export <strong>has no saved cell outputs</strong>. So this page documents the <em>idioms and decisions</em> from the notebook but <strong>does not reproduce any numbers</strong> — no shapes, WCSS, silhouette values, or cluster stats are quoted, because none exist to cite and none will be fabricated. To run it yourself, download the dataset from <a href="https://archive.ics.uci.edu/ml/datasets/Bank+Marketing" class="uri">https://archive.ics.uci.edu/ml/datasets/Bank+Marketing</a> and fix the path. For <em>worked, runnable</em> K-Means and PCA examples on present data, use the method pages linked below (their examples use Iris / seeds / Wholesale Customers).</p>
+</div>
+</section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<ul>
+<li><strong>Dataset (intended):</strong> UCI Bank Marketing — Portuguese bank direct-marketing campaigns. The full variant <code>bank-additional-full.csv</code> has 41,188 rows and 20 input columns; the CSV uses a <strong>semicolon separator</strong> and the literal string <code>'unknown'</code> for missing values.</li>
+<li><strong>Loader (VHL cell 2):</strong> <code>pd.read_csv('../../data/bank_marketing_data_set/bank-additional/bank-additional-full.csv', sep=';')</code>.</li>
+<li><strong>Numeric columns (exact, VHL cell 6):</strong> <code>age, duration, campaign, pdays, previous, emp.var.rate, cons.price.idx, cons.conf.idx, euribor3m, nr.employed</code>. All other columns (<code>job, marital, education, default, housing, loan, contact, month, day_of_week, poutcome</code>) are categorical.</li>
+<li><strong>Target (held aside, not used for clustering):</strong> <code>y</code> — binary <code>yes</code>/<code>no</code>, whether the client subscribed to a term deposit.</li>
+<li><strong>Task:</strong> load + preprocess → visualize → K-Means with elbow/silhouette → PCA 2D plot → interpret clusters.</li>
+<li><strong>Expected output:</strong> preprocessed feature shape; numeric histograms + a correlation heatmap; WCSS and silhouette per <code>k</code> (2–10); a chosen <code>k</code> (the notebook picks 3) with labels; a PCA scatter coloured by cluster; per-cluster numeric summaries and target distributions. <em>(All unsaved in this export — see the callout above.)</em></li>
+</ul>
+</section>
+<section id="walkthrough" class="level2">
+<h2 class="anchored" data-anchor-id="walkthrough">Walkthrough</h2>
+<p><strong>Step 1 — load and clean missing values</strong> <em>(VHL cells 2, 4)</em>. Two decisions are easy to miss: the <code>sep=';'</code> and treating <code>'unknown'</code> as missing before dropping:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">'.../bank-additional-full.csv'</span>, sep<span class="op">=</span><span class="st">';'</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>df.replace(<span class="st">'unknown'</span>, np.nan, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df.dropna(inplace<span class="op">=</span><span class="va">True</span>)                  <span class="co"># drops every row with any 'unknown'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Step 2 — scale numerics, one-hot categoricals, drop the label</strong> <em>(VHL cell 6)</em>. The target is separated first; numerics are standardized; categoricals are one-hot encoded with <code>drop_first=True</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> df[<span class="st">'y'</span>]</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>df_features <span class="op">=</span> df.drop(<span class="st">'y'</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>categorical_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> df_features.columns <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> numeric_cols]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df_features[numeric_cols] <span class="op">=</span> StandardScaler().fit_transform(df_features[numeric_cols])</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> pd.get_dummies(df_features, columns<span class="op">=</span>categorical_cols, drop_first<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The decisive idea: K-Means uses <strong>Euclidean distance</strong>, so features must be on comparable scales — hence <code>StandardScaler</code> on the numerics — and categoricals must become numbers, hence <code>get_dummies</code>. Dropping <code>y</code> is mandatory: clustering is unsupervised.</p>
+<p><strong>Step 3 — pick <code>k</code> by elbow + silhouette, then cluster</strong> <em>(VHL cell 10)</em>. Sweep <code>k</code> from 2 to 10, collecting inertia (WCSS) and silhouette for each, then commit to a chosen <code>k</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">11</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span>k, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    kmeans.fit(X)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    wcss.append(kmeans.inertia_)                       <span class="co"># within-cluster sum of squares</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    silhouette_scores.append(silhouette_score(X, kmeans.labels_))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ...inspect the two curves...</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>optimal_k <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>cluster_labels <span class="op">=</span> KMeans(n_clusters<span class="op">=</span>optimal_k, random_state<span class="op">=</span><span class="dv">42</span>).fit_predict(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Choosing <code>k=3</code> is a <strong>judgment call</strong> read off the elbow and silhouette plots — not an automatic result. See <a href="../methods/kmeans.html">K-Means</a> for how to read both diagnostics.</p>
+<p><strong>Step 4 — PCA to 2D for visualization</strong> <em>(VHL cell 12)</em>. PCA here is purely for <em>plotting</em> the high-dimensional clusters, not for modelling:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X_pca <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">42</span>).fit_transform(X)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>sns.scatterplot(x<span class="op">=</span>X_pca[:, <span class="dv">0</span>], y<span class="op">=</span>X_pca[:, <span class="dv">1</span>], hue<span class="op">=</span>cluster_labels, palette<span class="op">=</span><span class="st">'Set1'</span>, s<span class="op">=</span><span class="dv">50</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Some overlap in 2D is expected — two components rarely capture all the structure of a wide one-hot feature space. See <a href="../methods/pca.html">PCA</a>.</p>
+<p><strong>Step 5 — interpret clusters against the held-aside <code>y</code></strong> <em>(VHL cell 14)</em>. Re-attach the labels and profile each cluster, including its subscription rate:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'cluster'</span>] <span class="op">=</span> cluster_labels</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> c <span class="kw">in</span> <span class="bu">range</span>(optimal_k):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    display(df[df[<span class="st">'cluster'</span>] <span class="op">==</span> c][numeric_cols].describe())</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(df[df[<span class="st">'cluster'</span>] <span class="op">==</span> c][<span class="st">'y'</span>].value_counts())   <span class="co"># which segments subscribe</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This is where <code>y</code> finally enters — as a <em>post-hoc</em> interpretation aid, asking which segment is most likely to subscribe, never as a clustering input.</p>
+<div class="callout-pitfall">
+<p><strong>The traps that bite in unsupervised work.</strong></p>
+<ul>
+<li><strong>Wrong separator or unhandled <code>'unknown'</code>.</strong> Forget <code>sep=';'</code> and the file loads as one column; forget the <code>'unknown'</code>→<code>NaN</code> step and “missing” values silently survive.</li>
+<li><strong><code>dropna()</code> can shrink the data a lot.</strong> Many columns use <code>'unknown'</code>, so dropping every affected row removes a sizeable fraction — note how much you lose.</li>
+<li><strong><code>duration</code> leaks the outcome.</strong> The UCI data description warns <code>duration</code> (call length) is known only <em>after</em> the call and essentially determines <code>y</code>. Including it in clustering is questionable for honest segmentation; consider dropping it.</li>
+<li><strong>One-hot blows up the dimensionality</strong> and mixes geometries — Euclidean distance over 0/1 dummies behaves very differently from distance over standardized continuous features. K-Means treats them all alike, which is a real limitation here.</li>
+<li><strong>K-Means depends on initialization.</strong> With <code>random_state=42</code> and default <code>n_init</code>, results are reproducible but the elbow at <code>k=3</code> is still a judgment, not a fact.</li>
+</ul>
+</div>
+</section>
+<section id="common-pitfalls" class="level2">
+<h2 class="anchored" data-anchor-id="common-pitfalls">Common pitfalls</h2>
+<p>The conceptual one underneath all of the above: clustering finds structure in the <em>features you give it</em>, so preprocessing <strong>is</strong> the model. Scaling, encoding, and which columns you include (especially the leaky <code>duration</code>) change the clusters more than any K-Means setting. And because there is no ground truth during fitting, you cannot “score” the result — you justify <code>k</code> with elbow + silhouette and validate the segments by whether they tell a coherent story (their feature profiles and, here, their subscription rates).</p>
+</section>
+<section id="what-this-exercise-teaches-that-the-others-dont" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-exercise-teaches-that-the-others-dont">What this exercise teaches that the others don’t</h2>
+<p>It is the <strong>only unsupervised-learning</strong> exercise: K-Means, cluster-count selection by <strong>elbow (WCSS) + silhouette</strong>, and <strong>PCA for visualizing</strong> high-dimensional clusters. It is the only one combining one-hot encoding of many categoricals with scaled numerics for distance-based modelling, and the only one interpreting clusters against a <em>held-aside</em> label rather than predicting it. Every other drill has a target to optimize; here the work is finding and explaining structure with none.</p>
+<div class="callout-bigpicture">
+<p>Supervised learning asks “predict <code>y</code>”; this asks “what natural groups exist?” — so there is no accuracy to chase. The deliverables are a <em>defensible</em> <code>k</code> (elbow + silhouette), a 2D PCA picture that shows the groups are real, and a plain-language profile of each segment. The course’s <em>lecture</em> K-Means/PCA examples use present datasets (Iris, seeds, Wholesale Customers); pair this drill with those for runnable practice.</p>
+</div>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<ul>
+<li><a href="../methods/kmeans.html">K-Means</a> — the clustering algorithm, elbow, and silhouette (worked example on present data).</li>
+<li><a href="../methods/pca.html">PCA</a> — dimensionality reduction for the 2D cluster plot (worked example on present data).</li>
+<li>The Bank Marketing dataset is not in this repo [DATA-2]; download it from <a href="https://archive.ics.uci.edu/ml/datasets/Bank+Marketing" class="uri">https://archive.ics.uci.edu/ml/datasets/Bank+Marketing</a> to run the notebook end-to-end.</li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../drill/exercise_05_model_selection.html" class="pagination-link" aria-label="Drill: Model Selection &amp; Evaluation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Drill: Model Selection &amp; Evaluation</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../appendix/notation_table.html" class="pagination-link" aria-label="Notation">
+        <span class="nav-page-text">Notation</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

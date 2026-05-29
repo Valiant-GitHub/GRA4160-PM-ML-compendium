@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Principal Component Analysis (PCA) – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/kmeans.html" rel="next">
+<link href="../methods/ensembles.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-unsup quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/pca.html">Methods — Unsupervised</a></li><li class="breadcrumb-item"><a href="../methods/pca.html">Principal Component Analysis (PCA)</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#when-to-use-when-not-to-use" id="toc-when-to-use-when-not-to-use" class="nav-link" data-scroll-target="#when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#sec-pca-code" id="toc-sec-pca-code" class="nav-link" data-scroll-target="#sec-pca-code">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-pca-seeds" id="toc-sec-pca-seeds" class="nav-link" data-scroll-target="#sec-pca-seeds">Example 1 — seeds: how much do 2 components keep, and does scaling matter?</a></li>
+  <li><a href="#sec-pca-wine" id="toc-sec-pca-wine" class="nav-link" data-scroll-target="#sec-pca-wine">Example 2 — wine: scaling flips a mediocre PCA into an excellent one</a></li>
+  </ul></li>
+  <li><a href="#sec-pca-viz" id="toc-sec-pca-viz" class="nav-link" data-scroll-target="#sec-pca-viz">5. Visualization</a></li>
+  <li><a href="#diagnostics-interpretation" id="toc-diagnostics-interpretation" class="nav-link" data-scroll-target="#diagnostics-interpretation">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#past-exam-lens" id="toc-past-exam-lens" class="nav-link" data-scroll-target="#past-exam-lens">7. Past-exam lens</a></li>
+  <li><a href="#sec-pca-math" id="toc-sec-pca-math" class="nav-link" data-scroll-target="#sec-pca-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/pca.html">Methods — Unsupervised</a></li><li class="breadcrumb-item"><a href="../methods/pca.html">Principal Component Analysis (PCA)</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Principal Component Analysis (PCA)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Unsupervised</strong></span> · the workhorse of linear dimensionality reduction — it rewrites your features as a handful of uncorrelated directions that pack in as much variance as possible, for visualization, noise reduction, or compression. Siblings: <a href="../methods/lda.html">LDA</a> (the <em>supervised</em> cousin — maximizes class separation, not raw variance), <a href="../methods/kmeans.html">K-Means</a> (the natural downstream step — reduce, then cluster), <a href="../methods/regularization.html">Regularization</a> (the rival fix for many/correlated predictors — <em>shrink</em> the original axes instead of <em>projecting</em> onto new ones).</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p>Principal Component Analysis takes a dataset with many (possibly correlated) features and finds a new set of axes — the <strong>principal components</strong> — that are mutually orthogonal and ordered so the first captures the most variance in the data, the second the most of what remains, and so on. Keeping only the first few components gives you a faithful lower-dimensional version of the data: fewer columns, but most of the information retained. It is a <strong>linear</strong> technique — each component is a weighted combination of the original features — and it is <strong>unsupervised</strong>: it looks only at the spread of the predictors and <em>ignores any class labels</em> entirely (Lecture 6, slide 9/19).</p>
+<p>The three things people do with it are visualization, preprocessing, and compression. <strong>Visualization</strong>: project high-dimensional data down to 2 or 3 components and plot it to spot clusters, trends, and outliers. <strong>Preprocessing / noise reduction</strong>: drop the low-variance components, which often carry mostly noise, to mitigate the curse of dimensionality and feed a cleaner, smaller representation to a downstream model. <strong>Compression</strong>: store the few high-variance components instead of all original features (the Eigenfaces idea for images) (Lecture 6, slide 10/19).</p>
+<p>The single most important practical rule is <strong>standardize first</strong>. PCA chases variance, and variance is not scale-invariant: a feature measured in large units (proline in milligrams, area in mm²) will dominate the first component purely because its <em>numbers</em> are bigger, not because it is more informative. Lecture 6 calls standardization “crucial for unbiased results” (slide 11/19), and the worked examples in §4 show exactly what goes wrong when you skip it. Compared with its neighbours: <a href="../methods/lda.html">LDA</a> does dimensionality reduction too, but <em>supervised</em> — it keeps the directions that separate the classes, not the directions of largest total spread; <a href="../methods/regularization.html">Regularization</a> tackles the same many/correlated-predictor problem but by shrinking coefficients on the <em>original</em> (interpretable) axes rather than replacing them with components; and <a href="../methods/kmeans.html">K-Means</a> is the clustering step PCA most often feeds (Lecture 6, slide 18/19).</p>
+</section>
+<section id="when-to-use-when-not-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for PCA when…</strong></p>
+<ul>
+<li>You have <strong>many features, some correlated</strong>, and want to <strong>compress them into a few uncorrelated directions</strong> while keeping most of the information — read off how much you keep from the <strong>explained-variance ratio</strong> (Lecture 6, slide 6/19).</li>
+<li>You want to <strong>visualize</strong> high-dimensional data in 2D/3D to look for clusters, trends, or outliers before modelling (Lecture 6, slide 10/19).</li>
+<li>You want <strong>noise reduction / preprocessing</strong> — discard the low-variance tail of components, which is often noise, then feed the reduced data to a classifier or to <a href="../methods/kmeans.html">K-Means</a> (Lecture 6, slides 10/18). The exam’s Assignment 2 does exactly this: scale → PCA to 90 % variance → cluster (see §7).</li>
+<li>You need <strong>compression</strong> of a large, redundant feature set (images, sensor banks).</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else when…</strong></p>
+<ul>
+<li><strong>You have labels and care about class separation, not raw spread</strong> → <a href="../methods/lda.html"><strong>LDA</strong></a>. PCA’s top component can run <em>across</em> the classes rather than between them, because it never sees <code>y</code>; LDA spends its budget on separability (the Iris contrast on the <a href="../methods/lda.html#sec-lda-iris">LDA page</a> makes this vivid).</li>
+<li><strong>The structure is genuinely non-linear</strong> → PCA only finds <em>linear</em> directions; a curved manifold defeats it. Lecture 6 lists linearity as the first limitation (slide 11/19); reach for a non-linear reducer (t-SNE is named on slide 4/19) or a kernel method.</li>
+<li><strong>You want to keep interpretable original features</strong> and merely tame correlation/overfitting → <a href="../methods/regularization.html"><strong>Regularization</strong></a> (Ridge/Lasso) shrinks or zeros coefficients on the <em>original</em> axes; PCA’s components are blends of all features and are harder to read (Lecture 6 lists interpretability as a limitation, slide 11/19).</li>
+<li><strong>Outliers dominate</strong> → PCA is variance-driven, so a few extreme points can swing the components (Lecture 6, slide 11/19); diagnose and consider robust methods first.</li>
+</ul>
+</div>
+</section>
+<section id="sec-pca-code" class="level2">
+<h2 class="anchored" data-anchor-id="sec-pca-code">3. Code idiom</h2>
+<p>The canonical course idiom is <code>scikit-learn</code>’s <code>PCA</code>. There is no from-scratch implementation in the lecture notebook — the eigendecomposition/SVD mechanics are left as markdown theory <em>(notebook <code>10_PCA.ipynb</code>, cell 1)</em>; see <a href="#sec-pca-math">§8</a> for that math (marked supplemental).</p>
+<p><strong>Canonical (sklearn)</strong> — <em>(notebook <code>10_PCA.ipynb</code>, cell 6)</em></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pca <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">2</span>)        <span class="co"># keep the top 2 components</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>pca.fit(X)                      <span class="co"># learns the directions from the spread of X (no y — unsupervised)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pca.components_                 <span class="co"># the principal axes (each a length-p combination of features)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>X_proj <span class="op">=</span> pca.transform(X)       <span class="co"># project X onto the 2 components → (n_samples, 2)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>pca.explained_variance_ratio_   <span class="co"># fraction of total variance each component captures</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The one hyperparameter you normally touch is <code>n_components</code>: an <strong>integer</strong> keeps that many components; a <strong>float in (0, 1)</strong> keeps the <em>smallest</em> number of components reaching that cumulative variance — <code>PCA(n_components=0.90)</code> is the exact idiom for the exam’s “90 % variance” task. The course reads off how much variance two components keep with <em>(notebook <code>10_PCA.ipynb</code>, cell 7)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">sum</span>(pca.explained_variance_ratio_.<span class="bu">round</span>(<span class="dv">2</span>))   <span class="co"># e.g. 0.99 for unscaled seeds</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Standardize first — the pipeline idiom</strong> <em>(notebook <code>10_PCA.ipynb</code>, cell 12)</em>. Because PCA is scale-sensitive, the course wraps a <code>StandardScaler</code> in front of it (here also feeding a downstream classifier), so the scaling is learned on the training fold and never leaks:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> make_pipeline</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.naive_bayes <span class="im">import</span> GaussianNB</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>std_clf <span class="op">=</span> make_pipeline(StandardScaler(), PCA(n_components<span class="op">=</span><span class="dv">2</span>), GaussianNB())</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>std_clf.fit(X_train, y_train)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>std_clf.named_steps[<span class="st">'pca'</span>].explained_variance_ratio_   <span class="co"># reach into a pipeline step</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout-pitfall">
+<p><strong>The reproducibility + labeling traps in the lecture notebook (<code>phase0/disagreements.md</code> [NB-3]).</strong> Three things in <code>10_PCA.ipynb</code> cell 12 are worth fixing when you reuse it: (i) its <code>train_test_split(features, target, test_size=0.30)</code> has <strong>no <code>random_state</code></strong>, so the accuracy printout changes every run — <em>always</em> set a seed (the §4 numbers below use <code>random_state=42</code>). (ii) The left “Training dataset after PCA” panel actually plots <code>X_train[..., 0]</code> and <code>X_train[..., 1]</code> — the first two <strong>raw features</strong>, not the PCA projection — so it is <strong>mislabeled</strong>; only the right (standardized) panel truly shows PCA output. (iii) The notebook loads <code>../data/seeds.csv</code> (lowercase) while the repo file is <code>course_materials/Data/seeds.csv</code> (capital D) — harmless on Windows but a real path-case mismatch.</p>
+</div>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<section id="sec-pca-seeds" class="level3">
+<h3 class="anchored" data-anchor-id="sec-pca-seeds">Example 1 — seeds: how much do 2 components keep, and does scaling matter?</h3>
+<p>The lecture’s first dataset is <strong><code>seeds.csv</code></strong> — 140 wheat kernels, <strong>7 geometric features</strong> (<code>area</code>, <code>perimeter</code>, <code>compactness</code>, <code>length</code>, <code>width</code>, <code>asymmetry_coefficient</code>, <code>grove_length</code>), target <code>type</code> with 2 varieties (70 each) <em>(notebook <code>10_PCA.ipynb</code>, cells 3–4)</em>. The notebook fits PCA on the <strong>raw</strong> features <em>(cell 6)</em> and reports two components capture <strong>0.99</strong> of the variance <em>(cell 7 idiom <code>sum(pca.explained_variance_ratio_.round(2))</code>)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> seeds[[<span class="st">'area'</span>,<span class="st">'perimeter'</span>,<span class="st">'compactness'</span>,<span class="st">'length'</span>,<span class="st">'width'</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">'asymmetry_coefficient'</span>,<span class="st">'grove_length'</span>]]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>pca <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">2</span>).fit(X)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>pca.explained_variance_ratio_          <span class="co"># ≈ [0.834, 0.157]  → sum ≈ 0.991</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>That <strong>99 %</strong> looks fantastic — until you remember PCA chases raw variance and these features are <em>unscaled</em>. <code>area</code> and <code>perimeter</code> have far larger numeric spread than <code>compactness</code>, so they dominate PC1 by units, not by importance. <strong>Standardize first</strong> and the picture is honest <em>(computed via the course <code>.venv</code>, <code>./.venv/Scripts/python.exe</code>)</em>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>seeds PCA</th>
+<th>PC1</th>
+<th>PC1+PC2</th>
+<th>components for ≥ 90 %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Unscaled</strong> (nb10 cell 6)</td>
+<td>0.834</td>
+<td><strong>0.991</strong></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><strong>Standardized</strong> (<code>StandardScaler</code> first)</td>
+<td>0.692</td>
+<td><strong>0.859</strong></td>
+<td><strong>3</strong></td>
+</tr>
+</tbody>
+</table>
+<p>After standardizing, two components keep only <strong>86 %</strong>, and you need <strong>three</strong> to clear 90 % (computed) — the cumulative-variance curve in <a href="#sec-pca-viz">§5</a> shows exactly where the 90 % line is crossed. The unscaled “99 %” was largely an artifact of <code>area</code>/<code>perimeter</code>’s units: this is the standardization lesson (Lecture 6, slide 11/19) made concrete on the course’s own dataset, and it is precisely the decision the exam’s “PCA to 90 % variance” hangs on.</p>
+</section>
+<section id="sec-pca-wine" class="level3">
+<h3 class="anchored" data-anchor-id="sec-pca-wine">Example 2 — wine: scaling flips a mediocre PCA into an excellent one</h3>
+<p>The lecture’s second dataset is <strong>Wine</strong> (178 samples, <strong>13 chemical features</strong>, 3 cultivars), used to compare PCA <em>with</em> and <em>without</em> standardization through a <code>GaussianNB</code> classifier <em>(notebook <code>10_PCA.ipynb</code>, cell 12)</em>. Reproducing it with a fixed seed (the [NB-3] fix) <em>(computed via the <code>.venv</code>, <code>random_state=42</code>)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    features, target, test_size<span class="op">=</span><span class="fl">0.30</span>, random_state<span class="op">=</span><span class="dv">42</span>)   <span class="co"># NB-3 fix: add a seed</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>unscaled <span class="op">=</span> make_pipeline(PCA(n_components<span class="op">=</span><span class="dv">2</span>), GaussianNB()).fit(X_train, y_train)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>scaled   <span class="op">=</span> make_pipeline(StandardScaler(), PCA(n_components<span class="op">=</span><span class="dv">2</span>), GaussianNB()).fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Wine, 2-component PCA → GaussianNB</th>
+<th>PC1 evr</th>
+<th>PC1+PC2 evr</th>
+<th>Test accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Unscaled</strong></td>
+<td><strong>0.998</strong></td>
+<td>0.9998</td>
+<td>0.81</td>
+</tr>
+<tr class="even">
+<td><strong>Standardized</strong></td>
+<td>0.362</td>
+<td>0.550</td>
+<td><strong>0.98</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Read the table the right way round. The <em>unscaled</em> PCA looks like it captures everything — <strong>99.8 %</strong> on PC1 alone — yet classifies worst (<strong>0.81</strong>). That single component is essentially just <code>proline</code>, whose raw variance (≈ 98,600) dwarfs every other feature by orders of magnitude (computed), so PCA aligns PC1 with one chemical and throws away the rest. <strong>Standardize</strong>, and the variance spreads across components (36 % / 19 %), PC1+PC2 keep a more modest 55 % — <em>and accuracy jumps to 0.98</em> (computed). More retained variance is not the goal; <strong>retained <em>useful</em> variance</strong> is, and only scaling delivers it. This is the headline limitation from Lecture 6 (slide 11/19): without standardization PCA is biased toward whichever feature happens to be measured in big numbers.</p>
+<div class="callout-bigpicture">
+<p>Both examples teach the same thing from opposite directions: on seeds, scaling makes the “99 %” honestly <em>shrink</em> to 86 %; on wine, scaling makes a useless 99.8 %-on-PC1 split <em>spread out</em> and the downstream accuracy soar. The explained-variance ratio is only trustworthy <strong>after</strong> standardizing.</p>
+</div>
+</section>
+</section>
+<section id="sec-pca-viz" class="level2">
+<h2 class="anchored" data-anchor-id="sec-pca-viz">5. Visualization</h2>
+<p>The one figure that earns its place for PCA is the <strong>cumulative explained-variance curve</strong> (a “scree”-style plot): how much of the total variance you have retained as you add components, with a horizontal line at the variance budget you are willing to keep. It turns the abstract phrase “PCA to 90 % variance” into a concrete <em>count</em> — read straight up from where the curve crosses the line. The data below is the <strong>standardized seeds</strong> PCA, computed in the course <code>.venv</code> <em>(<code>./.venv/Scripts/python.exe</code>, deterministic — PCA on fixed data has no random seed to set)</em>; it is the honest, scaled version of <a href="#sec-pca-seeds">Example 1</a>, and it is exactly the diagnostic the exam asks for.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb6" data-startfrom="127" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 126;"><span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a>famUnsup <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-unsup'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#F18F01"</span>)</span>
+<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a>screeData <span class="op">=</span> [</span>
+<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.6924</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">0.6924</span>}<span class="op">,</span></span>
+<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.1666</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">0.8590</span>}<span class="op">,</span></span>
+<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.1258</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">0.9848</span>}<span class="op">,</span></span>
+<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">4</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.0098</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">0.9946</span>}<span class="op">,</span></span>
+<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.0039</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">0.9985</span>}<span class="op">,</span></span>
+<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">6</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.0014</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">0.9999</span>}<span class="op">,</span></span>
+<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">pc</span><span class="op">:</span> <span class="dv">7</span><span class="op">,</span> <span class="dt">evr</span><span class="op">:</span> <span class="fl">0.0001</span><span class="op">,</span> <span class="dt">cum</span><span class="op">:</span> <span class="fl">1.0000</span>}</span>
+<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb6-138"><a href="#cb6-138" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">320</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">55</span><span class="op">,</span> <span class="dt">marginRight</span><span class="op">:</span> <span class="dv">20</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb6-139"><a href="#cb6-139" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"number of principal components kept"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="fl">0.5</span><span class="op">,</span> <span class="fl">7.5</span>]<span class="op">,</span> <span class="dt">ticks</span><span class="op">:</span> [<span class="dv">1</span><span class="op">,</span><span class="dv">2</span><span class="op">,</span><span class="dv">3</span><span class="op">,</span><span class="dv">4</span><span class="op">,</span><span class="dv">5</span><span class="op">,</span><span class="dv">6</span><span class="op">,</span><span class="dv">7</span>]}<span class="op">,</span></span>
+<span id="cb6-140"><a href="#cb6-140" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"cumulative variance retained"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="fl">1.02</span>]<span class="op">,</span> <span class="dt">percent</span><span class="op">:</span> <span class="kw">true</span>}<span class="op">,</span></span>
+<span id="cb6-141"><a href="#cb6-141" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb6-142"><a href="#cb6-142" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>([<span class="fl">0.90</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#888"</span><span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"5,4"</span>})<span class="op">,</span></span>
+<span id="cb6-143"><a href="#cb6-143" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>([{<span class="dt">x</span><span class="op">:</span> <span class="fl">6.4</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="fl">0.90</span>}]<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> [<span class="st">"90% budget"</span>]<span class="op">,</span> <span class="dt">dy</span><span class="op">:</span> <span class="op">-</span><span class="dv">8</span><span class="op">,</span> <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">11</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"#666"</span>})<span class="op">,</span></span>
+<span id="cb6-144"><a href="#cb6-144" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">areaY</span>(screeData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"pc"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"cum"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> famUnsup<span class="op">,</span> <span class="dt">fillOpacity</span><span class="op">:</span> <span class="fl">0.12</span>})<span class="op">,</span></span>
+<span id="cb6-145"><a href="#cb6-145" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(screeData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"pc"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"cum"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> famUnsup<span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="fl">2.5</span>})<span class="op">,</span></span>
+<span id="cb6-146"><a href="#cb6-146" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(screeData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"pc"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"cum"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> famUnsup<span class="op">,</span> <span class="dt">r</span><span class="op">:</span> <span class="dv">4</span>})<span class="op">,</span></span>
+<span id="cb6-147"><a href="#cb6-147" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleX</span>([<span class="dv">3</span>]<span class="op">,</span> {<span class="dt">y1</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">y2</span><span class="op">:</span> <span class="fl">0.9848</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> famUnsup<span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"2,3"</span><span class="op">,</span> <span class="dt">strokeOpacity</span><span class="op">:</span> <span class="fl">0.6</span>})<span class="op">,</span></span>
+<span id="cb6-148"><a href="#cb6-148" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>(screeData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"pc"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"cum"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> d <span class="kw">=&gt;</span> (d<span class="op">.</span><span class="at">cum</span><span class="op">*</span><span class="dv">100</span>)<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">0</span>) <span class="op">+</span> <span class="st">"%"</span><span class="op">,</span> <span class="dt">dy</span><span class="op">:</span> <span class="op">-</span><span class="dv">12</span><span class="op">,</span> <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">9</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"#444"</span>})</span>
+<span id="cb6-149"><a href="#cb6-149" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb6-150"><a href="#cb6-150" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-pca-scree" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pca-scree-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-pca-scree-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-pca-scree-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-pca-scree-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-pca-scree-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-pca-scree-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-pca-scree-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-pca-scree-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-pca-scree-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-pca-scree-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pca-scree-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Cumulative explained-variance curve for PCA on the standardized seeds data (7 features; computed in the course .venv, deterministic). Each point adds one principal component; the y-value is the running fraction of total variance retained. The dashed line is a 90 % variance budget — read straight up from where the curve crosses it: on the <em>standardized</em> data you need 3 components to clear 90 % (PC1+PC2 reach only 86 %), whereas the unscaled data hit 99 % on 2 components purely because area/perimeter dominate by raw units (see §4). This ‘how many components for X % variance’ read-off is exactly the exam’s Assignment-2 task.
+</figcaption>
+</figure>
+</div>
+</div>
+<p>Static prose can say “keep components until you reach 90 %”; only the picture shows <em>which</em> count that is, and that the answer changes the moment you standardize — the elbow after PC3 is where the remaining components carry almost no variance (the noise tail you can safely discard for <a href="../methods/kmeans.html">K-Means</a> or any downstream model).</p>
+</section>
+<section id="diagnostics-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-interpretation">6. Diagnostics &amp; interpretation</h2>
+<p>What to report and look at to decide whether a PCA is doing its job:</p>
+<ul>
+<li><strong><code>explained_variance_ratio_</code> and its cumulative sum</strong> — the headline. Report per-component and cumulative variance; choose <code>n_components</code> by a budget (90 %, 95 %) read off the <a href="#sec-pca-viz">§5 curve</a>, or by an elbow where added components stop paying. Remember it is only meaningful <strong>after</strong> standardizing (§4).</li>
+<li><strong>Did you standardize?</strong> — the first thing to check. On raw features with mixed units the top component can be one high-variance feature in disguise (wine’s <code>proline</code>, §4). Lecture 6 stresses this as <em>crucial</em> (slide 11/19).</li>
+<li><strong>Component loadings (<code>components_</code>)</strong> — each component is a weighted blend of original features; inspect the weights to <em>interpret</em> what a component “means,” but accept that blends are inherently harder to read than single features (the interpretability limitation, slide 11/19).</li>
+<li><strong>Outlier check</strong> — because PCA is variance-driven, a few extreme points can tilt the components; scan the projection scatter (or the original features) for outliers before trusting the axes (slide 11/19).</li>
+</ul>
+<div class="callout-bigpicture">
+<p><strong>PCA vs LDA, and choosing the number of components.</strong> Both reduce dimensions linearly, but they optimize different things: <a href="../methods/lda.html"><strong>PCA</strong></a> is <em>unsupervised</em> — it keeps the directions of greatest <strong>total variance</strong>, ignoring labels — while <a href="../methods/lda.html"><strong>LDA</strong></a> is <em>supervised</em> and keeps the directions of greatest <strong>class separation</strong> (Lecture 6 slide 9/19; the <a href="../methods/lda.html#sec-lda-iris">LDA Iris example</a> shows LDA’s LD1 capturing ~99 % of between-class separation, which need not coincide with PCA’s top variance axis). LDA is also <em>capped</em> at #classes − 1 components; PCA can return up to #features. For <strong>choosing the count</strong>, PCA has no labels to validate against, so the rule is the explained-variance budget (the §5 curve), not cross-validated accuracy — that is the exam’s chosen criterion (90 %). Versus <a href="../methods/regularization.html"><strong>Regularization</strong></a>, PCA <em>projects</em> onto new uncorrelated axes (losing interpretability of the originals) where Ridge/Lasso <em>shrink</em> the original coefficients (keeping them).</p>
+</div>
+</section>
+<section id="past-exam-lens" class="level2">
+<h2 class="anchored" data-anchor-id="past-exam-lens">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How PCA shows up — this is core to the unsupervised assignment.</strong> In the <strong>Spring-2025 take-home (Assignment 2)</strong> the unsupervised task runs on <strong><code>WholesaleCustomers.csv</code></strong>: <strong>standardize the features, apply PCA keeping enough components for 90 % of the variance, interpret what those components represent, then feed the reduced data into <a href="../methods/kmeans.html">K-Means</a></strong> (<code>phase0/concept_inventory.md</code>; <code>phase0/exam_spring2025_notebook.md</code>). Expect to (i) write the pipeline idiom from <a href="#sec-pca-code">§3</a> — <em><code>StandardScaler</code> before <code>PCA</code></em>, the non-negotiable step (§4); (ii) use <strong><code>PCA(n_components=0.90)</code></strong> (or read the cumulative-variance curve, <a href="#sec-pca-viz">§5</a>) and <em>justify the component count</em>; (iii) <strong>interpret the components</strong> from their loadings — “PC1 is mostly spending on X and Y” — accepting that blends are harder to read; and (iv) hand the projection to <a href="../methods/kmeans.html">K-Means</a> and choose <code>k</code> by elbow/silhouette. The grade rests on the <em>reasoning</em> — why standardize, why this many components, what they mean — at least as much as on the code. The classic slip to avoid: running PCA on <strong>unscaled</strong> features, which (as the wine example shows) lets one big-unit feature hijack the first component.</p>
+</div>
+</section>
+<section id="sec-pca-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-pca-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> PCA stated as the course teaches it — <em>conceptually, with no formula</em>. Principal components are the <strong>orthogonal directions that successively maximize variance</strong>: PC1 is the direction capturing the most variance in the data, PC2 the most of the <em>remaining</em> variance subject to being orthogonal to PC1, and so on (Lecture 6, slide 9/19). How much you keep is summarized by the <strong>explained-variance ratio</strong> — the fraction of total variance lying along each component — which the notebook reads off as <code>explained_variance_ratio_</code> and <em>sums</em> to decide how many components to retain <em>(notebook <code>10_PCA.ipynb</code>, cell 7: <code>sum(pca.explained_variance_ratio_.round(2))</code>)</em>. Lecture 6 frames the choice as an <em>information-loss</em> trade-off: “use explained variance to decide acceptable loss” (slide 11/19), which is exactly the §5 cumulative-variance read-off and the exam’s “90 % variance” rule. <strong>Note:</strong> Lecture 6 gives PCA <em>only conceptually</em> — there is <strong>no covariance-eigendecomposition, SVD, or explained-variance formula anywhere on the slides</strong> (<code>phase0/disagreements.md</code> [R9-5]). The formal eigen/SVD math is therefore <em>supplemental</em>: it lives in Mode B below, drawn from the lecture notebook’s markdown and the textbooks, <strong>not</strong> from the course deck.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor <em>(supplemental — not on the course slides; sourced from the lecture notebook’s markdown + ESL §14.5 / ISL §12.2; <code>phase0/disagreements.md</code> [R9-5])</em>.</strong> The eigen/SVD characterization the slides omit. <em>Local notation</em> (per <code>phase0/notation_table.md</code>, which records that the slides assign <strong>no symbol</strong> to PCA components — these are supplied from ESL §14.5): <span class="math inline">v_j</span> = <span class="math inline">j</span>-th principal-component <strong>direction</strong> (loading vector), <span class="math inline">\lambda_j</span> = the variance along it, <span class="math inline">d_j</span> = <span class="math inline">j</span>-th singular value. Here <span class="math inline">\lambda</span> is a <strong>PCA variance/eigenvalue</strong>, <em>not</em> a regularization strength (the <a href="../methods/regularization.html">Ridge/Lasso</a> sense). Throughout, <span class="math inline">X</span> is the <span class="math inline">n\times p</span> data matrix with columns centered to mean zero.</p>
+<p><strong>Two equivalent characterizations.</strong> <em>(i) Variance maximization (ISL §12.2.1).</em> The first principal component is the normalized linear combination <span class="math inline">Z_1 = \phi_{11}X_1 + \dots + \phi_{p1}X_p</span> with <span class="math inline">\sum_j \phi_{j1}^2 = 1</span> that has the largest sample variance (ISL 12.1); formally it solves <span class="math display">\max_{\phi_1:\,\|\phi_1\|=1}\;\frac1n\sum_{i=1}^n\Bigl(\textstyle\sum_{j=1}^p \phi_{j1}x_{ij}\Bigr)^2 \qquad\text{(ISL 12.3),}</span> with each later component maximizing the remaining variance subject to being orthogonal to the earlier ones. <em>(ii) Reconstruction-error minimization (ISL §12.2.2; ESL §14.5.1).</em> Equivalently, the first <span class="math inline">m</span> components give the rank-<span class="math inline">m</span> linear approximation <span class="math inline">x_{ij}\approx\sum_{k\le m} z_{ik}\phi_{jk}</span> minimizing the squared error (ISL 12.6–12.7); ESL writes the same as fitting the affine rank-<span class="math inline">q</span> hyperplane <span class="math inline">f(\lambda)=\mu+V_q\lambda</span> (ESL 14.49) by least squares <span class="math inline">\min\sum_i\|x_i-\mu-V_q\lambda_i\|^2</span> (ESL 14.50), with solution <span class="math inline">\hat\mu=\bar x</span>, scores <span class="math inline">\hat\lambda_i=V_q^\top(x_i-\bar x)</span>, and direction matrix <span class="math inline">V_q</span> minimizing the projection residual (ESL 14.51–14.53). ISL 12.11 shows these two views are <strong>the same problem</strong>: total variance = variance of the kept components + reconstruction MSE, so maximizing the one minimizes the other.</p>
+<p><strong>Eigen/SVD solution.</strong> Form the sample covariance <span class="math inline">\Sigma=\tfrac1n X^\top X</span>; its <strong>eigendecomposition</strong> <span class="math inline">\Sigma v_j=\lambda_j v_j</span> gives the component directions as eigenvectors <span class="math inline">v_j</span> ordered by eigenvalue <span class="math inline">\lambda_j</span> (= variance along <span class="math inline">v_j</span>), and the projection <span class="math inline">\hat X=XV</span> keeps the leading columns of <span class="math inline">V</span> <em>(lecture notebook <code>10_PCA.ipynb</code>, cell 1, markdown; ISL §12.2.1 footnote: “the principal component directions <span class="math inline">\phi_1,\phi_2,\dots</span> are the ordered eigenvectors of <span class="math inline">X^\top X</span>, and the variances of the components are the eigenvalues”)</em>. The numerically preferred route is the <strong>singular value decomposition</strong> <span class="math inline">X=UDV^\top</span> (ESL 14.54), where the columns <span class="math inline">v_j</span> of <span class="math inline">V</span> are the right-singular vectors (the directions/loadings), <span class="math inline">D=\operatorname{diag}(d_1\ge\dots\ge d_p\ge0)</span> holds the singular values, and the <strong>columns of <span class="math inline">UD</span> are the principal components</strong> (the scores) — so <span class="math inline">\lambda_j=d_j^2/n</span>. sklearn’s <code>PCA</code> uses this SVD path. The general eigen/SVD background is deferred to the <a href="../appendix/math_appendix.html#sec-linalg">linear-algebra appendix</a>; the key result inline is that <em>components = (right-)singular vectors/eigenvectors, variances = (squared singular values)/eigenvalues</em>.</p>
+<p><strong>Explained-variance ratio.</strong> The proportion of variance explained by component <span class="math inline">j</span> (ISL 12.10, the PVE) is <span class="math display">\frac{\lambda_j}{\sum_k \lambda_k}=\frac{d_j^2}{\sum_k d_k^2},</span> which is exactly sklearn’s <code>explained_variance_ratio_</code> from Mode A. “PCA to 90 % variance” is then the smallest <span class="math inline">m</span> with <span class="math inline">\sum_{j\le m}\lambda_j\big/\sum_k\lambda_k\ge 0.90</span> — the §5 cumulative-variance read-off (standardized seeds: <span class="math inline">m=3</span>, computed). ESL’s handwritten-digits example makes the same count concrete: of 256 possible components, “approximately 50 account for 90 % of the variation… 12 account for 63 %” (ESL §14.5.1). <em>Anchored to ISL §12.2 (eqs 12.1, 12.3, 12.6–12.7, 12.10–12.11) and ESL §14.5.1 (eqs 14.49–14.54).</em></p>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbVVuc3VwID0gKGdldENvbXB1dGVkU3R5bGUoZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50KS5nZXRQcm9wZXJ0eVZhbHVlKCctLWZhbWlseS11bnN1cCcpLnRyaW0oKSB8fCBcIiNGMThGMDFcIilcbnNjcmVlRGF0YSA9IFtcbiAge3BjOiAxLCBldnI6IDAuNjkyNCwgY3VtOiAwLjY5MjR9LFxuICB7cGM6IDIsIGV2cjogMC4xNjY2LCBjdW06IDAuODU5MH0sXG4gIHtwYzogMywgZXZyOiAwLjEyNTgsIGN1bTogMC45ODQ4fSxcbiAge3BjOiA0LCBldnI6IDAuMDA5OCwgY3VtOiAwLjk5NDZ9LFxuICB7cGM6IDUsIGV2cjogMC4wMDM5LCBjdW06IDAuOTk4NX0sXG4gIHtwYzogNiwgZXZyOiAwLjAwMTQsIGN1bTogMC45OTk5fSxcbiAge3BjOiA3LCBldnI6IDAuMDAwMSwgY3VtOiAxLjAwMDB9XG5dXG5QbG90LnBsb3Qoe1xuICBoZWlnaHQ6IDMyMCwgbWFyZ2luTGVmdDogNTUsIG1hcmdpblJpZ2h0OiAyMCwgZ3JpZDogdHJ1ZSxcbiAgeDoge2xhYmVsOiBcIm51bWJlciBvZiBwcmluY2lwYWwgY29tcG9uZW50cyBrZXB0XCIsIGRvbWFpbjogWzAuNSwgNy41XSwgdGlja3M6IFsxLDIsMyw0LDUsNiw3XX0sXG4gIHk6IHtsYWJlbDogXCJjdW11bGF0aXZlIHZhcmlhbmNlIHJldGFpbmVkXCIsIGRvbWFpbjogWzAsIDEuMDJdLCBwZXJjZW50OiB0cnVlfSxcbiAgbWFya3M6IFtcbiAgICBQbG90LnJ1bGVZKFswLjkwXSwge3N0cm9rZTogXCIjODg4XCIsIHN0cm9rZURhc2hhcnJheTogXCI1LDRcIn0pLFxuICAgIFBsb3QudGV4dChbe3g6IDYuNCwgeTogMC45MH1dLCB7eDogXCJ4XCIsIHk6IFwieVwiLCB0ZXh0OiBbXCI5MCUgYnVkZ2V0XCJdLCBkeTogLTgsIGZvbnRTaXplOiAxMSwgZmlsbDogXCIjNjY2XCJ9KSxcbiAgICBQbG90LmFyZWFZKHNjcmVlRGF0YSwge3g6IFwicGNcIiwgeTogXCJjdW1cIiwgZmlsbDogZmFtVW5zdXAsIGZpbGxPcGFjaXR5OiAwLjEyfSksXG4gICAgUGxvdC5saW5lKHNjcmVlRGF0YSwge3g6IFwicGNcIiwgeTogXCJjdW1cIiwgc3Ryb2tlOiBmYW1VbnN1cCwgc3Ryb2tlV2lkdGg6IDIuNX0pLFxuICAgIFBsb3QuZG90KHNjcmVlRGF0YSwge3g6IFwicGNcIiwgeTogXCJjdW1cIiwgZmlsbDogZmFtVW5zdXAsIHI6IDR9KSxcbiAgICBQbG90LnJ1bGVYKFszXSwge3kxOiAwLCB5MjogMC45ODQ4LCBzdHJva2U6IGZhbVVuc3VwLCBzdHJva2VEYXNoYXJyYXk6IFwiMiwzXCIsIHN0cm9rZU9wYWNpdHk6IDAuNn0pLFxuICAgIFBsb3QudGV4dChzY3JlZURhdGEsIHt4OiBcInBjXCIsIHk6IFwiY3VtXCIsIHRleHQ6IGQgPT4gKGQuY3VtKjEwMCkudG9GaXhlZCgwKSArIFwiJVwiLCBkeTogLTEyLCBmb250U2l6ZTogOSwgZmlsbDogXCIjNDQ0XCJ9KVxuICBdXG59KVxuIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/ensembles.html" class="pagination-link" aria-label="Ensemble Methods">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Ensemble Methods</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/kmeans.html" class="pagination-link" aria-label="K-Means Clustering">
+        <span class="nav-page-text">K-Means Clustering</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

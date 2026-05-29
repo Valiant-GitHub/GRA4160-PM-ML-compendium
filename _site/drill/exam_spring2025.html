@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Drill: Spring 2025 Take-Home Exam – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../drill/exercise_01_titanic_preprocessing.html" rel="next">
+<link href="../drill/index.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-cross quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../drill/index.html">Drill</a></li><li class="breadcrumb-item"><a href="../drill/exam_spring2025.html">Drill: Spring 2025 Take-Home Exam</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-format-and-the-one-rule-that-decides-your-grade" id="toc-the-format-and-the-one-rule-that-decides-your-grade" class="nav-link active" data-scroll-target="#the-format-and-the-one-rule-that-decides-your-grade">1. The format, and the one rule that decides your grade</a></li>
+  <li><a href="#assignment-1-regularized-regression-on-hitters.csv" id="toc-assignment-1-regularized-regression-on-hitters.csv" class="nav-link" data-scroll-target="#assignment-1-regularized-regression-on-hitters.csv">2. Assignment 1 — Regularized regression on <code>Hitters.csv</code></a>
+  <ul class="collapse">
+  <li><a href="#solution-sketch-the-decisions-and-idioms" id="toc-solution-sketch-the-decisions-and-idioms" class="nav-link" data-scroll-target="#solution-sketch-the-decisions-and-idioms">Solution sketch — the decisions and idioms</a></li>
+  </ul></li>
+  <li><a href="#assignment-2-clustering-unsupervised-on-wholesalecustomers.csv" id="toc-assignment-2-clustering-unsupervised-on-wholesalecustomers.csv" class="nav-link" data-scroll-target="#assignment-2-clustering-unsupervised-on-wholesalecustomers.csv">3. Assignment 2 — Clustering / unsupervised on <code>WholesaleCustomers.csv</code></a>
+  <ul class="collapse">
+  <li><a href="#solution-sketch-the-decisions-and-idioms-1" id="toc-solution-sketch-the-decisions-and-idioms-1" class="nav-link" data-scroll-target="#solution-sketch-the-decisions-and-idioms-1">Solution sketch — the decisions and idioms</a></li>
+  </ul></li>
+  <li><a href="#assignment-3-ensemble-methods-on-wdbc.data-breast-cancer" id="toc-assignment-3-ensemble-methods-on-wdbc.data-breast-cancer" class="nav-link" data-scroll-target="#assignment-3-ensemble-methods-on-wdbc.data-breast-cancer">4. Assignment 3 — Ensemble methods on <code>wdbc.data</code> (breast cancer)</a>
+  <ul class="collapse">
+  <li><a href="#solution-sketch-the-decisions-and-idioms-2" id="toc-solution-sketch-the-decisions-and-idioms-2" class="nav-link" data-scroll-target="#solution-sketch-the-decisions-and-idioms-2">Solution sketch — the decisions and idioms</a></li>
+  </ul></li>
+  <li><a href="#assignment-4-binary-classification-challenge-on-simulateddata.csv" id="toc-assignment-4-binary-classification-challenge-on-simulateddata.csv" class="nav-link" data-scroll-target="#assignment-4-binary-classification-challenge-on-simulateddata.csv">5. Assignment 4 — Binary-classification challenge on <code>SimulatedData.csv</code></a>
+  <ul class="collapse">
+  <li><a href="#solution-sketch-the-decisions-and-idioms-3" id="toc-solution-sketch-the-decisions-and-idioms-3" class="nav-link" data-scroll-target="#solution-sketch-the-decisions-and-idioms-3">Solution sketch — the decisions and idioms</a></li>
+  </ul></li>
+  <li><a href="#the-through-line" id="toc-the-through-line" class="nav-link" data-scroll-target="#the-through-line">6. The through-line</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../drill/index.html">Drill</a></li><li class="breadcrumb-item"><a href="../drill/exam_spring2025.html">Drill: Spring 2025 Take-Home Exam</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Drill: Spring 2025 Take-Home Exam</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Cross-method</strong></span> · The real Spring-2025 take-home, used as a <strong>lens</strong>, not a content source. This page walks the four assignments and gives, for each exercise, the <strong>decisions a strong answer makes</strong> and the <strong>key code idioms</strong> — citing the method page that holds the full treatment. It is a <strong>solution <em>sketch</em></strong>, not a worked solution: the exam is graded on reasoning, so the sketch foregrounds <em>why</em> over <em>what to type</em>. Every claim traces to the exam notebook (<code>course_materials/Lecture slides/Past exams/GRA4160_2025-05-26_kl_09_EP_2/Exam_GRA4160_spring2025.ipynb</code>, catalogued in <code>phase0/exam_spring2025_notebook.md</code>) or the grading guidelines (<code>phase0/guidelines_extract.md</code>). For the reusable recipes underneath these tasks see <a href="../big_picture/workflow_patterns.html">workflow patterns</a>; to pick a method from scratch see the <a href="../cross_method/decision_dashboard.html">decision dashboard</a>.</p>
+<section id="the-format-and-the-one-rule-that-decides-your-grade" class="level2">
+<h2 class="anchored" data-anchor-id="the-format-and-the-one-rule-that-decides-your-grade">1. The format, and the one rule that decides your grade</h2>
+<p><strong>The exam at a glance</strong> <em>(notebook header + instructions cell; <code>phase0/exam_spring2025_notebook.md</code>)</em>:</p>
+<ul>
+<li><strong>30-hour take-home</strong>, window <code>26.05.2025 09:00 – 27.05.2025 15:00</code>. Submit <strong>one completed <code>.ipynb</code></strong> via <strong>WISEflow</strong> before the strict deadline; fill in your student ID in the designated cell.</li>
+<li><strong>Four assignments</strong> (regularized regression, clustering, ensembles, a classification challenge), each with multiple numbered exercises (1.1–1.7, 2.1–2.7, 3.1–3.8, 4.1–4.9). Each section ends with a <em>“List of resources used in this section”</em> markdown cell you must fill in.</li>
+<li><strong>Weighting:</strong> the 2024 guidelines state <strong>each assignment counts 25%</strong> of a <strong>100-point</strong> total (boundaries: F 0–40, E 41–60, D 61–70, C 71–80, B 81–90, A 91–100). The <strong>2025 notebook itself states no point values or weights</strong> — <code>[VERIFY: section weighting for Spring 2025]</code>; do not assume 2024’s scheme transfers, but 25%-each is the working assumption.</li>
+<li><strong>Question types observed:</strong> code-write (load/preprocess/model/evaluate), code-analyze/compare (1.7, 3.6, 4.6–4.7), prose interpretation (EDA, PCs, clusters, feature importance, reflection), and “explain the concept” prompts (1.3 regularization, 2.7 cluster evaluation, 3.8 RF vs GB). <strong>No true/false items and no algebraic-derivation items</strong> appear — <code>[VERIFY: none present]</code>.</li>
+</ul>
+<div class="callout-exam">
+<p><strong>The cardinal grading rule: justification is graded as heavily as the choice.</strong> Both guideline documents say it outright — <em>“justifications for your choices are equally important as the choices themselves”</em> (2023 rubric) — and the 2024 file rewards <em>“well-reasoned model choices including strengths and weaknesses,”</em> <em>“correct, well-explained cross-validation,”</em> and <em>“depth/critical analysis”</em> (<code>phase0/guidelines_extract.md</code>). Concretely, for every exercise:</p>
+<ul>
+<li><strong>State the decision and the reason in the same breath.</strong> “I standardize because the penalty in <a href="../methods/regularization.html#sec-reg-when">§2 of regularization</a> is only meaningful on a common scale” beats a bare <code>StandardScaler()</code> call.</li>
+<li><strong>Keep prose concise.</strong> The notebook warns <em>“Long responses with irrelevant information can lead to a deduction of points,”</em> and the reflection answers (Assignment 4) are capped at <strong>≤300 words each</strong>. Put non-code answers in <strong>markdown cells</strong>.</li>
+<li><strong>Comment your code</strong> comprehensively; ensure every cell <strong>executes error-free</strong> and cells are <strong>arranged logically</strong>; label each cell with the exercise it answers.</li>
+<li><strong>AI is allowed</strong> <em>only if you can explain every line in your own words</em>, justify why you used it, and <strong>list the tool in the resources cell</strong>. Same for internet code snippets (list the URL). No help from other people.</li>
+</ul>
+</div>
+<div class="callout-bigpicture">
+<p><strong>Each assignment is one trip through the standard workflow.</strong> Load → inspect → handle missing → encode/scale (decide <em>out loud</em> whether to scale) → split → baseline → tune via cross-validation → evaluate with the <em>right</em> metric → compare → interpret. The <a href="../cross_method/decision_dashboard.html">decision dashboard</a> turns “what method?” into a few dropdowns, and <a href="../big_picture/workflow_patterns.html">workflow patterns</a> gives the liftable code skeleton for each step. The four assignments below map to dashboard paths B+F+G, C+D, A+E+G, and A+E+F+G respectively.</p>
+</div>
+<hr>
+</section>
+<section id="assignment-1-regularized-regression-on-hitters.csv" class="level2">
+<h2 class="anchored" data-anchor-id="assignment-1-regularized-regression-on-hitters.csv">2. Assignment 1 — Regularized regression on <code>Hitters.csv</code></h2>
+<p><strong>The data</strong> <em>(notebook Assignment-1 markdown cell)</em>: MLB player statistics from the 1986 season plus career totals, with 1987 salaries. 322 players, 20 features (performance metrics + categorical <code>League</code> and <code>Division</code>); <strong>target = annual salary, some missing — 263 observations remain after dropping missing salaries.</strong> <strong>Methods:</strong> <a href="../methods/ols.html">OLS</a> baseline → <a href="../methods/regularization.html">Ridge/Lasso regularization</a> with CV-tuned <code>alpha</code>, read through the <a href="../methods/bias_variance.html">bias–variance</a> lens; tuning is <a href="../methods/cv_info_criteria.html">cross-validation</a>.</p>
+<p><strong>The task, exercise by exercise</strong> <em>(paraphrased from the notebook)</em>: <strong>1.1</strong> load, show head, report #obs/#features and types, check &amp; handle missing values. <strong>1.2</strong> EDA — summary stats for numerics, category distributions, argue which variables likely predict salary. <strong>1.3</strong> explain regularization; the Ridge-vs-Lasso difference; when each is preferred. <strong>1.4</strong> encode categoricals, standardize numerics, train/test split. <strong>1.5</strong> train OLS, evaluate on test with regression metrics, comment. <strong>1.6</strong> train Ridge and Lasso, <strong>CV on the training set for optimal <code>alpha</code></strong>, report alphas, evaluate on test. <strong>1.7</strong> compare OLS/Ridge/Lasso; examine coefficients; did Lasso zero any; interpret the bias–variance trade-off.</p>
+<section id="solution-sketch-the-decisions-and-idioms" class="level3">
+<h3 class="anchored" data-anchor-id="solution-sketch-the-decisions-and-idioms">Solution sketch — the decisions and idioms</h3>
+<ul>
+<li><strong>1.1 Missing values.</strong> Salary is the only column with NaNs; the canonical move is <strong>drop the rows with missing target</strong> (you cannot impute a label) → 263 rows. State it: imputing a <em>target</em> would fabricate the thing you are predicting. Idiom: <code>df.dropna(subset=['Salary'])</code>. See <a href="../big_picture/reading_the_data.html">reading the data</a>.</li>
+<li><strong>1.2 EDA.</strong> <code>df.describe()</code> for numerics, <code>value_counts()</code> for <code>League</code>/<code>Division</code>. Argue from the data: career-total and 1986-rate hitting features (<code>CRuns</code>, <code>CRBI</code>, <code>Hits</code>, <code>Years</code>) plausibly drive salary; flag that many career totals are <strong>mutually correlated</strong> — the exact condition that motivates Assignment 1’s regularization.</li>
+<li><strong>1.3 Concept (prose, concise).</strong> Regularization = OLS + a penalty on coefficient size, trading a little bias for a large drop in variance. <strong>Ridge (L2)</strong> shrinks all coefficients smoothly toward zero, never <em>to</em> zero — the multicollinearity cure. <strong>Lasso (L1)</strong> has corner geometry, so it zeros some coefficients exactly → built-in feature selection. Prefer Ridge for many small correlated effects; Lasso when you want a sparse, interpretable model. Source the full statement to <a href="../methods/regularization.html#sec-reg-diag">regularization §1 + §6</a>.</li>
+<li><strong>1.4 Prep.</strong> One-hot encode <code>League</code>/<code>Division</code>/<code>NewLeague</code> (<code>pd.get_dummies(..., drop_first=True)</code>), <strong>standardize numerics</strong>, then split. <strong>Put the <code>StandardScaler</code> inside a <code>Pipeline</code> so it is fit on training folds only</strong> — see the idiom in <a href="../methods/regularization.html#sec-reg-code">regularization §3</a>.</li>
+<li><strong>1.5 OLS baseline.</strong> <code>LinearRegression().fit(...)</code>; report <strong>test <span class="math inline">R^2</span> and RMSE</strong> (and/or MSE/MAE). The graded observation is the <strong>train–test gap</strong>: OLS on this data fits <em>train <span class="math inline">R^2 \approx 0.55</span> but test <span class="math inline">R^2 \approx 0.36</span></em> (computed; see <a href="../methods/ols.html#sec-ols-hitters">OLS §Example 2</a>) — a wide gap = variance from redundant career totals, which sets up Ridge/Lasso.</li>
+<li><strong>1.6 Ridge + Lasso with CV <code>alpha</code>.</strong> Use <code>RidgeCV(alphas=np.logspace(-3, 3, 100))</code> and <code>LassoCV(cv=10, max_iter=100000)</code>, <strong>each wrapped in <code>make_pipeline(StandardScaler(), ...)</code></strong>; read the chosen value off <code>model[-1].alpha_</code>. This is the exact pattern in <a href="../methods/regularization.html#sec-reg-code">regularization §3</a> and <a href="../methods/regularization.html#sec-reg-hitters">§4 Example 2</a>. Report both alphas; evaluate with the <em>same</em> metrics as 1.5.</li>
+<li><strong>1.7 Compare + interpret.</strong> Both regularized models nudge <strong>train <span class="math inline">R^2</span> down slightly while raising test <span class="math inline">R^2</span></strong> — the train–test gap narrows (the bias–variance trade-off made concrete). Inspect <code>.coef_</code>: Ridge shrinks toward but not to zero; <strong>Lasso zeros a couple of correlated career totals</strong> (feature selection). Tie it together: <em>more bias, less variance, better generalization</em> — cite <a href="../methods/bias_variance.html">bias–variance</a>. For the head-to-head numbers on this dataset see the <a href="../cross_method/showdowns.html">regression showdown</a>.</li>
+</ul>
+<div class="callout-exam">
+<p><strong>Where the points are.</strong> (i) Justify the missing-value strategy (drop, because it is the <em>target</em>). (ii) Tune <code>alpha</code> <em>by CV on the training set</em> and <strong>report the values</strong> — guidelines reward “correct, well-explained cross-validation.” (iii) Connect the narrowed train–test gap to <strong>reduced variance</strong> in words. (iv) Read off which coefficients Lasso zeroed and say what that implies about feature importance. The interpretation in 1.7 carries as much weight as the code in 1.5–1.6.</p>
+</div>
+<div class="callout-pitfall">
+<p><strong>Three traps in Assignment 1.</strong> (i) <strong><code>alpha</code> is not <span class="math inline">\alpha</span></strong> — in scikit-learn the argument named <code>alpha</code> is the penalty strength <span class="math inline">\lambda</span>; the Elastic-Net mixing ratio is <code>l1_ratio</code>. Confusing them silently fits the wrong model (<a href="../methods/regularization.html#sec-reg-when">regularization §2 pitfall</a>). (ii) <strong>Scaling before, not inside, CV</strong> leaks test information across folds — keep the scaler in the pipeline. (iii) <strong>Reading raw-scale penalized coefficients as effect sizes</strong> — they are comparable <em>only</em> because you standardized; never compare a penalized coefficient on an unscaled feature.</p>
+</div>
+<hr>
+</section>
+</section>
+<section id="assignment-2-clustering-unsupervised-on-wholesalecustomers.csv" class="level2">
+<h2 class="anchored" data-anchor-id="assignment-2-clustering-unsupervised-on-wholesalecustomers.csv">3. Assignment 2 — Clustering / unsupervised on <code>WholesaleCustomers.csv</code></h2>
+<p><strong>The data</strong> <em>(notebook Assignment-2 markdown cell)</em>: annual spending of <strong>440 wholesale clients</strong> across six product categories — Fresh, Milk, Grocery, Frozen, Detergents_Paper, Delicassen — plus two categorical attributes, <code>Region</code> (1/2/3) and <code>Channel</code> (1 = Horeca, 2 = Retail). <strong>Methods:</strong> scaling rationale → <a href="../methods/pca.html">PCA</a> to ~90% variance → <a href="../methods/kmeans.html">K-Means</a> with elbow/silhouette → cluster profiling and interpretation.</p>
+<p><strong>The task</strong> <em>(paraphrased)</em>: <strong>2.1</strong> load, inspect, report #obs/#features, identify continuous vs categorical, check missing (none expected). <strong>2.2</strong> summary stats for the six spending features; which categories have the highest mean spend and highest variability; <strong>decide whether scaling is necessary and explain.</strong> <strong>2.3</strong> PCA on the six spending features (scale first if you deemed it necessary); how many PCs reach ~90% variance; <strong>interpret the first two PCs</strong> in terms of original features. <strong>2.4</strong> K-Means; use the <strong>elbow method and/or silhouette score</strong> to choose <em>k</em>. <strong>2.5</strong> run K-Means with chosen <em>k</em>; describe cluster characteristics (mean spend per category), report #customers per cluster. <strong>2.6</strong> relate clusters to <code>Region</code>/<code>Channel</code> labels (a validation aid, <em>not</em> used in clustering). <strong>2.7</strong> discuss how to evaluate clustering quality and the challenge of doing so without ground truth; judge whether your clusters are meaningful.</p>
+<section id="solution-sketch-the-decisions-and-idioms-1" class="level3">
+<h3 class="anchored" data-anchor-id="solution-sketch-the-decisions-and-idioms-1">Solution sketch — the decisions and idioms</h3>
+<ul>
+<li><strong>2.1 Inspect.</strong> Six spending columns are continuous; <code>Region</code>/<code>Channel</code> are categorical <em>codes</em> (not to be averaged). <code>df.isnull().sum()</code> confirms no missing values — say so, do not silently skip.</li>
+<li><strong>2.2 Scaling decision (graded prose).</strong> The spending features span very different magnitudes and variances (Fresh and Grocery dwarf Delicassen). Both PCA and K-Means are <strong>variance/distance based</strong>, so the large-spend categories would dominate unscaled → <strong>standardize the six spending features.</strong> Justify it; do not assume it. See <a href="../methods/pca.html#sec-pca-wine">PCA §Example 2 (wine)</a>, where scaling flips a mediocre PCA into an excellent one.</li>
+<li><strong>2.3 PCA.</strong> <code>PCA().fit(X_scaled)</code>, then read <code>np.cumsum(pca.explained_variance_ratio_)</code> and pick the smallest #components crossing <strong>0.90</strong>. Interpret PC1/PC2 from <code>pca.components_</code> (loadings): typically PC1 = an overall “grocery/detergents/milk vs fresh/frozen” retail-vs-Horeca axis. Idiom and reading in <a href="../methods/pca.html#sec-pca-code">PCA §3</a>.</li>
+<li><strong>2.4 Choose <em>k</em>.</strong> Sweep <code>k = 2..10</code>: plot <strong>inertia</strong> (<code>KMeans.inertia_</code>) for the elbow and <strong><code>silhouette_score</code></strong> for cohesion/separation. Report what each suggests; they need not agree — say which you trust and why. Idiom in <a href="../methods/kmeans.html#sec-km-code">K-Means §3</a>; the full scale → PCA → K-Means pipeline is <a href="../methods/kmeans.html#sec-km-wholesale">K-Means §Example 3</a>.</li>
+<li><strong>2.5 Fit + profile.</strong> <code>KMeans(n_clusters=k, n_init=10, random_state=...)</code>; group by <code>labels_</code> and report <strong>mean spend per category per cluster</strong> and the <strong>count per cluster</strong>. Characterize in plain words (“high Fresh / low Grocery = Horeca-like”).</li>
+<li><strong>2.6 Validate against labels.</strong> Cross-tabulate cluster vs <code>Channel</code> and vs <code>Region</code> (<code>pd.crosstab</code>). Strong cluster–<code>Channel</code> alignment is a sanity check that the unsupervised structure recovers a real distinction; weak <code>Region</code> alignment is also informative. Be explicit that labels were <strong>withheld from clustering</strong>.</li>
+<li><strong>2.7 Evaluate without ground truth (concept).</strong> Internal metrics — <strong>silhouette</strong>, <strong>Davies–Bouldin</strong>, inertia/elbow — measure cohesion/separation; <strong>stability</strong> under re-seeding and <strong>interpretability</strong> of profiles matter too. The honest point: with no labels, “meaningful” is a judgement about whether profiles are <em>actionable</em>, not a single number. Source to <a href="../methods/kmeans.html#sec-km-diag">K-Means §6 diagnostics</a>.</li>
+</ul>
+<div class="callout-exam">
+<p><strong>Where the points are.</strong> (i) The <strong>scaling decision is itself graded</strong> (2.2) — argue it from the value ranges, do not just call <code>StandardScaler</code>. (ii) Justify the <strong>#components</strong> by the 90% threshold and <strong>interpret PC1/PC2 from the loadings</strong> (not just “PC1 explains X%”). (iii) Show <em>both</em> the elbow and silhouette and <strong>commit to a <em>k</em> with a reason</strong>. (iv) 2.6 and 2.7 are pure interpretation — concise, concrete cluster stories beat metric dumps.</p>
+</div>
+<div class="callout-pitfall">
+<p><strong>Clustering traps.</strong> (i) <strong>Clustering on raw spending</strong> lets Fresh/Grocery swamp everything — scale first. (ii) <strong>Feeding <code>Region</code>/<code>Channel</code> codes into K-Means</strong> treats categorical codes as distances and double-counts what 2.6 is meant to <em>validate against</em> — cluster on the six spending features only. (iii) <strong>Treating the elbow as exact</strong> — it is a heuristic; let silhouette and interpretability break ties. (iv) <strong><code>n_init=1</code></strong> makes K-Means seed-dependent; use <code>n_init=10</code> (or the default) for stable centroids.</p>
+</div>
+<hr>
+</section>
+</section>
+<section id="assignment-3-ensemble-methods-on-wdbc.data-breast-cancer" class="level2">
+<h2 class="anchored" data-anchor-id="assignment-3-ensemble-methods-on-wdbc.data-breast-cancer">4. Assignment 3 — Ensemble methods on <code>wdbc.data</code> (breast cancer)</h2>
+<p><strong>The data</strong> <em>(notebook Assignment-3 markdown cell + <code>wdbc.names</code>)</em>: Wisconsin Diagnostic Breast Cancer — <strong>569 instances, 30 real-valued features</strong> (ten nucleus measurements × {mean, SE, worst}), target <strong>diagnosis M (malignant) / B (benign)</strong>, class split <strong>357 B / 212 M</strong>, no missing values. <strong>Methods:</strong> <a href="../methods/decision_trees.html">decision tree</a> → <a href="../methods/random_forests.html">Random Forest</a> → gradient boosting (<a href="../methods/ensembles.html">ensembles</a>), all CV-tuned, with feature importance and an RF-vs-GB construction discussion; framed by <a href="../methods/bias_variance.html">bias–variance</a>.</p>
+<p><strong>The task</strong> <em>(paraphrased)</em>: <strong>3.1</strong> load by combining <code>wdbc.data</code> + <code>wdbc.names</code>; report #obs/#features, the feature names, what the target is; <strong>check class balance.</strong> <strong>3.2</strong> train/test split with <strong>class proportion roughly maintained (stratified).</strong> <strong>3.3</strong> decision tree; <strong>CV on the training set to choose a complexity constraint</strong>; refit on full train; report test performance. <strong>3.4</strong> Random Forest; evaluate; <strong>compare to the tree.</strong> <strong>3.5</strong> Gradient Boosting; may tune #estimators / learning rate via CV; evaluate. <strong>3.6</strong> compare all three on the test set — which is best, by how much — <strong>via the bias–variance trade-off</strong> and the advantage of ensembles over a single tree. <strong>3.7</strong> identify the <strong>most important features for the Random Forest</strong>; list the top ones and interpret. <strong>3.8</strong> explain how <strong>Random Forests vs Gradient Boosting are constructed</strong>, and why ensembles may beat a single tree.</p>
+<section id="solution-sketch-the-decisions-and-idioms-2" class="level3">
+<h3 class="anchored" data-anchor-id="solution-sketch-the-decisions-and-idioms-2">Solution sketch — the decisions and idioms</h3>
+<ul>
+<li><strong>3.1 Load + balance.</strong> <code>wdbc.data</code> is headerless CSV; supply column names from <code>wdbc.names</code> (<code>id</code>, <code>diagnosis</code>, then 30 features). Map target <code>{'M':1,'B':0}</code>. Report <strong>357 B / 212 M</strong> — mildly imbalanced (~37% malignant), so prefer <strong>precision/recall/F1</strong>, not accuracy alone (a malignant miss is the costly error). See <a href="../methods/decision_trees.html#sec-tree-wdbc">decision trees §Example 3</a>.</li>
+<li><strong>3.2 Stratified split.</strong> <code>train_test_split(..., stratify=y, random_state=1)</code> preserves the class ratio in both sets — the exercise asks for this explicitly.</li>
+<li><strong>3.3 Tree + CV complexity.</strong> Tune a complexity constraint (<code>max_depth</code> and/or <code>min_samples_leaf</code>, or <code>ccp_alpha</code>) with <code>GridSearchCV(cv=5)</code> on the <em>training</em> set, refit on full train, evaluate on test. This single tree is the <strong>baseline the ensembles must beat</strong> (<a href="../methods/decision_trees.html#sec-tree-code">decision trees §3</a>).</li>
+<li><strong>3.4 Random Forest.</strong> <code>RandomForestClassifier(n_estimators=...)</code>; trees are scale-invariant so <strong>no scaling needed.</strong> Expect it to <strong>beat the single tree</strong> by averaging decorrelated trees (variance reduction). Compare on the <em>same</em> metrics (<a href="../methods/random_forests.html#sec-rf-code">random forests §3</a>).</li>
+<li><strong>3.5 Gradient Boosting.</strong> <code>GradientBoostingClassifier</code>; CV-tune <code>n_estimators</code> and <code>learning_rate</code> (the two trade off — more trees need a smaller rate). Evaluate on test (<a href="../methods/ensembles.html#sec-ens-code">ensembles §3</a>).</li>
+<li><strong>3.6 Compare via bias–variance.</strong> Order the three on test F1/accuracy and <strong>quantify the gap</strong> (“by how much”). The narrative: a single deep tree is <strong>low bias / high variance</strong> (overfits); RF cuts variance by <strong>averaging decorrelated trees</strong>; boosting cuts <strong>bias</strong> by sequentially fitting residuals. On WDBC the ensembles typically edge out the tuned tree but margins can be small — say so honestly. Cite <a href="../methods/bias_variance.html#sec-bv-exam">bias–variance §Past-exam lens</a>.</li>
+<li><strong>3.7 Feature importance.</strong> <code>rf.feature_importances_</code> sorted descending; the “worst” perimeter/radius/concave-points/area features usually dominate. Interpret: larger, more irregular nuclei → malignant. Idiom in <a href="../methods/random_forests.html#sec-rf-importance">random forests §Example 2</a>.</li>
+<li><strong>3.8 Construction (concept, concise).</strong> <strong>RF = bagging + random feature subsets:</strong> many <em>independent</em>, deep trees on bootstrap samples, each split choosing from a random √p feature subset, then <strong>majority vote</strong> — parallel, variance-reducing. <strong>Gradient Boosting = sequential:</strong> each shallow tree fits the <strong>residual/gradient</strong> of the running ensemble, additively correcting errors — bias-reducing. Ensembles beat a single tree because <strong>averaging/correcting many weak learners reduces variance (RF) or bias (GB)</strong> beyond what one tree achieves. Source to <a href="../methods/ensembles.html#sec-ens-diag">ensembles §6</a> and <a href="../methods/random_forests.html#sec-rf-diag">random forests §6</a>.</li>
+</ul>
+<div class="callout-exam">
+<p><strong>Where the points are.</strong> (i) <strong>Stratify</strong> the split and <em>say why</em> (class balance). (ii) <strong>CV-tune the tree’s complexity</strong> — an untuned default tree forfeits the “correct, well-explained cross-validation” points. (iii) 3.6 must be a <strong>quantified comparison framed in bias–variance terms</strong>, not just “RF won.” (iv) 3.7 interpretation and 3.8 construction-difference are conceptual deliverables — keep them tight and correct (parallel-bagging vs sequential-boosting is the crux).</p>
+</div>
+<div class="callout-pitfall">
+<p><strong>Ensemble traps.</strong> (i) <strong>Accuracy on the imbalanced target</strong> — 63% benign means a do-nothing classifier scores 63%; report precision/recall/F1 and the confusion matrix, and watch the <em>malignant</em> recall. (ii) <strong>Scaling tree models</strong> — pointless; trees split on thresholds, scale-invariant (only flag if you reused a scaled matrix from elsewhere). (iii) <strong>Tuning on the test set</strong> — choose all hyperparameters by CV on train; the test set is touched once. (iv) <strong>Reading feature importances as causal</strong> — they are split-utility, correlated-feature-sensitive; interpret with care.</p>
+</div>
+<hr>
+</section>
+</section>
+<section id="assignment-4-binary-classification-challenge-on-simulateddata.csv" class="level2">
+<h2 class="anchored" data-anchor-id="assignment-4-binary-classification-challenge-on-simulateddata.csv">5. Assignment 4 — Binary-classification challenge on <code>SimulatedData.csv</code></h2>
+<p><strong>The data</strong> <em>(notebook Assignment-4 markdown cell)</em>: a <strong>simulated</strong> binary-classification dataset — multiple features, a binary target, a <strong>non-trivial relationship with non-linear effects and noise.</strong> A separate <strong>hold-out test set in the same format is withheld for grading</strong> — <em>the grader runs your submitted notebook on it.</em> <code>[VERIFY: exact #features/#instances/class split]</code> — not stated in the notebook by design (you compute them in 4.1). <strong>Methods:</strong> EDA → preprocessing decisions → <strong>≥2 tuned classifiers</strong> (e.g.&nbsp;<a href="../methods/logistic.html">logistic regression</a> / <a href="../methods/decision_trees.html">tree</a> baseline + <a href="../methods/random_forests.html">random forest</a> / <a href="../methods/ensembles.html">gradient boosting</a> / SVM / NN) → classification metrics → final-model selection → a <strong>generalizable predict pipeline.</strong></p>
+<p><strong>The task</strong> <em>(paraphrased)</em>: <strong>4.1</strong> load, examine structure, #features and types, #instances, <strong>class distribution (% class 1 vs 0).</strong> <strong>4.2</strong> EDA wrt target — per-feature distributions (optionally split by class), pairwise relationships, target proportion within categorical levels; summarize patterns (expect non-linearity). <strong>4.3</strong> encode categoricals, <strong>scale if necessary</strong> — discuss: trees need no scaling, distance/gradient models (k-NN, logistic) do. <strong>4.4</strong> train <strong>at least two different classifiers</strong>; <strong>justify the choices</strong> (different inductive biases). <strong>4.5</strong> <strong>hyperparameter tuning</strong> per model (CV or a hold-out validation subset); describe process and criteria. <strong>4.6</strong> evaluate with <strong>accuracy, precision, recall, F1</strong> (look beyond accuracy if imbalanced); use CV/validation to estimate unseen performance; identify the best. <strong>4.7</strong> compare; <strong>choose a final model to deploy and why</strong> (performance, complexity, interpretability); what this implies about the task. <strong>4.8</strong> <strong>demonstrate predicting on new data</strong> — simulate a <code>SimulatedData_test.csv</code>, apply the <em>same</em> preprocessing, <code>model.predict</code>; code must be <strong>generalizable</strong> (the grader runs it on the hidden set). <strong>4.9</strong> <strong>reflect</strong> (≤300 words) on what made it hard, how you addressed it, how you’d improve with more time/data.</p>
+<section id="solution-sketch-the-decisions-and-idioms-3" class="level3">
+<h3 class="anchored" data-anchor-id="solution-sketch-the-decisions-and-idioms-3">Solution sketch — the decisions and idioms</h3>
+<ul>
+<li><strong>4.1 Structure + balance.</strong> <code>df.info()</code>, <code>df.shape</code>, <code>y.value_counts(normalize=True)</code>. <strong>Compute the class split</strong> and let it set your metric choice (4.6) and whether to stratify. Do not assume balance.</li>
+<li><strong>4.2 EDA for non-linearity.</strong> Histograms/KDE per feature <strong>split by class</strong>; a correlation heatmap; pairwise scatter for promising pairs. The brief warns the data is <strong>non-linear</strong> — note features that separate only <em>jointly</em>, which is the cue that a flexible model will beat a linear one.</li>
+<li><strong>4.3 Preprocessing, justified.</strong> Encode categoricals (<code>get_dummies</code>). <strong>Scale only the models that need it:</strong> put <code>StandardScaler</code> in the <strong>pipeline for logistic/k-NN/SVM</strong>, and <em>omit</em> it for tree/RF/GB. Say this explicitly — the exercise asks for the rationale. See <a href="../big_picture/workflow_patterns.html#sec-wp-a">Pattern A in workflow patterns</a>.</li>
+<li><strong>4.4 Two contrasting classifiers.</strong> Pick a <strong>simple, interpretable baseline</strong> (logistic regression or a single tree) <strong>and a flexible non-linear model</strong> (random forest or gradient boosting). Justify by <strong>inductive bias</strong>: logistic = linear boundary (baseline to beat); RF/GB = non-linear interactions (suited to a simulated non-linear DGP). Use the <a href="../cross_method/decision_dashboard.html">decision dashboard</a> to defend the pairing.</li>
+<li><strong>4.5 Tune each.</strong> <code>GridSearchCV</code>/<code>RandomizedSearchCV</code> (<code>cv=5</code>, scoring <code>f1</code> or <code>roc_auc</code>) <strong>on the training set only</strong>; describe the grid and the selection criterion. Each estimator that needs scaling is tuned <strong>inside a <code>Pipeline</code></strong> so the scaler re-fits per fold.</li>
+<li><strong>4.6 Metrics.</strong> Report <strong>accuracy, precision, recall, F1</strong> (add ROC-AUC); if imbalanced, <strong>lead with F1/recall, not accuracy.</strong> Use the <strong>cross-validated</strong> score as your unbiased estimate of unseen performance — this is what predicts how you’ll do on the hidden test set.</li>
+<li><strong>4.7 Final model.</strong> Choose on the CV metric <strong>plus</strong> complexity/interpretability; if the flexible model clearly beats the linear baseline, that <em>itself</em> is the finding: <strong>the decision boundary is genuinely non-linear.</strong> State the trade-off you accepted.</li>
+<li><strong>4.8 Generalizable predict pipeline (the make-or-break exercise).</strong> Wrap <strong>all preprocessing + the final estimator in one <code>Pipeline</code></strong> (or <code>ColumnTransformer</code> + estimator), fit once, and define a path that loads a same-format CSV and calls <code>pipeline.predict(new_X)</code>. Apply the <em>exact</em> transformations from 4.3 — <strong>no separate, hand-applied scaling that won’t run on the grader’s file.</strong> This is the most common point-loser; the grader executes your notebook on unseen data, so the pipeline must run end-to-end with no manual steps. See <a href="../big_picture/workflow_patterns.html#sec-wp-g">Pattern G in workflow patterns</a>.</li>
+<li><strong>4.9 Reflection (≤300 words).</strong> Name the concrete difficulties — <strong>non-linear feature interactions, irrelevant/noise features, possible imbalance</strong> — how you handled each (flexible model, CV, F1), and improvements (more data, feature engineering, stronger tuning, ensembling). Concise and specific; verbosity is penalized.</li>
+</ul>
+<div class="callout-exam">
+<p><strong>Where the points are.</strong> (i) <strong>Compute the class split</strong> and let it drive metric choice. (ii) <strong>Justify two <em>contrasting</em> models</strong> by inductive bias, not “I tried two.” (iii) <strong>Tune by CV and report the criterion</strong> — this is your honest unseen-performance estimate. (iv) <strong>4.8 must actually generalize</strong> — a self-contained <code>Pipeline</code> that the grader can run on the hidden test set; this exercise rewards engineering discipline as much as modelling. (v) Reflection (4.9) is graded for <em>insight</em>, capped at 300 words.</p>
+</div>
+<div class="callout-pitfall">
+<p><strong>Challenge traps.</strong> (i) <strong>Optimizing accuracy on an imbalanced split</strong> — a constant predictor can look strong; use F1/recall and the confusion matrix. (ii) <strong>Manual preprocessing outside the pipeline</strong> — scaling/encoding done by hand won’t replay on the grader’s data → broken predictions in 4.8. <strong>Everything in the <code>Pipeline</code>.</strong> (iii) <strong>Tuning or selecting on the test/validation fold you then report</strong> — keep selection and final estimate separate (nested or held-out). (iv) <strong>Fitting the scaler on the full dataset before CV</strong> — leakage; fit inside the pipeline, per fold. (v) <strong>A linear-only model on a non-linear DGP</strong> — the brief says the relationship is non-linear; a logistic baseline alone will underfit, so pair it with a flexible learner.</p>
+</div>
+<hr>
+</section>
+</section>
+<section id="the-through-line" class="level2">
+<h2 class="anchored" data-anchor-id="the-through-line">6. The through-line</h2>
+<div class="callout-bigpicture">
+<p><strong>Four datasets, one graded skill.</strong> Salaries, customers, tumours, a simulated puzzle — but every assignment rewards the same thing: <strong>a decision made out loud, defended, executed correctly, and interpreted.</strong> Scale-or-not, drop-or-impute, which <code>alpha</code>, which <em>k</em>, which metric, which final model — each is a fork, and the points live in the <em>because</em>. Code that runs is the floor; reasoning that holds is the grade. For the reusable recipes see <a href="../big_picture/workflow_patterns.html">workflow patterns</a>; to choose a method cold see the <a href="../cross_method/decision_dashboard.html">decision dashboard</a>; for head-to-head numbers on Hitters and the WDBC family see the <a href="../cross_method/showdowns.html">showdowns</a>.</p>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../drill/index.html" class="pagination-link" aria-label="Drill — Index">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Drill — Index</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../drill/exercise_01_titanic_preprocessing.html" class="pagination-link" aria-label="Drill: Titanic Preprocessing">
+        <span class="nav-page-text">Drill: Titanic Preprocessing</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

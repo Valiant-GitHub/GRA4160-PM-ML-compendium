@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Ensemble Methods – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/pca.html" rel="next">
+<link href="../methods/random_forests.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-tree quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/decision_trees.html">Methods — Tree family</a></li><li class="breadcrumb-item"><a href="../methods/ensembles.html">Ensemble Methods</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#when-to-use-when-not-to-use" id="toc-when-to-use-when-not-to-use" class="nav-link" data-scroll-target="#when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#sec-ens-code" id="toc-sec-ens-code" class="nav-link" data-scroll-target="#sec-ens-code">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-ens-voting" id="toc-sec-ens-voting" class="nav-link" data-scroll-target="#sec-ens-voting">Example 1 — soft voting on Iris</a></li>
+  <li><a href="#sec-ens-bagging" id="toc-sec-ens-bagging" class="nav-link" data-scroll-target="#sec-ens-bagging">Example 2 — bagging on breast cancer, swept over <code>n_estimators</code></a></li>
+  <li><a href="#sec-ens-income" id="toc-sec-ens-income" class="nav-link" data-scroll-target="#sec-ens-income">Example 3 — gradient boosting on Adult/Census income (a scaffold, honestly)</a></li>
+  </ul></li>
+  <li><a href="#sec-ens-viz" id="toc-sec-ens-viz" class="nav-link" data-scroll-target="#sec-ens-viz">5. Visualization</a></li>
+  <li><a href="#sec-ens-diag" id="toc-sec-ens-diag" class="nav-link" data-scroll-target="#sec-ens-diag">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#sec-ens-exam" id="toc-sec-ens-exam" class="nav-link" data-scroll-target="#sec-ens-exam">7. Past-exam lens</a></li>
+  <li><a href="#sec-ens-math" id="toc-sec-ens-math" class="nav-link" data-scroll-target="#sec-ens-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/decision_trees.html">Methods — Tree family</a></li><li class="breadcrumb-item"><a href="../methods/ensembles.html">Ensemble Methods</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Ensemble Methods</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Tree family</strong></span> · combine many models so the crowd beats any single member. Two big ideas dominate: <strong>bagging</strong> (train models in parallel on bootstrap samples and average — kills <em>variance</em>) and <strong>boosting</strong> (train models in sequence, each fixing the last one’s mistakes — kills <em>bias</em>). A single <a href="../methods/decision_trees.html">Decision Tree</a> is the high-variance learner these methods most often wrap; <a href="../methods/random_forests.html">Random Forests</a> are a specific bagging ensemble (bagging <em>plus</em> feature randomness) important enough to get <a href="../methods/random_forests.html">their own page</a>. The trade you make everywhere here: more accuracy, less interpretability (Lecture 7, slide 3/21).</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p>An ensemble trains <strong>multiple models</strong> and combines their predictions to get a more accurate, more robust result than any single model could deliver. It is not one algorithm but a <em>family of strategies</em> — and crucially it is <strong>base-model-agnostic</strong>: you can ensemble linear models, decision trees, or neural networks, though shallow/large decision trees are the workhorse base learner in this course (Lecture 7, slide 3/21). The combination step usually <strong>reduces variance and boosts performance</strong>; the price is interpretability — a forest of 500 trees has no single “coefficient with a sign” to read the way <a href="../methods/ols.html">OLS</a> does (Lecture 7, slide 3/21).</p>
+<p>The course names <strong>four families</strong> (Lecture 7, slide 4/21):</p>
+<ul>
+<li><strong>Bagging</strong> (<em>Bootstrap AGGregatING</em>) — train many instances of a base model <em>in parallel</em>, each on a different <strong>bootstrap sample</strong> (sampled with replacement), then combine by <strong>majority vote</strong> (classification) or <strong>averaging</strong> (regression). It is the cure for <strong>variance</strong>: averaging many noisy-but-unbiased models cancels their independent errors. <a href="../methods/random_forests.html">Random Forests</a> and Extra Trees are bagging instances (Lecture 7, slides 6/21, 9/21).</li>
+<li><strong>Boosting</strong> (<em>sequential learning</em>) — train models <em>one after another</em>, each new model focusing on the examples its predecessors got wrong (by <strong>reweighting</strong> the misclassified up), then combine as a weighted sum. It is the cure for <strong>bias</strong>: a sequence of weak learners is incrementally sharpened into a strong one. A <strong>learning rate <span class="math inline">\eta</span></strong> scales each weak learner’s contribution. AdaBoost, Gradient Boosting, and XGBoost are the named instances (Lecture 7, slides 11/21, 12/21, 13/21).</li>
+<li><strong>Bayesian Model Averaging (BMA)</strong> — train multiple models and weight them by their <strong>posterior probabilities</strong>, so the weights can be updated as new data arrives; the right tool when model <em>uncertainty</em> must be made explicit (Lecture 7, slide 4/21).</li>
+<li><strong>Stacking</strong> (<em>stacked generalization</em>) — train a <strong>meta-model on the outputs of diverse base models</strong> (e.g.&nbsp;a neural network learning to combine the predictions of a logistic regression, an SVM, and a random forest), letting the meta-learner decide whom to trust when (Lecture 7, slide 4/21).</li>
+</ul>
+<p>The <strong>bootstrap</strong> underpins bagging: resample the data <em>with replacement</em> to make new datasets of the same size; some points repeat, some are left out. <strong>About 63% of the unique original samples appear in any one bootstrap sample</strong> (Lecture 7, slide 7/21) — the exact limit is <span class="math inline">1-e^{-1}\approx 0.632</span> (<a href="#sec-ens-math">§8</a>; [disagreements R9-6]). The ~37% left out of each draw form a free hold-out, the basis of the <strong>out-of-bag (OOB) error</strong> estimate.</p>
+<p>The two dominant families are best understood as opposites on the <a href="../methods/bias_variance.html">bias–variance</a> axis: <strong>bagging attacks variance</strong> (parallel, independent, averaged), <strong>boosting attacks bias</strong> (sequential, dependent, reweighted). Keep that contrast in mind — it drives every “which one?” decision below.</p>
+</section>
+<section id="when-to-use-when-not-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for an ensemble when…</strong></p>
+<ul>
+<li><strong>A single <a href="../methods/decision_trees.html">Decision Tree</a> overfits</strong> — it has low bias but high variance, the textbook case for <strong>bagging</strong> (or its specialised cousin the <a href="../methods/random_forests.html">Random Forest</a>) to average the variance away (Lecture 7, slide 6/21).</li>
+<li><strong>You need maximum predictive accuracy</strong> and can spend interpretability to get it — ensembles routinely top single models on structured/tabular data (Lecture 7, slide 3/21).</li>
+<li><strong>A weak, biased learner (a shallow tree, a “stump”) underfits</strong> → <strong>boosting</strong> sharpens a sequence of weak learners into a strong one, reducing bias (Lecture 7, slide 11/21).</li>
+<li><strong>You already have several good, <em>diverse</em> models</strong> and want to combine their strengths → <strong>stacking</strong> trains a meta-model on their outputs (Lecture 7, slide 4/21).</li>
+<li><strong>Model uncertainty itself matters</strong> (you want to weight models by how plausible they are, updating with new data) → <strong>Bayesian Model Averaging</strong> (Lecture 7, slide 4/21).</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else — or a <em>different</em> ensemble — when…</strong></p>
+<ul>
+<li><strong>You need an interpretable model</strong> (“how does feature X move the outcome?”) → a single <a href="../methods/decision_trees.html">Decision Tree</a> or <a href="../methods/ols.html">OLS</a>/<a href="../methods/logistic.html">logistic regression</a>. Ensembles trade the readable model for performance (Lecture 7, slide 3/21); you get <a href="../methods/random_forests.html">feature importances</a>, not signed coefficients.</li>
+<li><strong>Your base learner is already low-variance and stable</strong> (e.g.&nbsp;a well-regularized linear model) → bagging buys little, because there is little variance to average out. Bagging helps <em>high-variance</em> learners most (Lecture 7, slide 6/21).</li>
+<li><strong>The data is very noisy and you boost too hard</strong> → <strong>boosting can overfit</strong> if not regularized, precisely because it keeps chasing the hard (often noisy) examples; control it with a small <strong>learning rate <span class="math inline">\eta</span></strong> and shallow trees (Lecture 7, slide 11/21).</li>
+<li><strong>Bagging vs boosting:</strong> if the symptom is a <em>train–test gap</em> (variance) use <strong>bagging / <a href="../methods/random_forests.html">Random Forests</a></strong>; if the symptom is <em>underfitting both train and test</em> (bias) use <strong>boosting</strong>. This is the single most important fork on this page.</li>
+<li><strong>Voting vs stacking:</strong> <strong>voting</strong> combines base models with a <em>fixed</em> rule (majority or averaged probabilities); <strong>stacking</strong> <em>learns</em> the combination with a meta-model — more flexible, more prone to overfit, needs careful held-out predictions to train the meta-learner.</li>
+</ul>
+</div>
+</section>
+<section id="sec-ens-code" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ens-code">3. Code idiom</h2>
+<p>The canonical course idioms are all from <code>sklearn.ensemble</code>: <code>VotingClassifier</code>, <code>BaggingClassifier</code>, and <code>GradientBoostingClassifier</code>. There is <strong>no from-scratch implementation</strong> in the ensembles notebook — bagging, boosting and the bootstrap are taught as markdown theory and demonstrated with sklearn (notebook <code>12_Introducing_ensemble_methods.ipynb</code>, cells 2–7).</p>
+<p><strong>Voting ensemble</strong> — <em>(notebook <code>12_...</code>, cell 4)</em>. Combine a <a href="../methods/logistic.html">logistic regression</a> and a <a href="../methods/decision_trees.html">decision tree</a>, averaging their predicted probabilities:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> VotingClassifier</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeClassifier</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>clf1 <span class="op">=</span> LogisticRegression(random_state<span class="op">=</span><span class="dv">10</span>, solver<span class="op">=</span><span class="st">'lbfgs'</span>, max_iter<span class="op">=</span><span class="dv">1000</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>clf2 <span class="op">=</span> DecisionTreeClassifier(random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>voting_clf <span class="op">=</span> VotingClassifier(estimators<span class="op">=</span>[(<span class="st">'lr'</span>, clf1), (<span class="st">'dt'</span>, clf2)], voting<span class="op">=</span><span class="st">'soft'</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>voting_clf.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout-pitfall">
+<p><strong>Read the code, not the comment.</strong> In this exact cell the comment says <em>“Define the VotingClassifier with hard voting”</em> — but the call uses <strong><code>voting='soft'</code></strong> (average the predicted <em>probabilities</em>, then take the argmax), not hard voting (majority vote on labels). A second comment in the same cell mislabels the decision-tree base learner as a <code>RandomForestClassifier</code>. Trust the code: the model is <strong>soft voting</strong> over a logistic regression and a <em>decision tree</em> ([disagreements NB-5]). The <code>voting</code> argument is the one hyperparameter that changes the combination rule: <code>'hard'</code> = majority vote on labels, <code>'soft'</code> = argmax of averaged probabilities (needs base learners with <code>predict_proba</code>).</p>
+</div>
+<p><strong>Bagging ensemble</strong> — <em>(notebook <code>12_...</code>, cell 11)</em>. Wrap a decision tree in <code>BaggingClassifier</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> BaggingClassifier</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeClassifier</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>tree_clf <span class="op">=</span> DecisionTreeClassifier(random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>bag_clf <span class="op">=</span> BaggingClassifier(estimator<span class="op">=</span>tree_clf, n_estimators<span class="op">=</span><span class="dv">500</span>, max_samples<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                            bootstrap<span class="op">=</span><span class="va">True</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>bag_clf.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Every hyperparameter, annotated: <code>estimator</code> is the base learner to bag (here a tree); <code>n_estimators</code> is how many copies to train (more ⇒ lower variance, diminishing returns); <code>max_samples</code> is how many points each bootstrap draw contains; <code>bootstrap=True</code> is what makes it <em>bagging</em> (sample with replacement — set <code>False</code> and it becomes pasting); <code>n_jobs=-1</code> parallelises across cores (legitimate because bagging is embarrassingly parallel); <code>random_state</code> fixes the seed. Note the keyword is <strong><code>estimator=</code></strong> (scikit-learn ≥ 1.2; older versions used <code>base_estimator=</code>) — the course <code>.venv</code> runs sklearn 1.8.0, so <code>estimator=</code> is correct (computed).</p>
+<p><strong>Gradient boosting</strong> — <em>(notebook <code>07_Predicting_income.ipynb</code>, cells 2, 5)</em>. The income notebook is a <strong>setup/exercise scaffold</strong>: it describes <code>GradientBoostingClassifier</code> and its hyperparameters in markdown and prepares the Adult data, but <strong>does not instantiate or fit any model</strong> — fitting is left to the student (see <a href="#sec-ens-income">§4 Example 3</a>). The idiom the exercise points to:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> GradientBoostingClassifier</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>gb <span class="op">=</span> GradientBoostingClassifier(n_estimators<span class="op">=</span><span class="dv">100</span>, learning_rate<span class="op">=</span><span class="fl">0.1</span>, max_depth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>gb.fit(X_train, y_train)          <span class="co"># NOT in the notebook — this is the exercise</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The hyperparameters the notebook lists <em>(cell 2)</em>: <code>n_estimators</code> (number of sequential trees), <strong><code>learning_rate</code></strong> (the step size <span class="math inline">\eta</span> — the boosting learning rate; smaller ⇒ each tree contributes less, usually needs more trees), <code>max_depth</code> (depth of each weak learner, kept shallow), <code>min_samples_split</code>, <code>min_samples_leaf</code>.</p>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<section id="sec-ens-voting" class="level3">
+<h3 class="anchored" data-anchor-id="sec-ens-voting">Example 1 — soft voting on Iris</h3>
+<p>The first ensemble in the course is a <strong>soft <code>VotingClassifier</code></strong> combining a <a href="../methods/logistic.html">logistic regression</a> and a <a href="../methods/decision_trees.html">decision tree</a> on Iris, with a 50/50 split (<code>random_state=2</code>) <em>(notebook <code>12_...</code>, cell 4)</em>. The notebook stores no execution outputs, so the accuracies below are <strong>computed via the course <code>.venv</code></strong> (sklearn 1.8.0, the notebook’s fixed seeds):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Test accuracy <em>(computed)</em></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Logistic regression</td>
+<td>0.947</td>
+</tr>
+<tr class="even">
+<td>Decision tree</td>
+<td>0.960</td>
+</tr>
+<tr class="odd">
+<td><strong>Soft voting (lr + dt)</strong></td>
+<td><strong>0.960</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The voting ensemble matches the better of its two members (0.960) and beats the weaker one (0.947) — a small, honest result on an easy dataset: combining diverse learners gives you the <em>robustness</em> of not having to pick the right base model in advance, even when the headline accuracy barely moves (computed). Note this is the cell whose comment wrongly says “hard voting” — the code is <strong>soft</strong> (<a href="#sec-ens-code">§3</a>, [disagreements NB-5]).</p>
+</section>
+<section id="sec-ens-bagging" class="level3">
+<h3 class="anchored" data-anchor-id="sec-ens-bagging">Example 2 — bagging on breast cancer, swept over <code>n_estimators</code></h3>
+<p>The notebook bags a <a href="../methods/decision_trees.html">decision tree</a> on the <strong>breast-cancer</strong> dataset (60/40 split, <code>random_state=42</code>) and sweeps four configurations <em>(notebook <code>12_...</code>, cells 9, 11, 13)</em>. Again no outputs are stored, so all figures are <strong>computed via the course <code>.venv</code></strong> with the notebook’s seeds. The single-tree baseline is the thing bagging is meant to beat:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Configuration</th>
+<th><code>n_estimators</code></th>
+<th><code>max_samples</code></th>
+<th>Test accuracy <em>(computed)</em></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Single decision tree</td>
+<td>—</td>
+<td>—</td>
+<td>0.9386</td>
+</tr>
+<tr class="even">
+<td><code>bag_clf1</code></td>
+<td>100</td>
+<td>10</td>
+<td><strong>0.9605</strong></td>
+</tr>
+<tr class="odd">
+<td><code>bag_clf2</code></td>
+<td>200</td>
+<td>50</td>
+<td>0.9430</td>
+</tr>
+<tr class="even">
+<td><code>bag_clf3</code></td>
+<td>500</td>
+<td>100</td>
+<td>0.9518</td>
+</tr>
+<tr class="odd">
+<td><code>bag_clf4</code></td>
+<td>1000</td>
+<td>200</td>
+<td>0.9518</td>
+</tr>
+</tbody>
+</table>
+<p>Every bagged configuration beats the single tree (0.9386) — bagging’s promised <strong>variance reduction</strong> made concrete. But the relationship is <strong>not</strong> “more trees ⇒ more accuracy”: the best config here (0.9605) uses only <code>n_estimators=100</code> with tiny <code>max_samples=10</code>, while 1000 trees lands lower (0.9518) (computed). The reason is that the notebook <strong>changes <code>n_estimators</code> and <code>max_samples</code> together</strong>, so the sweep confounds two effects — a teaching scaffold, not a clean ablation. The honest reading is: <em>bagging reliably beats the single tree; the exact ranking among bagged configs is noise on this small dataset</em>, and a clean “accuracy vs <code>n_estimators</code>” study would hold <code>max_samples</code> fixed. (The notebook also plots the <em>single</em> tree’s <code>feature_importances_</code>, not the ensemble’s, cell 14.)</p>
+<div class="callout-bigpicture">
+<p>This is the bagging mechanism in one table: a high-variance base learner (the single tree, 0.9386) is averaged over many bootstrap resamples and the variance — not the bias — is what shrinks, lifting test accuracy. A <a href="../methods/random_forests.html">Random Forest</a> goes one step further by <em>also</em> randomising the features at each split to decorrelate the trees (Lecture 7, slides 18–19/21).</p>
+</div>
+</section>
+<section id="sec-ens-income" class="level3">
+<h3 class="anchored" data-anchor-id="sec-ens-income">Example 3 — gradient boosting on Adult/Census income (a scaffold, honestly)</h3>
+<p>The income notebook targets <strong>boosting</strong> but is, by design, <strong>incomplete</strong>: it loads and cleans the UCI <strong>Adult (“Census Income”)</strong> dataset, label-encodes the categoricals, binarises the target (<code>1</code> if income <code>&gt;50K</code> else <code>0</code>), and makes an 80/20 split (<code>random_state=42</code>) — then <strong>stops</strong>. <em>No <code>GradientBoostingClassifier</code> is ever instantiated or fitted in code</em>; the entire fit/evaluate workflow is set as <strong>exercises</strong> <em>(notebook <code>07_Predicting_income.ipynb</code>, cells 4, 5)</em>. The data-prep idiom that <em>is</em> present:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.replace(<span class="st">'?'</span>, pd.NaT)                         <span class="co"># mark missing</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.dropna()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> LabelEncoder()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> categorical_features:                 <span class="co"># one shared encoder, re-fit per column</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    df[feature] <span class="op">=</span> encoder.fit_transform(df[feature])</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'income'</span>] <span class="op">=</span> df[<span class="st">'income'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: <span class="dv">1</span> <span class="cf">if</span> x.strip() <span class="op">==</span> <span class="st">'&gt;50K'</span> <span class="cf">else</span> <span class="dv">0</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The exercises <em>(cell 5)</em> ask the student to (1) fit a <code>GradientBoostingClassifier</code> and evaluate with <strong>ROC AUC</strong>, (2) tune <code>n_estimators</code> / <code>learning_rate</code> / <code>max_depth</code> and observe the effect, (3) fit an <strong>AdaBoost</strong> classifier and compare to gradient boosting (optionally XGBoost), and (4) do feature selection via gradient boosting and re-fit on the top-5 features. Because no model is fitted in the notebook, <strong>no accuracy or AUC is reported here</strong> — fabricating one would violate the source-fidelity rule. This is exactly the gradient-boosting workflow the exam asks for on a <em>different</em> dataset (see <a href="#sec-ens-exam">§7</a>). <em>(One non-canonical idiom worth flagging: a single shared <code>LabelEncoder</code> is re-<code>fit_transform</code>’d across every categorical column; it works but a separate encoder per column is the cleaner pattern — [VERIFY: behaviour relies on <code>pd.NaT</code> being treated as NA across object columns].)</em></p>
+</section>
+</section>
+<section id="sec-ens-viz" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ens-viz">5. Visualization</h2>
+<p>The figure that earns its place is the <strong>bagging sweep</strong> from <a href="#sec-ens-bagging">Example 2</a>: test accuracy of each bagged configuration against the single-tree baseline. It makes the family’s defining behaviour visible — <em>every</em> bagged ensemble clears the single tree (the variance-reduction win), while the configurations sit close together (the ranking among them is noise, because the notebook varies <code>n_estimators</code> and <code>max_samples</code> together). Data is the §4 table, transcribed verbatim; the baseline is drawn as a reference rule.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb5" data-startfrom="147" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 146;"><span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a>famTree <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-tree'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#06A77D"</span>)</span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a>singleTree <span class="op">=</span> <span class="fl">0.9386</span></span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a>bagData <span class="op">=</span> [</span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">config</span><span class="op">:</span> <span class="st">"100 / 10"</span><span class="op">,</span>   <span class="dt">n_estimators</span><span class="op">:</span> <span class="dv">100</span><span class="op">,</span>  <span class="dt">max_samples</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span>  <span class="dt">acc</span><span class="op">:</span> <span class="fl">0.9605</span>}<span class="op">,</span></span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">config</span><span class="op">:</span> <span class="st">"200 / 50"</span><span class="op">,</span>   <span class="dt">n_estimators</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span>  <span class="dt">max_samples</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span>  <span class="dt">acc</span><span class="op">:</span> <span class="fl">0.9430</span>}<span class="op">,</span></span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">config</span><span class="op">:</span> <span class="st">"500 / 100"</span><span class="op">,</span>  <span class="dt">n_estimators</span><span class="op">:</span> <span class="dv">500</span><span class="op">,</span>  <span class="dt">max_samples</span><span class="op">:</span> <span class="dv">100</span><span class="op">,</span> <span class="dt">acc</span><span class="op">:</span> <span class="fl">0.9518</span>}<span class="op">,</span></span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">config</span><span class="op">:</span> <span class="st">"1000 / 200"</span><span class="op">,</span> <span class="dt">n_estimators</span><span class="op">:</span> <span class="dv">1000</span><span class="op">,</span> <span class="dt">max_samples</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span> <span class="dt">acc</span><span class="op">:</span> <span class="fl">0.9518</span>}</span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">320</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">60</span><span class="op">,</span> <span class="dt">marginBottom</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Bagging config  (n_estimators / max_samples)"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> bagData<span class="op">.</span><span class="fu">map</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">config</span>)}<span class="op">,</span></span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Test accuracy"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="fl">0.90</span><span class="op">,</span> <span class="fl">0.97</span>]}<span class="op">,</span></span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">barY</span>(bagData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"config"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"acc"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> famTree<span class="op">,</span> <span class="dt">fillOpacity</span><span class="op">:</span> <span class="fl">0.85</span>})<span class="op">,</span></span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>(bagData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"config"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"acc"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">acc</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span> <span class="dt">dy</span><span class="op">:</span> <span class="op">-</span><span class="dv">8</span><span class="op">,</span> <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">11</span>})<span class="op">,</span></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>([singleTree]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#c0392b"</span><span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"5,4"</span><span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="dv">2</span>})<span class="op">,</span></span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>([{<span class="dt">config</span><span class="op">:</span> bagData[<span class="dv">3</span>]<span class="op">.</span><span class="at">config</span><span class="op">,</span> <span class="dt">acc</span><span class="op">:</span> singleTree}]<span class="op">,</span></span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">x</span><span class="op">:</span> <span class="st">"config"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"acc"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> [<span class="st">"single tree 0.9386"</span>]<span class="op">,</span> <span class="dt">dy</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">dx</span><span class="op">:</span> <span class="op">-</span><span class="dv">8</span><span class="op">,</span> <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">11</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"#c0392b"</span><span class="op">,</span> <span class="dt">textAnchor</span><span class="op">:</span> <span class="st">"end"</span>})</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-ens-bagging" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ens-bagging-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-ens-bagging-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ens-bagging-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ens-bagging-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-ens-bagging-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ens-bagging-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ens-bagging-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-ens-bagging-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ens-bagging-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ens-bagging-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-ens-bagging-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ens-bagging-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-4" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ens-bagging-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ens-bagging-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Bagging on breast cancer (nb12, cells 11/13; accuracies computed via the course .venv, sklearn 1.8.0). Bars are the four bagged configurations; the dashed rule is the single decision-tree baseline (0.9386). Every bagged ensemble beats the single tree — bagging’s variance-reduction win — but they cluster together because the notebook changes n_estimators and max_samples together, so this is not a clean ‘accuracy vs n_estimators’ ablation. x-axis labels show (n_estimators, max_samples).
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="sec-ens-diag" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ens-diag">6. Diagnostics &amp; interpretation</h2>
+<p>What to report and inspect to judge an ensemble:</p>
+<ul>
+<li><strong>Ensemble vs base-learner accuracy</strong> — always report the single base model alongside the ensemble (single tree 0.9386 vs bagged ≥ 0.943 above). If the ensemble does not beat its base learner, it is not earning its complexity.</li>
+<li><strong>Out-of-bag (OOB) error</strong> — bagging gives a free hold-out: each model never saw ~37% of the data (the ~63% bootstrap fact, <a href="#sec-ens-math">§8</a>), so the OOB predictions estimate test error without a separate split. (<code>BaggingClassifier(oob_score=True)</code>.)</li>
+<li><strong>The <code>n_estimators</code> curve</strong> — for bagging, test error should fall then <em>plateau</em> as you add models (more trees rarely hurt); for <strong>boosting</strong>, it can fall then <em>rise</em> (boosting can overfit), so the curve is a genuine stopping-criterion diagnostic, tuned together with the <strong>learning rate <span class="math inline">\eta</span></strong> (Lecture 7, slides 11–12/21).</li>
+<li><strong>Feature importances</strong> — ensembles of trees expose <code>feature_importances_</code> for <em>ranking</em> drivers — but note the notebook plots the <em>single</em> tree’s importances (cell 14), not the ensemble’s. Importances rank features; unlike <a href="../methods/ols.html">OLS</a> coefficients they give no signed “+1 unit ⇒ +β” reading.</li>
+<li><strong>ROC AUC</strong> — the metric the income exercise specifies for the boosted model (cell 5); appropriate for the imbalanced income target.</li>
+</ul>
+<div class="callout-bigpicture">
+<p><strong>Bagging vs boosting vs stacking — the choice in one breath.</strong> <strong>Bagging</strong> (parallel, bootstrap, average) attacks <strong>variance</strong> — use it when a high-variance learner like a deep tree overfits; <a href="../methods/random_forests.html">Random Forests</a> are the go-to instance. <strong>Boosting</strong> (sequential, reweight the misclassified, learning rate <span class="math inline">\eta</span>) attacks <strong>bias</strong> — use it to turn weak learners into a strong one, watching for overfitting. <strong>Stacking</strong> <em>learns</em> a meta-model over diverse base models — the most flexible and the most prone to overfit. Across all three you are spending <strong>interpretability</strong> for <strong>performance</strong> (Lecture 7, slide 3/21): the gain is real, but you lose the single readable model that <a href="../methods/ols.html">OLS</a> or a lone <a href="../methods/decision_trees.html">decision tree</a> gives you. Decision rule: <em>train–test gap</em> ⇒ bagging; <em>underfitting</em> ⇒ boosting; <em>several good diverse models to fuse</em> ⇒ stacking.</p>
+</div>
+</section>
+<section id="sec-ens-exam" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ens-exam">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How ensembles show up.</strong> In the take-home <strong>Assignment 3 (on WDBC / breast cancer)</strong>, ensembles are central: the assignment uses <strong>gradient boosting</strong> and explicitly asks you to <strong>compare a <a href="../methods/random_forests.html">Random Forest</a> against gradient boosting</strong> (task 3.8) — i.e.&nbsp;<strong>bagging vs boosting</strong> on the same data. Expect to (i) write the <code>GradientBoostingClassifier</code> idiom from <a href="#sec-ens-code">§3</a>, (ii) tune <code>n_estimators</code> / <code>learning_rate</code> (<span class="math inline">\eta</span>) / <code>max_depth</code> and <strong>justify</strong> the values, (iii) report and interpret performance (the income exercise’s ROC AUC is the same skill on a different dataset, <a href="#sec-ens-income">§4 Example 3</a>), and (iv) <strong>explain the RF-vs-GB difference in terms of variance reduction vs bias reduction</strong> — the <a href="#sec-ens-diag">§6 big-picture callout</a> is the answer template. The grade rests on the <em>reasoning</em> (why one ensemble suits the data) at least as much as the code. The classic slip: confusing the boosting <strong>learning rate <span class="math inline">\eta</span></strong> (<code>learning_rate</code>) with the number of trees — they trade off (smaller <span class="math inline">\eta</span> ⇒ more trees).</p>
+</div>
+</section>
+<section id="sec-ens-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ens-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> The course states the two combination rules and the bootstrap fact procedurally — there are no boosting <em>formulas</em> on the Lecture 7 slides (see Mode B for those). <em>(Symbols: <span class="math inline">B</span> = number of base models, <span class="math inline">n</span> = sample size, <span class="math inline">\eta</span> = boosting learning rate — <code>notation_table</code> η.)</em></p>
+<p><strong>Bagging.</strong> Train <span class="math inline">B</span> base models <span class="math inline">\hat f_1,\dots,\hat f_B</span>, each on a separate bootstrap resample, then combine. For <strong>regression</strong>, average them, <span class="math display">\hat f_{\text{bag}}(x)=\frac1B\sum_{b=1}^{B}\hat f_b(x);</span> for <strong>classification</strong>, take the <strong>majority vote</strong> of the <span class="math inline">B</span> predicted labels (Lecture 7, slides 6/21, 9/21; notebook <code>12_...</code>, cells 5–6). Averaging many noisy-but-unbiased models cancels their independent errors, so bagging <strong>reduces variance</strong> (Lecture 7, slide 6/21).</p>
+<p><strong>Boosting.</strong> The slides give the procedure, not an equation (Lecture 7, slide 12/21): (1) initialise equal example weights <span class="math inline">w_i=\tfrac1n</span>; (2) train a weak learner on the weighted data; (3) evaluate it; (4) <strong>increase the weights of misclassified examples</strong> and decrease the rest; (5) repeat to a stopping criterion; (6) the final prediction is a <strong>weighted combination</strong> of all weak learners, with the <strong>learning rate <span class="math inline">\eta</span></strong> scaling each one’s contribution (smaller <span class="math inline">\eta</span> ⇒ each tree counts for less, usually needing more trees). Concentrating successive learners on the hard cases <strong>reduces bias</strong> (Lecture 7, slide 11/21).</p>
+<p><strong>Bootstrap.</strong> Resampling <span class="math inline">n</span> points with replacement from <span class="math inline">n</span>, any one point is missed by a single draw with probability <span class="math inline">(1-1/n)^n</span>, so <strong>about 63% of the unique original samples appear</strong> in each bootstrap sample (Lecture 7, slide 7/21). The ~37% omitted form a free hold-out — the out-of-bag (OOB) estimate. The exact <span class="math inline">0.632</span> limit is derived in Mode B ([disagreements R9-6]). See the <a href="../appendix/math_appendix.html">math appendix</a>.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor.</strong> Everything below is <strong>supplemental</strong>: it is <em>not on the Lecture 7 slides</em>, which describe boosting and the bootstrap only procedurally ([disagreements R9-8, R9-6]). It is anchored to <strong>ESL §10.1–10.4</strong> (AdaBoost) and <strong>§7.11</strong> (bootstrap), with equation numbers read directly from the text.</p>
+<p><strong>AdaBoost.M1 (ESL Algorithm 10.1, §10.1).</strong> For a two-class target <span class="math inline">y_i\in\{-1,1\}</span> and weak classifiers <span class="math inline">G_m(x)\in\{-1,1\}</span>: initialise weights <span class="math inline">w_i=1/N</span>; for <span class="math inline">m=1,\dots,M</span>, fit <span class="math inline">G_m</span> to the data weighted by <span class="math inline">w_i</span>, compute the weighted error <span class="math display">\mathrm{err}_m=\frac{\sum_{i=1}^{N} w_i\,I\big(y_i\neq G_m(x_i)\big)}{\sum_{i=1}^{N} w_i},</span> set the <strong>stage weight</strong> <span class="math display">\alpha_m=\log\frac{1-\mathrm{err}_m}{\mathrm{err}_m}\qquad\text{(ESL Alg. 10.1, line 2c — note }\log,\text{ no }\tfrac12),</span> and reweight <span class="math inline">w_i\leftarrow w_i\cdot\exp\!\big[\alpha_m\,I(y_i\neq G_m(x_i))\big]</span>. The final classifier is the weighted vote <span class="math inline">G(x)=\operatorname{sign}\!\big[\sum_{m=1}^{M}\alpha_m G_m(x)\big]</span> (ESL 10.1). A more accurate stage (small <span class="math inline">\mathrm{err}_m</span>) earns a larger <span class="math inline">\alpha_m</span>, hence more vote.</p>
+<p><strong>Why the <span class="math inline">\tfrac12</span> sometimes appears.</strong> AdaBoost.M1 is equivalent to <strong>forward stagewise additive modeling</strong> (ESL Algorithm 10.2, §10.3) — building <span class="math inline">f_m(x)=f_{m-1}(x)+\beta_m b(x;\gamma_m)</span> one basis function at a time — on the <strong>exponential loss</strong> <span class="math inline">L(y,f)=\exp(-y\,f(x))</span> (ESL 10.8, §10.4). Minimising that loss at step <span class="math inline">m</span> first selects <span class="math inline">G_m</span> as the weighted-error minimiser (ESL 10.10–10.11), then solves for the coefficient <span class="math display">\beta_m=\tfrac12\log\frac{1-\mathrm{err}_m}{\mathrm{err}_m}\qquad\text{(ESL 10.12).}</span> The algorithm’s stage weight is exactly <span class="math inline">\alpha_m=2\beta_m</span> (ESL §10.4, after eq 10.15) — the <span class="math inline">\tfrac12</span> is absorbed because the <span class="math inline">\{-1,1\}</span> reweighting only depends on <span class="math inline">\alpha_m</span>. So the <strong>½ belongs to the exponential-loss derivation</strong>, while the <strong>plain <span class="math inline">\log</span> is the form used inside the AdaBoost.M1 algorithm itself</strong>.</p>
+<p><strong>Gradient / least-squares boosting (ESL §10.3–10.4).</strong> With squared-error loss <span class="math inline">L(y,f)=(y-f)^2</span> (ESL 10.6), the forward-stagewise subproblem reduces to fitting each new basis function to the <strong>current residuals</strong>: with <span class="math inline">r_{im}=y_i-f_{m-1}(x_i)</span>, <span class="math display">L\big(y_i,\,f_{m-1}(x_i)+\beta\,b(x_i;\gamma)\big)=\big(r_{im}-\beta\,b(x_i;\gamma)\big)^2\qquad\text{(ESL 10.7),}</span> so <span class="math inline">\beta_m b(x;\gamma_m)</span> best fits the residuals at each step. Generalising, each new learner is fit to the <strong>negative gradient</strong> of the loss at the current ensemble — boosting as gradient descent in function space — and the update <span class="math inline">f_m=f_{m-1}+\eta\,\beta_m b(x;\gamma_m)</span> carries the same <strong>learning rate <span class="math inline">\eta</span></strong> (“slow learning”/shrinkage, ESL §10.12) as Mode A’s slides.</p>
+<p><strong>The 0.632 bootstrap (ESL §7.11).</strong> The probability that observation <span class="math inline">i</span> is included in a given bootstrap sample is <span class="math display">\Pr\{i\in \text{bootstrap sample}\}=1-\Big(1-\tfrac1N\Big)^{N}\;\xrightarrow{\,N\to\infty\,}\;1-e^{-1}\approx 0.632\qquad\text{(ESL 7.55),}</span> so the expected number of <strong>distinct</strong> observations per draw is about <span class="math inline">0.632\,N</span> — the exact form of the slide’s “~63%” ([disagreements R9-6]). This constant names the <strong>“.632” estimator</strong> that corrects the optimism of training error, <span class="math inline">\widehat{\mathrm{Err}}^{(.632)}=.368\cdot\overline{\mathrm{err}}+.632\cdot\widehat{\mathrm{Err}}^{(1)}</span> (ESL 7.57), where <span class="math inline">\widehat{\mathrm{Err}}^{(1)}</span> is the leave-one-out bootstrap error.</p>
+<p><strong>Bias–variance link.</strong> Bagging targets the <strong>variance</strong> term and boosting the <strong>bias</strong> term of the prediction-error decomposition; rather than re-derive it here, see the <a href="../appendix/math_appendix.html#sec-biasvar">bias–variance decomposition in the math appendix</a>. See also the <a href="../appendix/math_appendix.html">math appendix</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbVRyZWUgPSAoZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQpLmdldFByb3BlcnR5VmFsdWUoJy0tZmFtaWx5LXRyZWUnKS50cmltKCkgfHwgXCIjMDZBNzdEXCIpXG5zaW5nbGVUcmVlID0gMC45Mzg2XG5iYWdEYXRhID0gW1xuICB7Y29uZmlnOiBcIjEwMCAvIDEwXCIsICAgbl9lc3RpbWF0b3JzOiAxMDAsICBtYXhfc2FtcGxlczogMTAsICBhY2M6IDAuOTYwNX0sXG4gIHtjb25maWc6IFwiMjAwIC8gNTBcIiwgICBuX2VzdGltYXRvcnM6IDIwMCwgIG1heF9zYW1wbGVzOiA1MCwgIGFjYzogMC45NDMwfSxcbiAge2NvbmZpZzogXCI1MDAgLyAxMDBcIiwgIG5fZXN0aW1hdG9yczogNTAwLCAgbWF4X3NhbXBsZXM6IDEwMCwgYWNjOiAwLjk1MTh9LFxuICB7Y29uZmlnOiBcIjEwMDAgLyAyMDBcIiwgbl9lc3RpbWF0b3JzOiAxMDAwLCBtYXhfc2FtcGxlczogMjAwLCBhY2M6IDAuOTUxOH1cbl1cblBsb3QucGxvdCh7XG4gIGhlaWdodDogMzIwLCBtYXJnaW5MZWZ0OiA2MCwgbWFyZ2luQm90dG9tOiA1MCwgZ3JpZDogdHJ1ZSxcbiAgeDoge2xhYmVsOiBcIkJhZ2dpbmcgY29uZmlnICAobl9lc3RpbWF0b3JzIC8gbWF4X3NhbXBsZXMpXCIsIGRvbWFpbjogYmFnRGF0YS5tYXAoZCA9PiBkLmNvbmZpZyl9LFxuICB5OiB7bGFiZWw6IFwiVGVzdCBhY2N1cmFjeVwiLCBkb21haW46IFswLjkwLCAwLjk3XX0sXG4gIG1hcmtzOiBbXG4gICAgUGxvdC5iYXJZKGJhZ0RhdGEsIHt4OiBcImNvbmZpZ1wiLCB5OiBcImFjY1wiLCBmaWxsOiBmYW1UcmVlLCBmaWxsT3BhY2l0eTogMC44NX0pLFxuICAgIFBsb3QudGV4dChiYWdEYXRhLCB7eDogXCJjb25maWdcIiwgeTogXCJhY2NcIiwgdGV4dDogZCA9PiBkLmFjYy50b0ZpeGVkKDQpLCBkeTogLTgsIGZvbnRTaXplOiAxMX0pLFxuICAgIFBsb3QucnVsZVkoW3NpbmdsZVRyZWVdLCB7c3Ryb2tlOiBcIiNjMDM5MmJcIiwgc3Ryb2tlRGFzaGFycmF5OiBcIjUsNFwiLCBzdHJva2VXaWR0aDogMn0pLFxuICAgIFBsb3QudGV4dChbe2NvbmZpZzogYmFnRGF0YVszXS5jb25maWcsIGFjYzogc2luZ2xlVHJlZX1dLFxuICAgICAge3g6IFwiY29uZmlnXCIsIHk6IFwiYWNjXCIsIHRleHQ6IFtcInNpbmdsZSB0cmVlIDAuOTM4NlwiXSwgZHk6IDEyLCBkeDogLTgsIGZvbnRTaXplOiAxMSwgZmlsbDogXCIjYzAzOTJiXCIsIHRleHRBbmNob3I6IFwiZW5kXCJ9KVxuICBdXG59KVxuIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/random_forests.html" class="pagination-link" aria-label="Random Forests">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Random Forests</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/pca.html" class="pagination-link" aria-label="Principal Component Analysis (PCA)">
+        <span class="nav-page-text">Principal Component Analysis (PCA)</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Linear Discriminant Analysis (LDA) – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/adaline.html" rel="next">
+<link href="../methods/logistic.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-linear quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/lda.html">Linear Discriminant Analysis (LDA)</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#when-to-use-when-not-to-use" id="toc-when-to-use-when-not-to-use" class="nav-link" data-scroll-target="#when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#code-idiom" id="toc-code-idiom" class="nav-link" data-scroll-target="#code-idiom">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-lda-toy" id="toc-sec-lda-toy" class="nav-link" data-scroll-target="#sec-lda-toy">Example 1 — toy 2-class set: classifier accuracy, sklearn vs from-scratch</a></li>
+  <li><a href="#sec-lda-iris" id="toc-sec-lda-iris" class="nav-link" data-scroll-target="#sec-lda-iris">Example 2 — Iris: LDA as supervised dimensionality reduction</a></li>
+  </ul></li>
+  <li><a href="#visualization" id="toc-visualization" class="nav-link" data-scroll-target="#visualization">5. Visualization</a></li>
+  <li><a href="#diagnostics-interpretation" id="toc-diagnostics-interpretation" class="nav-link" data-scroll-target="#diagnostics-interpretation">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#past-exam-lens" id="toc-past-exam-lens" class="nav-link" data-scroll-target="#past-exam-lens">7. Past-exam lens</a></li>
+  <li><a href="#sec-lda-math" id="toc-sec-lda-math" class="nav-link" data-scroll-target="#sec-lda-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/lda.html">Linear Discriminant Analysis (LDA)</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Linear Discriminant Analysis (LDA)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Linear family</strong></span> · the supervised cousin of <a href="../methods/pca.html">PCA</a>: one model that does <em>both</em> classification and dimensionality reduction by projecting onto the directions that pull the classes apart. Siblings: <a href="../methods/logistic.html">Logistic Regression</a> (also a linear classifier, but no dimensionality reduction and fewer distributional assumptions), QDA (one covariance <em>per</em> class), <a href="../methods/pca.html">PCA</a> (unsupervised — variance, not class separation), <a href="../methods/knn.html">kNN</a> (non-parametric alternative).</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p>Linear Discriminant Analysis takes labelled data and finds the direction(s) along which the classes are most cleanly separated, then either reports a class for each point (classifier) or hands back the low-dimensional projection (dimensionality reduction). The guiding idea is a single trade-off, the <strong>Fisher criterion</strong>: choose the projection that makes the class <em>means</em> sit far apart (large <strong>between-class</strong> variance) while each class stays <em>tight</em> around its own mean (small <strong>within-class</strong> variance) (Lecture 3, slide 8/20; notebook <code>04_Linear_discriminant_analysis.ipynb</code>, cell 2). Because that projection is a linear combination of the features, the resulting decision boundary is a straight line (or hyperplane), and a <span class="math inline">C</span>-class problem yields at most <span class="math inline">C-1</span> useful discriminant directions — which is why two classes collapse to a single axis.</p>
+<p>It is a <strong>parametric, generative</strong> model: it assumes each class is drawn from a Gaussian and — crucially — that all classes <strong>share one covariance matrix</strong> (Lecture 3, slide 10/20). Under those assumptions LDA is the Bayes-optimal linear classifier; it trains in essentially one pass (estimate the class means, the pooled covariance, and the priors), needs little data, and gives an interpretable boundary. The shared-covariance assumption is exactly what makes the boundary <em>linear</em> — relax it (one covariance per class) and you get the quadratic boundary of QDA instead.</p>
+<p>LDA wears two hats at once, which is its distinctive feature. As a <strong>classifier</strong> it competes with <a href="../methods/logistic.html">logistic regression</a>: both are linear, but LDA commits to the Gaussian/shared-covariance story while logistic regression models the log-odds directly and makes fewer distributional assumptions (Lecture 3, slide 11/20). As a <strong>dimensionality reducer</strong> it competes with <a href="../methods/pca.html">PCA</a>: PCA keeps the directions of greatest <em>total</em> variance ignoring labels, whereas LDA — being supervised — keeps the directions of greatest <em>class separation</em> (Lecture 3, slide 7/20).</p>
+</section>
+<section id="when-to-use-when-not-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for LDA when…</strong></p>
+<ul>
+<li>The target is a <strong>class</strong> and you have <strong>two or more reasonably well-separated classes</strong> whose spreads (covariances) look <strong>similar</strong> (Lecture 3, slide 7/20).</li>
+<li>You want an <strong>interpretable linear boundary</strong> <em>and/or</em> a <strong>supervised low-dimensional view</strong> of the data — LDA gives you both from one fit. On Iris it compresses 4 features to 2 discriminants that visibly separate the three species (see §4).</li>
+<li>You want a <strong>fast, low-variance baseline classifier</strong> that needs little data — the model is just class means, a pooled covariance, and priors.</li>
+<li>You plan to <strong>feed a downstream classifier</strong> a cheaper representation: LDA is “frequently used as a preprocessing step before applying classifiers like logistic regression” (notebook <code>04_…</code>, cell 4).</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else when…</strong></p>
+<ul>
+<li><strong>The classes have clearly different covariances (different shapes/orientations)</strong> → the shared-covariance assumption is wrong and the linear boundary underfits. Use <strong>QDA</strong>, which estimates a separate covariance per class and gives a quadratic boundary (Lecture 3, slide 10/20).</li>
+<li><strong>You want minimal distributional assumptions for a linear classifier</strong> → <a href="../methods/logistic.html"><strong>Logistic Regression</strong></a> models the log-odds directly without assuming Gaussian features; it is often the safer default when normality is doubtful (Lecture 3, slide 11/20).</li>
+<li><strong>You want dimensionality reduction but have no labels (or care about variance, not separation)</strong> → <a href="../methods/pca.html"><strong>PCA</strong></a> is the unsupervised counterpart; LDA cannot run without <code>y</code> (it is supervised — “it requires the class labels to be passed … in the <code>fit</code> method”, notebook <code>04_…</code>, cell 14).</li>
+<li><strong>The boundary is clearly non-linear</strong> → <a href="../methods/knn.html"><strong>kNN</strong></a> or <a href="../methods/random_forests.html"><strong>Decision Trees / Random Forests</strong></a> drop the linear-form assumption (more flexible, less interpretable, hungrier for data).</li>
+</ul>
+</div>
+</section>
+<section id="code-idiom" class="level2">
+<h2 class="anchored" data-anchor-id="code-idiom">3. Code idiom</h2>
+<p>The canonical course idiom is <code>scikit-learn</code>’s <code>LinearDiscriminantAnalysis</code>; the course also builds LDA from scratch via the eigendecomposition of <span class="math inline">S_W^{-1}S_B</span> so the Fisher criterion is not a black box.</p>
+<p><strong>Canonical (sklearn)</strong> — <em>(notebook <code>04_Linear_discriminant_analysis.ipynb</code>, cell 8)</em></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.discriminant_analysis <span class="im">import</span> LinearDiscriminantAnalysis</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># n_components: number of discriminant axes to keep after transform; must be ≤ #classes − 1</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>lda <span class="op">=</span> LinearDiscriminantAnalysis(n_components<span class="op">=</span><span class="dv">1</span>)   <span class="co"># 2-class toy data → at most 1 discriminant</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>lda.fit(X_train, y_train)                          <span class="co"># supervised: labels are REQUIRED</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>X_transformed <span class="op">=</span> lda.transform(X_train)             <span class="co"># project onto the discriminant axis (dim reduction)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>lda.predict(X_test)                                <span class="co"># class labels (classification)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>lda.score(X_test, y_test)                          <span class="co"># mean accuracy</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For multi-class dimensionality reduction the only change is <code>n_components</code> <em>(notebook <code>04_…</code>, cell 15)</em> — and <code>fit_transform</code> does fit-then-project in one call:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lda <span class="op">=</span> LinearDiscriminantAnalysis(n_components<span class="op">=</span><span class="dv">2</span>)   <span class="co"># 3-class Iris → up to 2 discriminants (LD1, LD2)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>X_train_lda <span class="op">=</span> lda.fit_transform(X_train2, y_train2)  <span class="co"># fit on train, return its projection</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X_test_lda  <span class="op">=</span> lda.transform(X_test2)                 <span class="co"># project test with the SAME learned axes</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The hyperparameters worth knowing (Lecture 3, slide 11/20): <code>solver</code> ∈ {<code>svd</code> (<strong>default</strong>, no covariance inversion, good for many features), <code>lsqr</code>, <code>eigen</code>}; <code>shrinkage</code> (regularizes the covariance estimate, only with <code>lsqr</code>/<code>eigen</code>); and <code>n_components</code> (the projection dimension, capped at #classes − 1). In notebook <code>04_…</code> everything except <code>n_components</code> is left at its <code>default</code>. Useful attributes: <code>coef_</code>, <code>means_</code>, <code>explained_variance_ratio_</code>. <strong>Tip stressed in lecture:</strong> scale/standardize features first (Lecture 3, slide 11/20; Lecture 4, slide 4/11).</p>
+<p><strong>From scratch — eigendecomposition of <span class="math inline">S_W^{-1}S_B</span></strong> <em>(notebook <code>04_…</code>, cell 18; this is the Tier-1 variation that fills the gap cell 4 leaves: “we will not dive into all the mathematical details”)</em>. The heart of the class is: build the within- and between-class scatter, then take the eigenvectors of <span class="math inline">\Sigma^{-1}S_B</span>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># within-class scatter S_W (sum of per-class outer products), then pooled covariance</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>S_W <span class="op">=</span> np.zeros((n_features, n_features))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.classes_:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    X_c <span class="op">=</span> X[y <span class="op">==</span> c]<span class="op">;</span> mean_c <span class="op">=</span> <span class="va">self</span>.means_[c].reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x <span class="kw">in</span> X_c:</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        S_W <span class="op">+=</span> (x <span class="op">-</span> mean_c) <span class="op">@</span> (x <span class="op">-</span> mean_c).T</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.cov_ <span class="op">=</span> S_W <span class="op">/</span> (n_samples <span class="op">-</span> <span class="bu">len</span>(<span class="va">self</span>.classes_))   <span class="co"># unbiased pooled cov, "consistent with sklearn"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># between-class scatter S_B = Σ_c N_c (μ_c − μ)(μ_c − μ)ᵀ</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>S_B <span class="op">=</span> np.zeros((n_features, n_features))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.classes_:</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    mean_diff <span class="op">=</span> <span class="va">self</span>.means_[c].reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="op">-</span> <span class="va">self</span>.overall_mean_</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    S_B <span class="op">+=</span> <span class="va">self</span>.class_count_[c] <span class="op">*</span> (mean_diff <span class="op">@</span> mean_diff.T)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># generalized eigenproblem: discriminant axes = top eigenvectors of inv(Σ) @ S_B</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> np.linalg.inv(<span class="va">self</span>.cov_) <span class="op">@</span> S_B</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>eigvals, eigvecs <span class="op">=</span> np.linalg.eig(A)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> np.argsort(np.real(eigvals))[::<span class="op">-</span><span class="dv">1</span>]      <span class="co"># sort eigenvalues descending</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.W_ <span class="op">=</span> np.real(eigvecs)[:, idx][:, :<span class="va">self</span>.n_components]   <span class="co"># keep top n_components</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout-pitfall">
+<p><strong>Idiom variation worth knowing.</strong> The from-scratch <code>predict</code> does <strong>not</strong> project-then-threshold; it applies the Gaussian/Bayes discriminant rule directly, <span class="math inline">\delta_c(x) = x^\top\Sigma^{-1}\mu_c - \tfrac12\mu_c^\top\Sigma^{-1}\mu_c + \log\pi_c</span>, and takes the <code>argmax</code> over classes <em>(notebook <code>04_…</code>, cell 18)</em>. This is the same maximum-a-posteriori rule sklearn uses, which is why the two implementations agree to the digit on the toy set (see §4). If you ever quote the from-scratch test accuracy, recompute it — the notebook does not store that number (<code>phase0/disagreements.md</code> [NB-10]); the value below was computed in the venv.</p>
+</div>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<section id="sec-lda-toy" class="level3">
+<h3 class="anchored" data-anchor-id="sec-lda-toy">Example 1 — toy 2-class set: classifier accuracy, sklearn vs from-scratch</h3>
+<p>The course generates a 2-feature, 2-class toy set and fits LDA as a classifier <em>(notebook <code>04_…</code>, cell 6)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_classification(n_samples<span class="op">=</span><span class="dv">200</span>, n_features<span class="op">=</span><span class="dv">2</span>, n_redundant<span class="op">=</span><span class="dv">0</span>, n_informative<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                           n_clusters_per_class<span class="op">=</span><span class="dv">1</span>, class_sep<span class="op">=</span><span class="fl">0.75</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.33</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>LinearDiscriminantAnalysis(n_components<span class="op">=</span><span class="dv">1</span>).fit(X_train, y_train).score(X_test, y_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The stored notebook output is a <strong>test accuracy of 0.7424</strong> <em>(notebook <code>04_…</code>, cell 13, stored output <code>0.7424242424242424</code>)</em>. The modest score is the point, not a bug: <code>class_sep=0.75</code> makes the two Gaussians overlap substantially, so even the Bayes-optimal linear boundary cannot do much better — a vivid reminder that accuracy is bounded by how separable the classes actually are, not by the model’s effort.</p>
+<p>The from-scratch <code>LDAFromScratch(n_components=1)</code> <em>(cell 18–19)</em>, fit on the same split, reaches the <strong>identical test accuracy of 0.7424</strong> (train accuracy 0.7910 for both) — computed in the venv (<code>./.venv/Scripts/python.exe</code>, <code>random_state=42</code>), resolving the [VERIFY] flag in <code>phase0/disagreements.md</code> [NB-10]. The agreement is by design: both use the pooled (unbiased) covariance <span class="math inline">S_W/(n-C)</span> and the same Bayes discriminant rule, so they are <em>the same classifier</em>, just coded twice. The single non-trivial eigenvalue of <span class="math inline">\Sigma^{-1}S_B</span> is ≈ 77.4 (the second is numerically zero — there is only <span class="math inline">C-1 = 1</span> discriminant for two classes), computed in the venv.</p>
+<div class="callout-bigpicture">
+<p>This is the natural place to line LDA up against <a href="../methods/logistic.html"><strong>logistic regression</strong></a>: on a 2-class problem both draw a straight boundary, but LDA <em>assumes</em> the two clouds are Gaussian with a shared covariance whereas logistic regression just fits the log-odds. When that assumption roughly holds (as here, by construction), they land in the same neighbourhood; when it fails badly, logistic regression usually degrades more gracefully. See the <a href="../cross_method/showdowns.html">2D classification showdown</a>.</p>
+</div>
+</section>
+<section id="sec-lda-iris" class="level3">
+<h3 class="anchored" data-anchor-id="sec-lda-iris">Example 2 — Iris: LDA as supervised dimensionality reduction</h3>
+<p>On Iris (150 samples, 4 features, 3 species) LDA wears its <em>other</em> hat — squashing 4 features to 2 discriminants for visualization <em>(notebook <code>04_…</code>, cell 15)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>iris <span class="op">=</span> load_iris()<span class="op">;</span> X2, y2 <span class="op">=</span> iris.data, iris.target</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X_train2, X_test2, y_train2, y_test2 <span class="op">=</span> train_test_split(X2, y2, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>lda <span class="op">=</span> LinearDiscriminantAnalysis(n_components<span class="op">=</span><span class="dv">2</span>)     <span class="co"># 3 classes → up to 2 discriminants</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>X_train_lda <span class="op">=</span> lda.fit_transform(X_train2, y_train2)  <span class="co"># LD1, LD2 for the training set</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>X_test_lda  <span class="op">=</span> lda.transform(X_test2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The first discriminant carries almost everything: <code>explained_variance_ratio_ ≈ [0.992, 0.008]</code> — <strong>LD1 alone accounts for ~99.2 % of the between-class separation</strong> (computed in the venv, <code>random_state=10</code>). In the LD1–LD2 scatter the three species fall into cleanly separated bands, with <em>setosa</em> far from the other two. As a classifier on this split the same model scores <strong>0.975 train / 1.00 test</strong> accuracy (computed in the venv) — but with only 30 test points the perfect test score is small-sample luck, not a claim that Iris is trivially separable; report it as “high” rather than overreading the exact 1.00.</p>
+<div class="callout-bigpicture">
+<p>Contrast with <a href="../methods/pca.html"><strong>PCA</strong></a> on the <em>same</em> Iris data: PCA would pick the 2 directions of largest total variance <strong>ignoring the species labels</strong>, which need not be the directions that separate species. LDA’s 99.2 %-on-LD1 result is precisely what supervision buys you — it spends its budget on <em>class</em> separation, not raw spread. This is the canonical “supervised vs unsupervised dimensionality reduction” comparison.</p>
+</div>
+</section>
+</section>
+<section id="visualization" class="level2">
+<h2 class="anchored" data-anchor-id="visualization">5. Visualization</h2>
+<p>The figure below makes the Fisher criterion tangible: it takes the real 1D projection of the toy training data onto LDA’s single discriminant axis <em>(notebook <code>04_…</code>, cell 9)</em> and shows the two classes as stacked dots along that axis.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb6" data-startfrom="139" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 138;"><span id="cb6-139"><a href="#cb6-139" aria-hidden="true" tabindex="-1"></a>famLinear <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-linear'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#2E86AB"</span>)</span>
+<span id="cb6-140"><a href="#cb6-140" aria-hidden="true" tabindex="-1"></a>ldaProj <span class="op">=</span> [{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.213</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.482</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.188</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.462</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.031</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.257</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.679</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.814</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.583</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.07</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.346</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.754</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.631</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.747</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.563</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.495</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.457</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.011</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.674</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.443</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.431</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.11</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.327</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.85</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.623</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.289</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">2.728</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.952</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.074</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.248</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.549</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.184</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.287</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.277</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.695</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.432</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.026</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.067</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.235</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.297</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">2.315</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.854</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.481</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.152</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.083</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.99</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.297</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.764</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.42</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.739</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">2.204</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.087</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.694</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.261</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.619</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.602</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.277</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.373</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.715</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.321</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.66</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.781</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.507</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.448</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.395</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.917</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.474</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.502</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.882</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.665</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.276</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.114</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.46</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.332</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.153</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.112</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.639</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.972</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.003</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.495</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.495</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.577</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.076</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.962</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.659</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.106</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.888</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.886</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">2.894</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">2.423</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.868</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.564</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.097</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.126</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.566</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.625</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.227</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.264</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.169</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.294</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.718</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.839</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.886</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.228</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.256</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.569</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.804</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.352</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">2.545</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.279</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.242</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.644</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.341</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.339</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.446</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.823</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.729</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.863</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.169</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.798</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">2.662</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.915</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.556</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.641</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">1.097</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">0.367</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.266</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.933</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.728</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.389</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:</span><span class="fl">1.615</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.991</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.073</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">1</span>}<span class="op">,</span>{<span class="st">"v"</span><span class="op">:-</span><span class="fl">0.895</span><span class="op">,</span><span class="st">"c"</span><span class="op">:</span><span class="dv">0</span>}]</span>
+<span id="cb6-141"><a href="#cb6-141" aria-hidden="true" tabindex="-1"></a>ldaMidpoint <span class="op">=</span> {</span>
+<span id="cb6-142"><a href="#cb6-142" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> m0 <span class="op">=</span> d3<span class="op">.</span><span class="fu">mean</span>(ldaProj<span class="op">.</span><span class="fu">filter</span>(d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">c</span><span class="op">===</span><span class="dv">0</span>)<span class="op">,</span> d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">v</span>)<span class="op">;</span></span>
+<span id="cb6-143"><a href="#cb6-143" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> m1 <span class="op">=</span> d3<span class="op">.</span><span class="fu">mean</span>(ldaProj<span class="op">.</span><span class="fu">filter</span>(d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">c</span><span class="op">===</span><span class="dv">1</span>)<span class="op">,</span> d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">v</span>)<span class="op">;</span></span>
+<span id="cb6-144"><a href="#cb6-144" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (m0 <span class="op">+</span> m1) <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb6-145"><a href="#cb6-145" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-146"><a href="#cb6-146" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb6-147"><a href="#cb6-147" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">260</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb6-148"><a href="#cb6-148" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"projection onto LDA discriminant axis (LD1)"</span>}<span class="op">,</span></span>
+<span id="cb6-149"><a href="#cb6-149" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"class"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="op">-</span><span class="fl">0.6</span><span class="op">,</span> <span class="fl">1.6</span>]<span class="op">,</span> <span class="dt">ticks</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">1</span>]<span class="op">,</span> <span class="dt">tickFormat</span><span class="op">:</span> d <span class="kw">=&gt;</span> <span class="st">"class "</span> <span class="op">+</span> d}<span class="op">,</span></span>
+<span id="cb6-150"><a href="#cb6-150" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">false</span>}<span class="op">,</span></span>
+<span id="cb6-151"><a href="#cb6-151" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb6-152"><a href="#cb6-152" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleX</span>([ldaMidpoint]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#888"</span><span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"4,3"</span>})<span class="op">,</span></span>
+<span id="cb6-153"><a href="#cb6-153" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">tickX</span>(ldaProj<span class="op">.</span><span class="fu">filter</span>(d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">c</span><span class="op">===</span><span class="dv">0</span>)<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"v"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> <span class="st">"#E8A33D"</span><span class="op">,</span> <span class="dt">strokeOpacity</span><span class="op">:</span> <span class="fl">0.55</span>})<span class="op">,</span></span>
+<span id="cb6-154"><a href="#cb6-154" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">tickX</span>(ldaProj<span class="op">.</span><span class="fu">filter</span>(d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">c</span><span class="op">===</span><span class="dv">1</span>)<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"v"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> () <span class="kw">=&gt;</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> famLinear<span class="op">,</span> <span class="dt">strokeOpacity</span><span class="op">:</span> <span class="fl">0.55</span>})<span class="op">,</span></span>
+<span id="cb6-155"><a href="#cb6-155" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(ldaProj<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"v"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"c"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">c</span> <span class="op">===</span> <span class="dv">1</span> <span class="op">?</span> famLinear <span class="op">:</span> <span class="st">"#E8A33D"</span><span class="op">,</span> <span class="dt">fillOpacity</span><span class="op">:</span> <span class="fl">0.7</span><span class="op">,</span> <span class="dt">r</span><span class="op">:</span> <span class="dv">4</span>})</span>
+<span id="cb6-156"><a href="#cb6-156" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb6-157"><a href="#cb6-157" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-lda-projection" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lda-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-lda-projection-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-lda-projection-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-lda-projection-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-lda-projection-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-lda-projection-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-lda-projection-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-lda-projection-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-lda-projection-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-lda-projection-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-lda-projection-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-lda-projection-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-4" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-lda-projection-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lda-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: LDA’s discriminant axis for the toy 2-class set (134 training points, projected via sklearn n_components=1, random_state=42). Each dot is one sample’s value along the single discriminant direction; the two colours are the two classes; the dashed line marks where their projected means sit midway. LDA chose this axis to push the two coloured clouds as far apart as possible while keeping each tight — yet they still overlap in the middle, which is exactly why test accuracy is only 0.74: the classes are not linearly separable, and no straight boundary can fix that.
+</figcaption>
+</figure>
+</div>
+</div>
+<p>Static prose can assert “LDA maximizes between-class over within-class variance”; only the picture shows the consequence — two clouds that LDA has pried apart as far as a single linear axis allows, with a stubborn overlap in the middle that caps accuracy at 0.74.</p>
+</section>
+<section id="diagnostics-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-interpretation">6. Diagnostics &amp; interpretation</h2>
+<p>What to report and look at to decide whether an LDA model is working:</p>
+<ul>
+<li><strong>Accuracy / confusion matrix</strong> — LDA is a classifier first; report test accuracy (toy: 0.74) and, for multi-class, the confusion matrix to see <em>which</em> classes get confused (Lecture 4, slide 4/11 explicitly recommends confusion matrices).</li>
+<li><strong><code>explained_variance_ratio_</code></strong> — for the dimensionality-reduction hat, this tells you how much class separation each discriminant captures (Iris: LD1 ≈ 99.2 %). A first discriminant near 1.0 means a 1D view loses almost nothing.</li>
+<li><strong>Check the shared-covariance assumption</strong> — if the classes visibly have different shapes/orientations, the linear boundary is mis-specified; that is the cue to move to <strong>QDA</strong>. Mild non-normality is usually tolerable (“robust to mild normality violations”, Lecture 4, slide 4/11).</li>
+<li><strong>Did you standardize?</strong> — scaling is stressed twice in lecture (L3 slide 11, L4 slide 4); on raw features with very different units the pooled covariance can be dominated by one feature.</li>
+</ul>
+<div class="callout-bigpicture">
+<p>Comparative diagnostic vs siblings: LDA gives you a <em>generative</em> story (class means + a shared covariance + priors), so you can read off how it would <em>generate</em> each class — where <a href="../methods/logistic.html">logistic regression</a> gives only a <em>discriminative</em> boundary (the log-odds), and <a href="../methods/pca.html">PCA</a> gives variance-ranked axes with no notion of class at all. Choose the model whose output answers your question: “which class, and why” (LDA), “what are the odds” (logistic), or “what varies most” (PCA).</p>
+</div>
+</section>
+<section id="past-exam-lens" class="level2">
+<h2 class="anchored" data-anchor-id="past-exam-lens">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How LDA shows up.</strong> LDA was <strong>not examined in the Spring-2025 take-home</strong> (<code>phase0/concept_inventory.md</code>; per rule R8 this absence is stated explicitly rather than glossed over) — the four assignments covered regression with regularization (Hitters), unsupervised PCA/K-means (WholesaleCustomers), trees/ensembles (WDBC), and a classifier comparison. LDA’s most natural exam framing, <em>inferred</em> from how Lecture 3 teaches it, is comparative: (i) as a <strong>2-class linear classifier set against <a href="../methods/logistic.html">logistic regression</a></strong> — fit both, compare accuracy/boundaries, and discuss <em>which assumptions each makes</em> (LDA’s Gaussian/shared-covariance vs logistic’s distribution-free log-odds, Lecture 3 slide 11/20 gives the explicit comparison table); or (ii) as <strong>supervised dimensionality reduction set against <a href="../methods/pca.html">PCA</a></strong> — show that LDA’s axes maximize <em>class</em> separation (Iris LD1 ≈ 99 %) while PCA’s maximize total variance. If LDA appears, the marks would rest on <em>justifying the assumptions and the choice</em>, exactly as the regularization task rewards justifying shrinkage.</p>
+</div>
+</section>
+<section id="sec-lda-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-lda-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> The course frames LDA through <strong>Fisher’s criterion</strong>: find the projection direction <span class="math inline">w</span> that pushes the class means apart while keeping each class tight <em>(notebook <code>04_Linear_discriminant_analysis.ipynb</code>, cell 2; Lecture 3, slide 8/20)</em>. Write the <strong>between-class</strong> and <strong>within-class</strong> scatter matrices <span class="math display">S_B = \sum_{i=1}^{C} N_i\,(m_i-m)(m_i-m)^\top, \qquad S_W = \sum_{i=1}^{C}\sum_{x\in C_i}(x-m_i)(x-m_i)^\top,</span> where <span class="math inline">m_i = \tfrac{1}{N_i}\sum_{x\in C_i} x</span> is the mean of class <span class="math inline">i</span> (size <span class="math inline">N_i</span>) and <span class="math inline">m</span> is the overall mean <em>(slide 9/20)</em>. Fisher’s criterion is the ratio of projected between- to within-class variance, which we maximize: <span class="math display">w = \arg\max_w \frac{w^\top S_B\, w}{w^\top S_W\, w}.</span> <strong>Reading it:</strong> the numerator <span class="math inline">w^\top S_B w</span> is how far apart the class means look <em>after</em> projecting onto <span class="math inline">w</span>; the denominator <span class="math inline">w^\top S_W w</span> is how spread out each class looks along <span class="math inline">w</span> — so the ratio rewards separation and penalizes overlap. Setting the gradient of this ratio to zero turns it into a <strong>generalized eigenproblem</strong> whose top eigenvectors are the discriminant axes: <span class="math display">S_W^{-1}S_B\, w = \lambda w \qquad \text{(cell 3; slide 9/20).}</span> For <strong>two classes</strong> this collapses to a single closed form (only <span class="math inline">C-1=1</span> axis exists), and because <span class="math inline">S_B</span> then has rank one the direction is simply <span class="math display">w \propto S_W^{-1}(m_1-m_2) \qquad \text{(Lecture 3, slide 9/20)}</span> — the line joining the two means, “rotated” by <span class="math inline">S_W^{-1}</span> to undo the within-class spread. <em>Local notation note</em> (per <code>phase0/notation_table.md</code>): here <span class="math inline">\lambda</span> denotes an <strong>LDA eigenvalue</strong> (not a regularization strength), <span class="math inline">m_i</span> the class mean, <span class="math inline">N_i</span> the class size, and <span class="math inline">w</span> the <strong>discriminant direction</strong> (not a generic weight vector). See the <a href="../appendix/math_appendix.html#sec-linalg">linear-algebra appendix</a>.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor.</strong> <em>(Anchored to ESL §4.3, eqs 4.7–4.12 and 4.15–4.16; verified at PDF pp.&nbsp;126–135 = printed pp.&nbsp;106–116.)</em> ESL derives LDA from <strong>decision theory</strong>, not from Fisher’s ratio. Let <span class="math inline">f_k(x)</span> be the class-conditional density and <span class="math inline">\pi_k</span> the prior of class <span class="math inline">k</span> (with <span class="math inline">\sum_k\pi_k=1</span>). Bayes’ theorem gives the posterior <span class="math display">\Pr(G=k\mid X=x) = \frac{f_k(x)\,\pi_k}{\sum_{\ell=1}^K f_\ell(x)\,\pi_\ell} \qquad \text{(ESL 4.7),}</span> so classifying to the largest posterior is <strong>Bayes-optimal</strong>. Now model each class as a multivariate Gaussian <span class="math display">f_k(x) = \frac{1}{(2\pi)^{p/2}\lvert\Sigma_k\rvert^{1/2}}\,\exp\!\Bigl(-\tfrac12 (x-\mu_k)^\top\Sigma_k^{-1}(x-\mu_k)\Bigr) \qquad \text{(ESL 4.8).}</span> <strong>LDA is the special case of a shared covariance</strong> <span class="math inline">\Sigma_k=\Sigma\ \forall k</span>. Comparing two classes by their log-posterior ratio, <span class="math display">\log\frac{\Pr(G=k\mid x)}{\Pr(G=\ell\mid x)} = \log\frac{\pi_k}{\pi_\ell} - \tfrac12(\mu_k+\mu_\ell)^\top\Sigma^{-1}(\mu_k-\mu_\ell) + x^\top\Sigma^{-1}(\mu_k-\mu_\ell) \qquad \text{(ESL 4.9),}</span> which is <strong>linear in <span class="math inline">x</span></strong>: the shared <span class="math inline">\Sigma</span> makes the normalizing constants <em>and</em> the quadratic term <span class="math inline">x^\top\Sigma^{-1}x</span> cancel between the two classes. The boundary <span class="math inline">\{x:\Pr(G=k\mid x)=\Pr(G=\ell\mid x)\}</span> is therefore a hyperplane. Equivalently, classify by <span class="math inline">G(x)=\arg\max_k \delta_k(x)</span> using the <strong>linear discriminant functions</strong> <span class="math display">\delta_k(x) = x^\top\Sigma^{-1}\mu_k - \tfrac12\mu_k^\top\Sigma^{-1}\mu_k + \log\pi_k \qquad \text{(ESL 4.10)}</span> — <em>exactly</em> the rule the from-scratch <code>predict</code> implements <em>(notebook <code>04_…</code>, cell 18)</em>, with the plug-in estimates <span class="math inline">\hat\pi_k=N_k/N</span>, <span class="math inline">\hat\mu_k=\sum_{g_i=k}x_i/N_k</span>, and the <strong>pooled</strong> covariance <span class="math inline">\hat\Sigma=\sum_{k}\sum_{g_i=k}(x_i-\hat\mu_k)(x_i-\hat\mu_k)^\top/(N-K)</span> (the <span class="math inline">N-K</span> denominator is why the notebook’s <code>S_W/(n−C)</code> “matches sklearn”). <strong>Why this matters: QDA.</strong> If the <span class="math inline">\Sigma_k</span> are <em>not</em> assumed equal, the quadratic term survives and you get the quadratic discriminant <span class="math inline">\delta_k(x)=-\tfrac12\log\lvert\Sigma_k\rvert-\tfrac12(x-\mu_k)^\top\Sigma_k^{-1}(x-\mu_k)+\log\pi_k</span> (ESL 4.12) — a curved boundary. Shared covariance ⇔ linear; per-class covariance ⇔ quadratic.</p>
+<p><strong>Equivalence to Fisher’s criterion.</strong> ESL §4.3.3 shows the Mode-A view is the <em>same</em> model. Writing <span class="math inline">B</span> for the between-class covariance of the centroids and <span class="math inline">W</span> for the within-class (pooled) covariance, Fisher’s “maximize between- over within-class variance” is the <strong>Rayleigh quotient</strong> <span class="math display">\max_a \frac{a^\top B\, a}{a^\top W\, a} \qquad \text{(ESL 4.15)} \quad\Longleftrightarrow\quad \max_a a^\top B\, a \ \text{ s.t. } a^\top W a = 1 \qquad \text{(ESL 4.16),}</span> “a generalized eigenvalue problem, with <span class="math inline">a</span> given by the largest eigenvalue of <span class="math inline">W^{-1}B</span>” — identical in form to Mode A’s <span class="math inline">S_W^{-1}S_B w=\lambda w</span> (<span class="math inline">B,W</span> are ESL’s names for <span class="math inline">S_B,S_W</span>, and <span class="math inline">B+W=T</span>, the total covariance). ESL notes Fisher “arrived at this decomposition via a different route, without referring to Gaussian distributions at all,” yet it lands on the same discriminant directions — the two derivations agree (<code>phase0/disagreements.md</code>: LDA Fisher criterion and <span class="math inline">w\propto S_W^{-1}(m_1-m_2)</span> match ESL §4.3; no flags). One subtlety ESL flags: the least-squares/Fisher route fixes the <em>direction</em> but the Gaussian route is needed to set the <em>intercept</em> (cut-point) — for two classes the two agree only when <span class="math inline">N_1=N_2</span> (ESL eq. 4.11 and following). See the <a href="../appendix/math_appendix.html#sec-linalg">linear-algebra appendix</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbUxpbmVhciA9IChnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmRvY3VtZW50RWxlbWVudCkuZ2V0UHJvcGVydHlWYWx1ZSgnLS1mYW1pbHktbGluZWFyJykudHJpbSgpIHx8IFwiIzJFODZBQlwiKVxubGRhUHJvaiA9IFt7XCJ2XCI6LTAuMjEzLFwiY1wiOjB9LHtcInZcIjowLjQ4MixcImNcIjoxfSx7XCJ2XCI6LTEuMTg4LFwiY1wiOjB9LHtcInZcIjotMS40NjIsXCJjXCI6MH0se1widlwiOi0xLjAzMSxcImNcIjowfSx7XCJ2XCI6LTAuMjU3LFwiY1wiOjB9LHtcInZcIjotMC42NzksXCJjXCI6MH0se1widlwiOjAuODE0LFwiY1wiOjB9LHtcInZcIjotMS41ODMsXCJjXCI6MX0se1widlwiOi0xLjA3LFwiY1wiOjB9LHtcInZcIjoxLjM0NixcImNcIjoxfSx7XCJ2XCI6LTEuNzU0LFwiY1wiOjB9LHtcInZcIjotMC42MzEsXCJjXCI6MX0se1widlwiOjAuNzQ3LFwiY1wiOjF9LHtcInZcIjoxLjU2MyxcImNcIjoxfSx7XCJ2XCI6MS40OTUsXCJjXCI6MX0se1widlwiOjAuNDU3LFwiY1wiOjB9LHtcInZcIjotMC4wMTEsXCJjXCI6MH0se1widlwiOjAuNjc0LFwiY1wiOjF9LHtcInZcIjowLjQ0MyxcImNcIjowfSx7XCJ2XCI6MC40MzEsXCJjXCI6MH0se1widlwiOi0xLjExLFwiY1wiOjB9LHtcInZcIjotMC4zMjcsXCJjXCI6MX0se1widlwiOi0xLjg1LFwiY1wiOjB9LHtcInZcIjowLjYyMyxcImNcIjoxfSx7XCJ2XCI6LTAuMjg5LFwiY1wiOjB9LHtcInZcIjotMi43MjgsXCJjXCI6MH0se1widlwiOjIuOTUyLFwiY1wiOjF9LHtcInZcIjotMC4wNzQsXCJjXCI6MH0se1widlwiOjIuMjQ4LFwiY1wiOjF9LHtcInZcIjotMC41NDksXCJjXCI6MH0se1widlwiOi0wLjE4NCxcImNcIjoxfSx7XCJ2XCI6Mi4yODcsXCJjXCI6MX0se1widlwiOi0wLjI3NyxcImNcIjoxfSx7XCJ2XCI6MC42OTUsXCJjXCI6MX0se1widlwiOi0wLjQzMixcImNcIjowfSx7XCJ2XCI6LTAuMDI2LFwiY1wiOjF9LHtcInZcIjotMC4wNjcsXCJjXCI6MH0se1widlwiOjIuMjM1LFwiY1wiOjB9LHtcInZcIjotMC4yOTcsXCJjXCI6MX0se1widlwiOi0yLjMxNSxcImNcIjowfSx7XCJ2XCI6Mi44NTQsXCJjXCI6MX0se1widlwiOjAuNDgxLFwiY1wiOjF9LHtcInZcIjotMC4xNTIsXCJjXCI6MH0se1widlwiOi0xLjA4MyxcImNcIjowfSx7XCJ2XCI6LTAuOTksXCJjXCI6MX0se1widlwiOjAuMjk3LFwiY1wiOjF9LHtcInZcIjoxLjc2NCxcImNcIjoxfSx7XCJ2XCI6LTEuNDIsXCJjXCI6MH0se1widlwiOi0wLjczOSxcImNcIjowfSx7XCJ2XCI6LTIuMjA0LFwiY1wiOjB9LHtcInZcIjotMC4wODcsXCJjXCI6MH0se1widlwiOjAuNjk0LFwiY1wiOjF9LHtcInZcIjotMS4yNjEsXCJjXCI6MH0se1widlwiOi0xLjYxOSxcImNcIjowfSx7XCJ2XCI6MS42MDIsXCJjXCI6MX0se1widlwiOi0xLjI3NyxcImNcIjoxfSx7XCJ2XCI6LTAuMzczLFwiY1wiOjF9LHtcInZcIjotMC43MTUsXCJjXCI6MX0se1widlwiOjAuMzIxLFwiY1wiOjB9LHtcInZcIjoxLjY2LFwiY1wiOjF9LHtcInZcIjowLjc4MSxcImNcIjoxfSx7XCJ2XCI6LTAuNTA3LFwiY1wiOjB9LHtcInZcIjowLjQ0OCxcImNcIjowfSx7XCJ2XCI6MS4zOTUsXCJjXCI6MX0se1widlwiOjAuOTE3LFwiY1wiOjB9LHtcInZcIjowLjQ3NCxcImNcIjoxfSx7XCJ2XCI6MS41MDIsXCJjXCI6MX0se1widlwiOjAuODgyLFwiY1wiOjF9LHtcInZcIjotMS42NjUsXCJjXCI6MH0se1widlwiOjIuMjc2LFwiY1wiOjF9LHtcInZcIjotMC4xMTQsXCJjXCI6MH0se1widlwiOjAuNDYsXCJjXCI6MX0se1widlwiOjAuMzMyLFwiY1wiOjF9LHtcInZcIjoxLjE1MyxcImNcIjoxfSx7XCJ2XCI6LTAuMTEyLFwiY1wiOjF9LHtcInZcIjowLjYzOSxcImNcIjoxfSx7XCJ2XCI6LTAuOTcyLFwiY1wiOjB9LHtcInZcIjotMC4wMDMsXCJjXCI6MX0se1widlwiOjEuNDk1LFwiY1wiOjF9LHtcInZcIjowLjQ5NSxcImNcIjowfSx7XCJ2XCI6MS41NzcsXCJjXCI6MX0se1widlwiOjIuMDc2LFwiY1wiOjF9LHtcInZcIjoxLjk2MixcImNcIjoxfSx7XCJ2XCI6MC42NTksXCJjXCI6MH0se1widlwiOi0wLjEwNixcImNcIjoxfSx7XCJ2XCI6LTAuODg4LFwiY1wiOjB9LHtcInZcIjotMC44ODYsXCJjXCI6MH0se1widlwiOi0yLjg5NCxcImNcIjowfSx7XCJ2XCI6Mi40MjMsXCJjXCI6MX0se1widlwiOjEuODY4LFwiY1wiOjF9LHtcInZcIjoxLjU2NCxcImNcIjoxfSx7XCJ2XCI6LTEuMDk3LFwiY1wiOjB9LHtcInZcIjowLjEyNixcImNcIjoxfSx7XCJ2XCI6MS41NjYsXCJjXCI6MX0se1widlwiOjAuNjI1LFwiY1wiOjF9LHtcInZcIjowLjIyNyxcImNcIjoxfSx7XCJ2XCI6MC4yNjQsXCJjXCI6MX0se1widlwiOi0xLjE2OSxcImNcIjowfSx7XCJ2XCI6MC4yOTQsXCJjXCI6MX0se1widlwiOjEuNzE4LFwiY1wiOjF9LHtcInZcIjowLjgzOSxcImNcIjoxfSx7XCJ2XCI6LTAuODg2LFwiY1wiOjB9LHtcInZcIjowLjIyOCxcImNcIjoxfSx7XCJ2XCI6MS4yNTYsXCJjXCI6MX0se1widlwiOi0wLjU2OSxcImNcIjowfSx7XCJ2XCI6LTEuODA0LFwiY1wiOjB9LHtcInZcIjotMS4zNTIsXCJjXCI6MH0se1widlwiOi0yLjU0NSxcImNcIjowfSx7XCJ2XCI6LTEuMjc5LFwiY1wiOjB9LHtcInZcIjotMC4yNDIsXCJjXCI6MH0se1widlwiOi0wLjY0NCxcImNcIjowfSx7XCJ2XCI6LTEuMzQxLFwiY1wiOjB9LHtcInZcIjotMC4zMzksXCJjXCI6MH0se1widlwiOjAuNDQ2LFwiY1wiOjF9LHtcInZcIjotMS44MjMsXCJjXCI6MH0se1widlwiOjEuNzI5LFwiY1wiOjF9LHtcInZcIjotMS44NjMsXCJjXCI6MH0se1widlwiOjAuMTY5LFwiY1wiOjF9LHtcInZcIjotMC43OTgsXCJjXCI6MH0se1widlwiOi0yLjY2MixcImNcIjowfSx7XCJ2XCI6MC45MTUsXCJjXCI6MX0se1widlwiOi0xLjU1NixcImNcIjowfSx7XCJ2XCI6LTAuNjQxLFwiY1wiOjF9LHtcInZcIjotMS4wOTcsXCJjXCI6MX0se1widlwiOjAuMzY3LFwiY1wiOjB9LHtcInZcIjoxLjI2NixcImNcIjoxfSx7XCJ2XCI6LTAuOTMzLFwiY1wiOjB9LHtcInZcIjotMC43MjgsXCJjXCI6MH0se1widlwiOi0wLjM4OSxcImNcIjowfSx7XCJ2XCI6MS42MTUsXCJjXCI6MX0se1widlwiOi0wLjk5MSxcImNcIjoxfSx7XCJ2XCI6LTAuMDczLFwiY1wiOjF9LHtcInZcIjotMC44OTUsXCJjXCI6MH1dXG5sZGFNaWRwb2ludCA9IHtcbiAgY29uc3QgbTAgPSBkMy5tZWFuKGxkYVByb2ouZmlsdGVyKGQ9PmQuYz09PTApLCBkPT5kLnYpO1xuICBjb25zdCBtMSA9IGQzLm1lYW4obGRhUHJvai5maWx0ZXIoZD0+ZC5jPT09MSksIGQ9PmQudik7XG4gIHJldHVybiAobTAgKyBtMSkgLyAyO1xufVxuUGxvdC5wbG90KHtcbiAgaGVpZ2h0OiAyNjAsIG1hcmdpbkxlZnQ6IDUwLCBncmlkOiB0cnVlLFxuICB4OiB7bGFiZWw6IFwicHJvamVjdGlvbiBvbnRvIExEQSBkaXNjcmltaW5hbnQgYXhpcyAoTEQxKVwifSxcbiAgeToge2xhYmVsOiBcImNsYXNzXCIsIGRvbWFpbjogWy0wLjYsIDEuNl0sIHRpY2tzOiBbMCwgMV0sIHRpY2tGb3JtYXQ6IGQgPT4gXCJjbGFzcyBcIiArIGR9LFxuICBjb2xvcjoge2xlZ2VuZDogZmFsc2V9LFxuICBtYXJrczogW1xuICAgIFBsb3QucnVsZVgoW2xkYU1pZHBvaW50XSwge3N0cm9rZTogXCIjODg4XCIsIHN0cm9rZURhc2hhcnJheTogXCI0LDNcIn0pLFxuICAgIFBsb3QudGlja1gobGRhUHJvai5maWx0ZXIoZD0+ZC5jPT09MCksIHt4OiBcInZcIiwgeTogKCkgPT4gMCwgc3Ryb2tlOiBcIiNFOEEzM0RcIiwgc3Ryb2tlT3BhY2l0eTogMC41NX0pLFxuICAgIFBsb3QudGlja1gobGRhUHJvai5maWx0ZXIoZD0+ZC5jPT09MSksIHt4OiBcInZcIiwgeTogKCkgPT4gMSwgc3Ryb2tlOiBmYW1MaW5lYXIsIHN0cm9rZU9wYWNpdHk6IDAuNTV9KSxcbiAgICBQbG90LmRvdChsZGFQcm9qLCB7eDogXCJ2XCIsIHk6IFwiY1wiLCBmaWxsOiBkID0+IGQuYyA9PT0gMSA/IGZhbUxpbmVhciA6IFwiI0U4QTMzRFwiLCBmaWxsT3BhY2l0eTogMC43LCByOiA0fSlcbiAgXVxufSlcbiJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/logistic.html" class="pagination-link" aria-label="Logistic Regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Logistic Regression</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/adaline.html" class="pagination-link" aria-label="Adaline">
+        <span class="nav-page-text">Adaline</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

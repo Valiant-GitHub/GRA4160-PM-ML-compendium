@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Adaline – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/regularization.html" rel="next">
+<link href="../methods/lda.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-linear quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/adaline.html">Adaline</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#when-to-use-when-not-to-use" id="toc-when-to-use-when-not-to-use" class="nav-link" data-scroll-target="#when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#code-idiom" id="toc-code-idiom" class="nav-link" data-scroll-target="#code-idiom">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-adaline-eta" id="toc-sec-adaline-eta" class="nav-link" data-scroll-target="#sec-adaline-eta">Example 1 — the learning rate makes or breaks convergence</a></li>
+  <li><a href="#sec-adaline-std" id="toc-sec-adaline-std" class="nav-link" data-scroll-target="#sec-adaline-std">Example 2 — standardizing the features smooths convergence</a></li>
+  </ul></li>
+  <li><a href="#sec-adaline-viz" id="toc-sec-adaline-viz" class="nav-link" data-scroll-target="#sec-adaline-viz">5. Visualization</a></li>
+  <li><a href="#diagnostics-interpretation" id="toc-diagnostics-interpretation" class="nav-link" data-scroll-target="#diagnostics-interpretation">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#past-exam-lens" id="toc-past-exam-lens" class="nav-link" data-scroll-target="#past-exam-lens">7. Past-exam lens</a></li>
+  <li><a href="#sec-adaline-math" id="toc-sec-adaline-math" class="nav-link" data-scroll-target="#sec-adaline-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/adaline.html">Adaline</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Adaline</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Linear family</strong></span> · the bridge from linear models to neural networks. Adaline is a single linear neuron trained by gradient descent — algebraically a cousin of <a href="../methods/ols.html">OLS</a> (linear activation, squared-error loss), structurally the template for <a href="../methods/logistic.html">Logistic Regression</a> (same update rule) and the smallest possible <a href="../methods/nn_basics.html">neural net</a>. Siblings: the perceptron (step activation), <a href="../methods/logistic.html">Logistic Regression</a> (sigmoid + cross-entropy), <a href="../methods/ols.html">OLS</a> (closed-form least squares).</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p><strong>ADA</strong>ptive <strong>LI</strong>near <strong>NE</strong>uron is a single linear neuron for binary classification. It computes a <strong>net input</strong> <span class="math inline">z = w^\top x + b</span> — a weighted sum of the features plus a bias — and then, crucially, applies an <strong>identity (linear) activation</strong>: the activation output <em>is</em> the net input. This is the one design choice that defines Adaline and separates it from its neighbors: the perceptron squashes <span class="math inline">z</span> through a hard step, <a href="../methods/logistic.html">logistic regression</a> squashes it through a sigmoid, but Adaline leaves <span class="math inline">z</span> untouched during learning (Lecture 8, slides 15–17).</p>
+<p>Training minimizes a <strong>mean squared error</strong> loss measured <em>on the continuous net inputs</em>, <span class="math inline">L(w,b) = \tfrac{1}{2n}\sum_i (y^{(i)} - z^{(i)})^2</span>, by <strong>batch gradient descent</strong>: every epoch computes the average gradient over the whole dataset and nudges the weights downhill (Lecture 8, slides 19–20). A hard threshold (<span class="math inline">z \ge 0.5 \Rightarrow 1</span>) is applied <strong>only at the very end, to turn the real-valued output into a class label</strong> — never during the weight updates. The professor emphasizes this in all caps: “the threshold function is only used to make the final prediction” (Lecture 8, slide 18).</p>
+<p>That combination — linear activation + squared error — makes Adaline essentially <a href="../methods/ols.html">OLS</a> run as an online learner on 0/1 labels: it regresses the labels on the features, then thresholds. But its real importance is pedagogical. Swap the MSE for cross-entropy and the identity activation for a sigmoid and you get <a href="../methods/logistic.html">logistic regression</a> <em>with the gradient-descent update completely unchanged</em> (Lecture 8, slides 27–28; see <a href="#sec-adaline-math">§8</a> and disagreement [R9-11]). Stack several of these neurons with non-linear activations and you get a <a href="../methods/nn_basics.html">neural network</a>. Adaline is the hinge those two doors swing on.</p>
+</section>
+<section id="when-to-use-when-not-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for Adaline when…</strong></p>
+<ul>
+<li>You are <strong>learning how gradient descent trains a classifier</strong> from the ground up — Adaline is the cleanest from-scratch example: net input, loss, gradient, update, repeat. This is its job in GRA 4160.</li>
+<li>You want to <strong>see the link between regression and classification</strong>: the linear activation makes the connection to <a href="../methods/ols.html">OLS</a> explicit, and the identical update rule makes the connection to <a href="../methods/logistic.html">logistic regression</a> explicit.</li>
+<li>You need a <strong>minimal worked example of batch GD</strong> before tackling <a href="../appendix/math_appendix.html#sec-gd">backprop</a> and <a href="../methods/nn_basics.html">neural nets</a>.</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else when…</strong></p>
+<ul>
+<li><strong>You actually need a probabilistic classifier in practice</strong> → <a href="../methods/logistic.html"><strong>Logistic Regression</strong></a>. Adaline’s MSE-on-net-input loss is a poor fit for 0/1 targets: squared error penalizes confident-correct predictions (a point with <span class="math inline">y=1</span> and <span class="math inline">z=3</span> still contributes loss), whereas cross-entropy does not. Logistic regression keeps Adaline’s update mechanics but uses the right loss + a sigmoid that outputs calibrated probabilities.</li>
+<li><strong>You want updates only when you make mistakes</strong> → the <strong>perceptron</strong>, which uses a step activation and updates on misclassifications only. Adaline instead updates on the continuous error every epoch, which gives a smoother, differentiable objective.</li>
+<li><strong>The relationship is non-linear</strong> → a single linear neuron can only draw a straight decision boundary. Stack neurons with non-linear activations → <a href="../methods/nn_basics.html"><strong>neural networks</strong></a>.</li>
+<li><strong>You just want the least-squares fit</strong> → <a href="../methods/ols.html"><strong>OLS</strong></a> gives it in closed form, <span class="math inline">\hat\beta = (X^\top X)^{-1}X^\top y</span>, with no learning rate to tune (see <a href="#sec-adaline-math">§8</a>).</li>
+</ul>
+</div>
+</section>
+<section id="code-idiom" class="level2">
+<h2 class="anchored" data-anchor-id="code-idiom">3. Code idiom</h2>
+<p>There is no <code>scikit-learn</code> “Adaline” — the course’s whole point is to build it from scratch in numpy so the gradient-descent loop is not a black box. The canonical idiom is the <code>AdalineGD</code> class.</p>
+<p><strong>From scratch — the <code>AdalineGD</code> class</strong> <em>(notebook <code>14_Adaline.ipynb</code>, cell 10)</em>. Note the three pieces that define Adaline: <code>net_input</code> (<span class="math inline">z = Xw + b</span>), an <strong>identity</strong> <code>activation</code>, and a <code>predict</code> that thresholds at 0.5 <em>only for the final label</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> AdalineGD:</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, eta<span class="op">=</span><span class="fl">0.01</span>, n_iter<span class="op">=</span><span class="dv">50</span>, random_state<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.eta <span class="op">=</span> eta              <span class="co"># learning rate η</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_iter <span class="op">=</span> n_iter        <span class="co"># epochs of full-batch GD</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.random_state <span class="op">=</span> random_state</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>, X, y):</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        rgen <span class="op">=</span> np.random.RandomState(<span class="va">self</span>.random_state)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.w_ <span class="op">=</span> rgen.normal(loc<span class="op">=</span><span class="fl">0.0</span>, scale<span class="op">=</span><span class="fl">0.01</span>, size<span class="op">=</span>X.shape[<span class="dv">1</span>])  <span class="co"># small random init</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.b_ <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.losses_, <span class="va">self</span>.missed_ <span class="op">=</span> [], []</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.n_iter):</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>            net_input <span class="op">=</span> <span class="va">self</span>.net_input(X)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>            output <span class="op">=</span> <span class="va">self</span>.activation(net_input)     <span class="co"># identity: output == net_input</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>            errors <span class="op">=</span> (y <span class="op">-</span> output)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.missed_.append(np.<span class="bu">sum</span>(np.<span class="bu">abs</span>(y <span class="op">-</span> <span class="va">self</span>.predict(X))))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.w_.shape[<span class="dv">0</span>]):       <span class="co"># per-feature average gradient</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.w_[j] <span class="op">+=</span> <span class="va">self</span>.eta <span class="op">*</span> (X[:, j] <span class="op">*</span> errors).mean()</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.b_ <span class="op">+=</span> <span class="va">self</span>.eta <span class="op">*</span> errors.mean()</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.losses_.append((errors <span class="op">**</span> <span class="dv">2</span>).mean())   <span class="co"># MSE per epoch</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> net_input(<span class="va">self</span>, X):</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.dot(X, <span class="va">self</span>.w_) <span class="op">+</span> <span class="va">self</span>.b_         <span class="co"># z = Xw + b</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> activation(<span class="va">self</span>, X):</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> X                                    <span class="co"># linear / identity activation</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X):</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.where(<span class="va">self</span>.activation(<span class="va">self</span>.net_input(X)) <span class="op">&gt;=</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)  <span class="co"># threshold ONLY here</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The hyperparameters you tune are the <strong>learning rate</strong> <code>eta</code> (<span class="math inline">\eta</span>) and the number of epochs <code>n_iter</code>; weights are initialized from <code>normal(0, 0.01)</code> and the bias from <code>0.0</code>. Labels are encoded <strong>0/1</strong> <em>(cell 5)</em>, so the threshold is <code>0.5</code> (the more common Adaline texts use <span class="math inline">\pm 1</span> and threshold at 0).</p>
+<div class="callout-pitfall">
+<p><strong>Idiom notes worth knowing.</strong></p>
+<ul>
+<li>The loss tracked is <code>(errors ** 2).mean()</code>, i.e.&nbsp;<span class="math inline">\tfrac{1}{n}\sum(y-z)^2</span> — the <strong>mean</strong> squared error, with no <span class="math inline">\tfrac12</span>. The lecture’s written loss carries a <span class="math inline">\tfrac{1}{2n}</span> prefactor (slide 19); the <span class="math inline">\tfrac12</span> only rescales the gradient and is absorbed into <span class="math inline">\eta</span>, so the notebook drops it (disagreement [R9-12] flavor; see <a href="#sec-adaline-math">§8</a>).</li>
+<li>The per-feature update loop <code>self.w_[j] += self.eta * (X[:, j] * errors).mean()</code> is the <strong>average</strong> gradient (divides by <span class="math inline">n</span> via <code>.mean()</code>). It is mathematically equivalent to the vectorized <code>self.w_ += self.eta * X.T @ errors / n</code>. Note that notebook 15’s <code>LogisticRegressionGD</code> writes the same step as <code>X.T.dot(errors) / X.shape[0]</code> — the structure is identical, exactly as the lecture claims ([R9-11]).</li>
+</ul>
+</div>
+<div class="callout-bigpicture">
+<p>The course standardizes the learning rate as <span class="math inline">\eta</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Footnote aside, recognize this loop for what it is: a forward pass (<code>net_input</code> → <code>activation</code>), an error, a gradient, an update. That is the same skeleton as <a href="../appendix/math_appendix.html#sec-gd">backprop</a> in a <a href="../methods/nn_basics.html">neural net</a> — Adaline is the one-neuron base case.</p>
+</div>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<p>All three examples use the course’s setup <em>(notebook <code>14_Adaline.ipynb</code>)</em>: the <strong>Iris</strong> dataset, first 100 rows (50 <strong>Iris-setosa</strong> encoded 0, 50 <strong>Iris-versicolor</strong> encoded 1), with two features — <strong>sepal length</strong> (col 0) and <strong>petal length</strong> (col 2). The notebook ships <strong>no stored numeric outputs</strong> (no cells were executed in the saved file), so every number below was <strong>computed</strong> by re-running the notebook’s exact <code>AdalineGD</code> class and settings via the project venv on <code>load_iris()</code> (deterministic, <code>random_state=1</code>).</p>
+<section id="sec-adaline-eta" class="level3">
+<h3 class="anchored" data-anchor-id="sec-adaline-eta">Example 1 — the learning rate makes or breaks convergence</h3>
+<p>The notebook trains three unscaled runs that vary only <span class="math inline">\eta</span> <em>(cells 12, 18)</em>. The behavior is a textbook illustration of the learning-rate trade-off:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ada_mid  <span class="op">=</span> AdalineGD(n_iter<span class="op">=</span><span class="dv">15</span>,   eta<span class="op">=</span><span class="fl">0.01</span>).fit(X, y)   <span class="co"># "just right"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>ada_big  <span class="op">=</span> AdalineGD(n_iter<span class="op">=</span><span class="dv">15</span>,   eta<span class="op">=</span><span class="fl">0.1</span> ).fit(X, y)   <span class="co"># too large → diverges</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ada_tiny <span class="op">=</span> AdalineGD(n_iter<span class="op">=</span><span class="dv">1000</span>, eta<span class="op">=</span><span class="fl">0.0001</span>).fit(X, y) <span class="co"># too small → crawls</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><strong><span class="math inline">\eta = 0.01</span> (Goldilocks):</strong> MSE falls smoothly <strong>0.4348 → 0.1348</strong> over 15 epochs, and the classifier reaches <strong>zero misclassifications by epoch 6</strong> (computed). This is the convergent regime.</li>
+<li><strong><span class="math inline">\eta = 0.1</span> (too large):</strong> the gradient steps <strong>overshoot the minimum and the loss explodes</strong> — MSE goes 0.4348 → 2.52 → 22.2 → 205 → … → <strong>≈ 9.2 × 10¹²</strong> by epoch 15 (computed), with <strong>all 50 points misclassified throughout</strong>. The updates oscillate to ever-larger weights instead of settling.</li>
+<li><strong><span class="math inline">\eta = 0.0001</span> (too small):</strong> stable but glacial — after <strong>1000</strong> epochs MSE only reaches <strong>0.1464</strong> (computed), barely better than the <span class="math inline">\eta=0.01</span> run achieved in 15. It does eventually reach zero misclassifications, but pays 1000 epochs for it.</li>
+</ul>
+<p>The lesson the notebook’s markdown states explicitly: “if the learning rate is too large, the algorithm might not converge, and if it’s too small, the algorithm will converge slowly” <em>(cell 11)</em>. The viz in <a href="#sec-adaline-viz">§5</a> plots the divergent vs convergent loss curves side by side.</p>
+</section>
+<section id="sec-adaline-std" class="level3">
+<h3 class="anchored" data-anchor-id="sec-adaline-std">Example 2 — standardizing the features smooths convergence</h3>
+<p>Sepal length (~4.3–7.0 cm) and petal length (~1.0–5.1 cm) live on different scales, which distorts the loss surface and forces a tiny learning rate. The notebook standardizes each feature to mean 0, sd 1 <em>(cells 22–24)</em> and then runs the <strong>same <span class="math inline">\eta = 0.1</span> that diverged on the raw data</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X_std <span class="op">=</span> np.copy(X)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>X_std[:, <span class="dv">0</span>] <span class="op">=</span> (X[:, <span class="dv">0</span>] <span class="op">-</span> X[:, <span class="dv">0</span>].mean()) <span class="op">/</span> X[:, <span class="dv">0</span>].std()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>X_std[:, <span class="dv">1</span>] <span class="op">=</span> (X[:, <span class="dv">1</span>] <span class="op">-</span> X[:, <span class="dv">1</span>].mean()) <span class="op">/</span> X[:, <span class="dv">1</span>].std()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ada_std <span class="op">=</span> AdalineGD(n_iter<span class="op">=</span><span class="dv">15</span>, eta<span class="op">=</span><span class="fl">0.1</span>).fit(X_std, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>On standardized features, <span class="math inline">\eta = 0.1</span> — which blew up on the raw data — now <strong>converges smoothly</strong>: MSE falls <strong>0.4942 → 0.0505</strong> over 15 epochs (computed), the <strong>lowest loss of any run on this page</strong>, with a clean monotone decrease. Two honest caveats, both computed:</p>
+<ul>
+<li>It reaches the lowest <em>MSE</em>, but within 15 epochs it still has <strong>4 misclassifications</strong> (down from 50); it reaches <strong>zero misclassifications at epoch 45</strong> if you let it run. So “converges better” means <em>smoother and lower-loss</em>, not <em>zero errors fastest</em> — the unscaled <span class="math inline">\eta=0.01</span> run hit zero misclass first (epoch 6) because its decision boundary crossed the data sooner, even though its MSE stayed higher.</li>
+<li>The win is that standardization let a <strong>single large, fast learning rate work at all</strong> — no per-feature tuning, no divergence. This is exactly why feature scaling is standard practice before gradient descent (notebook conclusion, <em>cell 27</em>).</li>
+</ul>
+<div class="callout-bigpicture">
+<p>Adaline → logistic → NN: change Adaline’s loss to cross-entropy and its activation to a sigmoid and you get <a href="../methods/logistic.html"><strong>logistic regression</strong></a> — <em>with the gradient-descent update rule unchanged</em> (Lecture 8, slides 27–28; [R9-11]). Wire several such neurons together with non-linear activations and the same forward-pass / loss / gradient / update loop becomes <a href="../methods/nn_basics.html"><strong>backprop in a neural network</strong></a>. Everything you see in this page’s training loop scales up to deep learning.</p>
+</div>
+</section>
+</section>
+<section id="sec-adaline-viz" class="level2">
+<h2 class="anchored" data-anchor-id="sec-adaline-viz">5. Visualization</h2>
+<p>The one figure that earns its place for Adaline is the <strong>MSE-vs-epoch curve for two learning rates</strong> — it makes the central lesson of <a href="#sec-adaline-eta">§4</a> visible: with a well-chosen <span class="math inline">\eta</span> the loss glides into a minimum, while with <span class="math inline">\eta</span> too large the very same algorithm diverges. Prose can say “it diverges”; only the picture shows the loss curving <em>upward</em> off the chart.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="137" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 136;"><span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a>famLinear <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-linear'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#2E86AB"</span>)</span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a><span class="co">// MSE per epoch, computed via the venv from nb14's exact AdalineGD on load_iris (random_state=1).</span></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>lossConverge <span class="op">=</span> [<span class="fl">0.4348</span><span class="op">,</span> <span class="fl">0.2661</span><span class="op">,</span> <span class="fl">0.2041</span><span class="op">,</span> <span class="fl">0.1799</span><span class="op">,</span> <span class="fl">0.1692</span><span class="op">,</span> <span class="fl">0.1632</span><span class="op">,</span> <span class="fl">0.1590</span><span class="op">,</span> <span class="fl">0.1555</span><span class="op">,</span> <span class="fl">0.1522</span><span class="op">,</span> <span class="fl">0.1491</span><span class="op">,</span> <span class="fl">0.1461</span><span class="op">,</span> <span class="fl">0.1432</span><span class="op">,</span> <span class="fl">0.1403</span><span class="op">,</span> <span class="fl">0.1375</span><span class="op">,</span> <span class="fl">0.1348</span>]</span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>lossDiverge  <span class="op">=</span> [<span class="fl">0.4348</span><span class="op">,</span> <span class="fl">2.5199</span><span class="op">,</span> <span class="fl">22.207</span><span class="op">,</span> <span class="fl">205.5205</span><span class="op">,</span> <span class="fl">1910.4251</span><span class="op">,</span> <span class="fl">17765.2884</span><span class="op">,</span> <span class="fl">165192.4</span><span class="op">,</span> <span class="fl">1536426.0</span><span class="op">,</span> <span class="fl">14289530.0</span><span class="op">,</span> <span class="fl">132894900.0</span><span class="op">,</span> <span class="fl">1235995000.0</span><span class="op">,</span> <span class="fl">11494780000.0</span><span class="op">,</span> <span class="fl">106903400000.0</span><span class="op">,</span> <span class="fl">994158600000.0</span><span class="op">,</span> <span class="fl">9240517204349.062</span>]</span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>adalineLoss <span class="op">=</span> lossConverge<span class="op">.</span><span class="fu">map</span>((v<span class="op">,</span>i) <span class="kw">=&gt;</span> ({<span class="dt">epoch</span><span class="op">:</span> i<span class="op">+</span><span class="dv">1</span><span class="op">,</span> <span class="dt">mse</span><span class="op">:</span> v<span class="op">,</span> <span class="dt">run</span><span class="op">:</span> <span class="st">"η = 0.01 (converges)"</span>}))</span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>  <span class="op">.</span><span class="fu">concat</span>(lossDiverge<span class="op">.</span><span class="fu">map</span>((v<span class="op">,</span>i) <span class="kw">=&gt;</span> ({<span class="dt">epoch</span><span class="op">:</span> i<span class="op">+</span><span class="dv">1</span><span class="op">,</span> <span class="dt">mse</span><span class="op">:</span> v<span class="op">,</span> <span class="dt">run</span><span class="op">:</span> <span class="st">"η = 0.1 (diverges)"</span>})))</span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">320</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">64</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Epoch"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="dv">1</span><span class="op">,</span> <span class="dv">15</span>]}<span class="op">,</span></span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Mean squared error (log scale)"</span><span class="op">,</span> <span class="dt">type</span><span class="op">:</span> <span class="st">"log"</span>}<span class="op">,</span></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> {<span class="dt">legend</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="st">"η = 0.01 (converges)"</span><span class="op">,</span> <span class="st">"η = 0.1 (diverges)"</span>]<span class="op">,</span> <span class="dt">range</span><span class="op">:</span> [famLinear<span class="op">,</span> <span class="st">"#c0392b"</span>]}<span class="op">,</span></span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(adalineLoss<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">run</span> <span class="op">===</span> <span class="st">"η = 0.01 (converges)"</span>)<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"epoch"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"mse"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> famLinear<span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="fl">2.5</span>})<span class="op">,</span></span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>(adalineLoss<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">run</span> <span class="op">===</span> <span class="st">"η = 0.1 (diverges)"</span>)<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"epoch"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"mse"</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> <span class="st">"#c0392b"</span><span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="fl">2.5</span><span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"4,3"</span>})<span class="op">,</span></span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(adalineLoss<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"epoch"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"mse"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"run"</span><span class="op">,</span> <span class="dt">r</span><span class="op">:</span> <span class="dv">3</span>})<span class="op">,</span></span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>([<span class="dv">1</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#ddd"</span>})</span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-adaline-loss" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-adaline-loss-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-adaline-loss-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-adaline-loss-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-adaline-loss-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-adaline-loss-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-adaline-loss-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-adaline-loss-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-adaline-loss-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-adaline-loss-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-adaline-loss-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-adaline-loss-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-adaline-loss-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-adaline-loss-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-adaline-loss-5" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-adaline-loss-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-5" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-adaline-loss-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(e)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-adaline-loss-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Adaline MSE vs epoch on unscaled Iris (setosa vs versicolor, 2 features), for two learning rates. With η = 0.01 (solid) the mean squared error descends smoothly toward a minimum; with η = 0.1 (dashed) the same gradient-descent updates overshoot and the loss explodes — plotted on a log scale so both fit. Values computed by re-running the notebook’s AdalineGD class (random_state = 1).
+</figcaption>
+</figure>
+</div>
+</div>
+<p>The decision-region plots the notebook also draws <em>(cells 16, 20, 26)</em> show the same story spatially: the converged models split setosa from versicolor with a clean straight line, while the divergent run does not.</p>
+</section>
+<section id="diagnostics-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-interpretation">6. Diagnostics &amp; interpretation</h2>
+<p>What to watch when training an Adaline (the notebook tracks both signals every epoch — <code>losses_</code> and <code>missed_</code>):</p>
+<ul>
+<li><strong>Loss curve (<code>losses_</code>, MSE per epoch).</strong> It should decrease <strong>monotonically and smoothly</strong>. A curve that rises, oscillates, or explodes (the <span class="math inline">\eta=0.1</span> run in <a href="#sec-adaline-eta">§4</a>) means the learning rate is too large — <em>decrease <span class="math inline">\eta</span> or standardize the features</em>. A curve that is still falling steeply at the last epoch means you stopped too early or <span class="math inline">\eta</span> is too small.</li>
+<li><strong>Misclassification count (<code>missed_</code>, via the 0.5 threshold).</strong> This can hit zero <strong>while the MSE is still well above zero</strong> — the standardized run reaches a perfect-ish boundary long before the net inputs sit exactly at 0/1, because squared error keeps penalizing confident-correct points. The two metrics measure different things; report both.</li>
+<li><strong>Feature scaling.</strong> Wildly different feature ranges are the usual cause of divergence or crawling convergence. Standardize (mean 0, sd 1) before training, as in <a href="#sec-adaline-std">§4</a>.</li>
+<li><strong>Learning rate.</strong> The single most important knob. Diagnose it <em>from the loss curve</em>, not in isolation.</li>
+</ul>
+<div class="callout-bigpicture">
+<p>Comparative diagnostic vs siblings: Adaline’s MSE on net inputs is the “wrong” loss for probabilities — it keeps penalizing already-correct confident points. <a href="../methods/logistic.html"><strong>Logistic regression</strong></a>’s cross-entropy fixes exactly this and yields a calibrated probability, all while reusing Adaline’s identical gradient step ([R9-11]). If you find yourself wishing Adaline’s output were a probability, that wish <em>is</em> logistic regression.</p>
+</div>
+</section>
+<section id="past-exam-lens" class="level2">
+<h2 class="anchored" data-anchor-id="past-exam-lens">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How Adaline shows up: it does not, directly.</strong> Adaline was <strong>not examined in Spring-2025</strong> — there is no exam task that fits, trains, or asks you to derive Adaline (per <code>phase0/disagreements.md</code>, R8). Its exam relevance is entirely as <strong>scaffolding</strong> for things that <em>are</em> examinable: gradient descent, <a href="../methods/logistic.html">logistic regression</a>, and <a href="../methods/nn_basics.html">neural networks</a>. The closest formal link is the lecture’s <strong>optional home exercise</strong> (Lecture 8, slide 27): show that the gradient-descent update for <a href="../methods/logistic.html">logistic regression</a> (cross-entropy + sigmoid) is <em>identical</em> to Adaline’s (MSE + linear activation) — both reduce to <span class="math inline">\partial L/\partial w_j = -\tfrac{1}{n}\sum_i (y^{(i)} - \text{activation}^{(i)})\,x_j^{(i)}</span> ([R9-11]; derivation deferred to <a href="#sec-adaline-math">§8</a>). If you understand Adaline’s training loop, you understand the mechanics every neural-net question rests on.</p>
+</div>
+</section>
+<section id="sec-adaline-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-adaline-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> The course defines Adaline by three pieces and trains it by batch gradient descent <em>(Lecture 8, slides 17–20; notebook <code>14_Adaline.ipynb</code>, cells 9–10)</em>. Here <span class="math inline">i = 1,\dots,n</span> indexes the training examples, <span class="math inline">j = 1,\dots,m</span> the features, <span class="math inline">\eta</span> is the <strong>learning rate</strong> (Lecture 8 also writes this as <span class="math inline">\alpha</span> in the generic-backprop section; this site standardises on <span class="math inline">\eta</span> per <code>phase0/notation_table.md</code>, see the <a href="#code-idiom">§3</a> footnote), and labels are encoded <span class="math inline">y^{(i)} \in \{0,1\}</span>.</p>
+<p>First the <strong>net input</strong> is the linear score, and the <strong>activation is the identity</strong> — the activation output <em>is</em> the net input (slides 15, 17): <span class="math display">z^{(i)} = w^\top x^{(i)} + b , \qquad a^{(i)} = z^{(i)} .</span> Training minimizes the <strong>mean squared error measured on the continuous net inputs</strong> (slide 19): <span class="math display">L(w,b) = \frac{1}{2n}\sum_{i=1}^{n}\bigl(y^{(i)} - z^{(i)}\bigr)^2 .</span> Because the activation is the identity, <span class="math inline">\partial z^{(i)}/\partial w_j = x_j^{(i)}</span> and <span class="math inline">\partial z^{(i)}/\partial b = 1</span>, so the chain rule gives the <strong>batch-gradient-descent gradients</strong> (slide 20): <span class="math display">\frac{\partial L}{\partial w_j} = -\frac{1}{n}\sum_{i=1}^{n}\bigl(y^{(i)} - z^{(i)}\bigr)x_j^{(i)} , \qquad \frac{\partial L}{\partial b} = -\frac{1}{n}\sum_{i=1}^{n}\bigl(y^{(i)} - z^{(i)}\bigr) .</span> Each epoch then takes one <strong>full-batch step downhill</strong> (slide 20): <span class="math display">w \leftarrow w - \eta\,\nabla_w L , \qquad b \leftarrow b - \eta\,\nabla_b L .</span> Only at the very end is the real-valued output turned into a class label by a <strong>threshold</strong> — never during the weight updates (slide 18, all-caps “THE THRESHOLD FUNCTION IS ONLY USED TO MAKE THE FINAL PREDICTION”): <span class="math display">\hat y^{(i)} = \begin{cases} 1 &amp; z^{(i)} \ge 0.5 \\ 0 &amp; z^{(i)} &lt; 0.5 \end{cases} \qquad (\text{threshold } 0.5 \text{ because labels are } 0/1).</span> <strong>Reading it:</strong> the error <span class="math inline">y^{(i)} - z^{(i)}</span> is the residual between a label and a <em>continuous</em> score; the update nudges each weight in proportion to the average of that residual times the feature, exactly as in linear regression — for <span class="math inline">y=1</span> it pushes <span class="math inline">z</span> toward <span class="math inline">1</span>, for <span class="math inline">y=0</span> toward <span class="math inline">0</span> (slide 17). Note the slide’s <span class="math inline">\tfrac{1}{2n}</span> prefactor versus the notebook’s <span class="math inline">\tfrac{1}{n}</span> MSE <em>(cell 10, <code>(errors ** 2).mean()</code>)</em>: the <span class="math inline">\tfrac12</span> only rescales the gradient and is absorbed into <span class="math inline">\eta</span>, so it changes no behaviour ([R9-12] flavour). See the <a href="../appendix/math_appendix.html#sec-gd">GD math appendix</a>.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor.</strong> ESL has no section named “Adaline”; the rigorous footing comes from two places it <em>does</em> treat — least squares (<strong>ESL §3.2</strong>, eqs 3.3–3.6) and the single-unit / gradient-descent view of a neuron (<strong>ESL §11.3–11.4</strong>, eqs 11.5, 11.9, 11.13). The “ADAptive LInear NEuron / delta-rule” framing itself is course/perceptron-history, not ESL terminology; ESL instead notes that back-propagation “has also been called the <em>delta rule</em> (Widrow and Hoff, 1960)” — Widrow and Hoff being exactly Adaline’s authors (ESL §11.4, p.&nbsp;397).</p>
+<p><strong>(i) Adaline is least squares on the labels, solved by GD.</strong> Collect the net inputs as <span class="math inline">z = Xb_{\!*} + \mathbf 1 b</span>, or absorb the bias into a leading ones-column so <span class="math inline">z = X\beta</span>. Adaline’s loss is then, up to the constant <span class="math inline">\tfrac{1}{2n}</span>, ESL’s residual sum of squares <span class="math display">2n\,L(\beta) = \mathrm{RSS}(\beta) = (y - X\beta)^\top (y - X\beta) \qquad \text{(ESL 3.3),}</span> whose gradient is <span class="math inline">\nabla_\beta \mathrm{RSS} = -2X^\top(y - X\beta)</span> (ESL 3.4) — <em>the same residual-times-feature form as the course gradient in Mode A.</em> Because this objective is convex with a single stationary point, the GD iterates (when they converge) land on the zero-gradient solution, i.e.&nbsp;the <strong>normal equations</strong> <span class="math inline">X^\top(y - X\beta) = 0</span> (ESL 3.5) and hence the closed-form OLS estimate <span class="math display">\hat\beta = (X^\top X)^{-1}X^\top y \qquad \text{(ESL 3.6).}</span> So Adaline computes nothing new at convergence: it is <strong>OLS on the <span class="math inline">0/1</span> labels reached iteratively</strong> rather than in closed form — the price of iteration buys an online/streaming learner and the gradient-descent template, not a different fit. (The threshold at <span class="math inline">0.5</span> is applied <em>after</em> this regression, turning the least-squares scores into class labels; it has no effect on the fit itself.) ESL §11.4 makes the same point from the neuron side: with the identity activation the network “collapses to a linear model in the inputs” (§11.3, p.&nbsp;394), and its squared-error fit <span class="math inline">R(\theta)=\sum_i(y_i-f(x_i))^2</span> (ESL 11.9, here <span class="math inline">K=1</span>) is minimized by gradient descent <span class="math inline">\beta^{(r+1)} = \beta^{(r)} - \gamma_r\sum_i \partial R_i/\partial\beta</span> with <strong>learning rate</strong> <span class="math inline">\gamma_r</span> (ESL 11.13) — Adaline’s update with <span class="math inline">\gamma_r \equiv \eta</span>.</p>
+<p><strong>(ii) Convergence and the learning-rate condition.</strong> On the quadratic MSE surface the gradient is linear in <span class="math inline">\beta</span>, so a GD step is the affine map <span class="math inline">\beta \leftarrow (I - \eta H)\beta + \text{const}</span>, where <span class="math inline">H</span> is the loss Hessian. The iteration is stable iff every eigenvalue of <span class="math inline">I-\eta H</span> lies in <span class="math inline">(-1,1)</span>, i.e.&nbsp;iff <span class="math inline">0 &lt; \eta &lt; 2/\lambda_{\max}(H)</span> (a standard convex-quadratic GD result, not stated in ESL §11). For the slide’s <span class="math inline">\tfrac{1}{2n}</span> loss <span class="math inline">H = \tfrac1n X^\top X</span>, giving <span class="math display">0 &lt; \eta &lt; \frac{2}{\lambda_{\max}\!\bigl(\tfrac1n X^\top X\bigr)} ;</span> for the notebook’s <span class="math inline">\tfrac1n</span> loss the Hessian is <span class="math inline">\tfrac2n X^\top X</span> and the bound halves to <span class="math inline">\eta &lt; 1/\lambda_{\max}(\tfrac1n X^\top X)</span>. Either way, <strong>larger <span class="math inline">\lambda_{\max}</span> forces a smaller stable step</strong>, and standardization shrinks <span class="math inline">\lambda_{\max}</span>. On the page’s Iris data this is exact (computed via the venv, <code>random_state=1</code>): the largest eigenvalue of <span class="math inline">\tfrac1n X^\top X</span> is <span class="math inline">\lambda_{\max} \approx 39.5</span> on the raw features but only <span class="math inline">\approx 1.8</span> after standardization — a <span class="math inline">\sim 22\times</span> reduction. For the notebook’s <span class="math inline">\tfrac1n</span> loss the stable range is therefore <span class="math inline">\eta &lt; 0.025</span> raw versus <span class="math inline">\eta &lt; 0.55</span> standardized, which <strong>explains <a href="#sec-adaline-eta">§4</a> exactly</strong>: <span class="math inline">\eta=0.01</span> converges and <span class="math inline">\eta=0.1</span> diverges on the raw data (0.1 sits well outside <span class="math inline">0.025</span>), yet that same <span class="math inline">\eta=0.1</span> converges smoothly once the features are standardized (<a href="#sec-adaline-std">§4</a>, <span class="math inline">0.1 &lt; 0.55</span>). The <span class="math inline">\eta=0.1</span> explosion is not numerical bad luck but the predicted instability of <span class="math inline">|1-\eta\lambda_{\max}|&gt;1</span>.</p>
+<p><strong>(iii) The Adaline → logistic equivalence [R9-11].</strong> Replace the identity activation by the sigmoid <span class="math inline">\sigma(z)=1/(1+e^{-z})</span> and the MSE by the cross-entropy <span class="math inline">L = \sum_i\bigl[-y^{(i)}\log\sigma(z^{(i)}) - (1-y^{(i)})\log(1-\sigma(z^{(i)}))\bigr]</span>, and the gradient-descent update is <strong>formally unchanged</strong>: <span class="math display">\frac{\partial L}{\partial w_j} = -\frac{1}{n}\sum_{i=1}^{n}\bigl(y^{(i)} - \text{activation}^{(i)}\bigr)x_j^{(i)} ,</span> where <span class="math inline">\text{activation}^{(i)} = z^{(i)}</span> for Adaline and <span class="math inline">\sigma(z^{(i)})</span> for logistic regression (Lecture 8, slides 27–28; the slide’s optional home exercise). The non-obvious part is that for logistic regression the sigmoid’s derivative <span class="math inline">\sigma'=\sigma(1-\sigma)</span> from the chain rule cancels exactly against the cross-entropy’s denominator, leaving the same residual-times-feature form — the two pairings (identity+MSE, sigmoid+cross-entropy) are precisely the two that produce a clean <span class="math inline">(y-\text{activation})\,x_j</span> gradient. ESL §11.4 records the same lineage: the squared-error and cross-entropy fits “have the same form” and both descend by the delta rule (p.&nbsp;397). This is why <a href="../methods/logistic.html">logistic regression</a> reuses Adaline’s training loop unchanged. See the <a href="../appendix/math_appendix.html#sec-linalg">linear-algebra appendix</a> and the <a href="../appendix/math_appendix.html#sec-gd">GD appendix</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Lecture 8 uses <strong>two symbols for the same learning rate</strong>: <span class="math inline">\eta</span> in the Adaline / logistic-regression sections (slides 19, 20, 28) and <span class="math inline">\alpha</span> in the generic backprop section (slides 12–13). This site standardizes on <span class="math inline">\eta</span> throughout, per <code>phase0/notation_table.md</code> (item 4).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbUxpbmVhciA9IChnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmRvY3VtZW50RWxlbWVudCkuZ2V0UHJvcGVydHlWYWx1ZSgnLS1mYW1pbHktbGluZWFyJykudHJpbSgpIHx8IFwiIzJFODZBQlwiKVxuLy8gTVNFIHBlciBlcG9jaCwgY29tcHV0ZWQgdmlhIHRoZSB2ZW52IGZyb20gbmIxNCdzIGV4YWN0IEFkYWxpbmVHRCBvbiBsb2FkX2lyaXMgKHJhbmRvbV9zdGF0ZT0xKS5cbmxvc3NDb252ZXJnZSA9IFswLjQzNDgsIDAuMjY2MSwgMC4yMDQxLCAwLjE3OTksIDAuMTY5MiwgMC4xNjMyLCAwLjE1OTAsIDAuMTU1NSwgMC4xNTIyLCAwLjE0OTEsIDAuMTQ2MSwgMC4xNDMyLCAwLjE0MDMsIDAuMTM3NSwgMC4xMzQ4XVxubG9zc0RpdmVyZ2UgID0gWzAuNDM0OCwgMi41MTk5LCAyMi4yMDcsIDIwNS41MjA1LCAxOTEwLjQyNTEsIDE3NzY1LjI4ODQsIDE2NTE5Mi40LCAxNTM2NDI2LjAsIDE0Mjg5NTMwLjAsIDEzMjg5NDkwMC4wLCAxMjM1OTk1MDAwLjAsIDExNDk0NzgwMDAwLjAsIDEwNjkwMzQwMDAwMC4wLCA5OTQxNTg2MDAwMDAuMCwgOTI0MDUxNzIwNDM0OS4wNjJdXG5hZGFsaW5lTG9zcyA9IGxvc3NDb252ZXJnZS5tYXAoKHYsaSkgPT4gKHtlcG9jaDogaSsxLCBtc2U6IHYsIHJ1bjogXCLOtyA9IDAuMDEgKGNvbnZlcmdlcylcIn0pKVxuICAuY29uY2F0KGxvc3NEaXZlcmdlLm1hcCgodixpKSA9PiAoe2Vwb2NoOiBpKzEsIG1zZTogdiwgcnVuOiBcIs63ID0gMC4xIChkaXZlcmdlcylcIn0pKSlcblBsb3QucGxvdCh7XG4gIGhlaWdodDogMzIwLCBtYXJnaW5MZWZ0OiA2NCwgZ3JpZDogdHJ1ZSxcbiAgeDoge2xhYmVsOiBcIkVwb2NoXCIsIGRvbWFpbjogWzEsIDE1XX0sXG4gIHk6IHtsYWJlbDogXCJNZWFuIHNxdWFyZWQgZXJyb3IgKGxvZyBzY2FsZSlcIiwgdHlwZTogXCJsb2dcIn0sXG4gIGNvbG9yOiB7bGVnZW5kOiB0cnVlLCBkb21haW46IFtcIs63ID0gMC4wMSAoY29udmVyZ2VzKVwiLCBcIs63ID0gMC4xIChkaXZlcmdlcylcIl0sIHJhbmdlOiBbZmFtTGluZWFyLCBcIiNjMDM5MmJcIl19LFxuICBtYXJrczogW1xuICAgIFBsb3QubGluZShhZGFsaW5lTG9zcy5maWx0ZXIoZCA9PiBkLnJ1biA9PT0gXCLOtyA9IDAuMDEgKGNvbnZlcmdlcylcIiksIHt4OiBcImVwb2NoXCIsIHk6IFwibXNlXCIsIHN0cm9rZTogZmFtTGluZWFyLCBzdHJva2VXaWR0aDogMi41fSksXG4gICAgUGxvdC5saW5lKGFkYWxpbmVMb3NzLmZpbHRlcihkID0+IGQucnVuID09PSBcIs63ID0gMC4xIChkaXZlcmdlcylcIiksIHt4OiBcImVwb2NoXCIsIHk6IFwibXNlXCIsIHN0cm9rZTogXCIjYzAzOTJiXCIsIHN0cm9rZVdpZHRoOiAyLjUsIHN0cm9rZURhc2hhcnJheTogXCI0LDNcIn0pLFxuICAgIFBsb3QuZG90KGFkYWxpbmVMb3NzLCB7eDogXCJlcG9jaFwiLCB5OiBcIm1zZVwiLCBmaWxsOiBcInJ1blwiLCByOiAzfSksXG4gICAgUGxvdC5ydWxlWShbMV0sIHtzdHJva2U6IFwiI2RkZFwifSlcbiAgXVxufSlcbiJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/lda.html" class="pagination-link" aria-label="Linear Discriminant Analysis (LDA)">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Linear Discriminant Analysis (LDA)</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/regularization.html" class="pagination-link" aria-label="Regularization — Ridge, Lasso, Elastic Net">
+        <span class="nav-page-text">Regularization — Ridge, Lasso, Elastic Net</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

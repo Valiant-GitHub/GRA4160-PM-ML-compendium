@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Random Forests – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/ensembles.html" rel="next">
+<link href="../methods/decision_trees.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-tree quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/decision_trees.html">Methods — Tree family</a></li><li class="breadcrumb-item"><a href="../methods/random_forests.html">Random Forests</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#sec-rf-when" id="toc-sec-rf-when" class="nav-link" data-scroll-target="#sec-rf-when">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#sec-rf-code" id="toc-sec-rf-code" class="nav-link" data-scroll-target="#sec-rf-code">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-rf-titanic" id="toc-sec-rf-titanic" class="nav-link" data-scroll-target="#sec-rf-titanic">Example 1 — from-scratch RF vs sklearn RF vs Extra Trees on Titanic</a></li>
+  <li><a href="#sec-rf-importance" id="toc-sec-rf-importance" class="nav-link" data-scroll-target="#sec-rf-importance">Example 2 — reading the feature importances (Titanic)</a></li>
+  <li><a href="#sec-rf-nest" id="toc-sec-rf-nest" class="nav-link" data-scroll-target="#sec-rf-nest">Example 3 — does adding trees help? (a cautionary <code>n_estimators</code> sweep)</a></li>
+  </ul></li>
+  <li><a href="#sec-rf-viz" id="toc-sec-rf-viz" class="nav-link" data-scroll-target="#sec-rf-viz">5. Visualization</a></li>
+  <li><a href="#sec-rf-diag" id="toc-sec-rf-diag" class="nav-link" data-scroll-target="#sec-rf-diag">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#sec-rf-exam" id="toc-sec-rf-exam" class="nav-link" data-scroll-target="#sec-rf-exam">7. Past-exam lens</a></li>
+  <li><a href="#sec-rf-math" id="toc-sec-rf-math" class="nav-link" data-scroll-target="#sec-rf-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/decision_trees.html">Methods — Tree family</a></li><li class="breadcrumb-item"><a href="../methods/random_forests.html">Random Forests</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Random Forests</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Tree family</strong></span> · many decision trees, deliberately made to disagree, then voted together — the variance-killer you reach for when a single <a href="../methods/decision_trees.html">Decision Tree</a> overfits. Random Forest = <strong>bagging</strong> (each tree on a bootstrap sample) <strong>+ feature randomness</strong> (each split sees only a random subset of predictors). Siblings: a single <a href="../methods/decision_trees.html">Decision Tree</a> (the high-variance learner RF tames), plain bagging and <strong>gradient boosting</strong> (<a href="../methods/ensembles.html">Ensembles</a> — bagging-reduces-variance vs boosting-reduces-bias), and Extra Trees (one extra dose of randomness). Read its variance story through the <a href="../methods/bias_variance.html">bias–variance</a> lens.</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p>A random forest is an <strong>ensemble</strong> of decision trees whose predictions are pooled — majority vote for classification, average for regression. The point is not that any one tree is good; it is that <em>many</em> trees, each fitted to a slightly different view of the data, make <em>uncorrelated</em> mistakes that cancel when you average them. A single <a href="../methods/decision_trees.html">decision tree</a> is notoriously <strong>high-variance</strong>: shift a few training rows and the splits — and therefore the predictions — can change wildly. Pooling many trees reduces that variance, and the more <em>independent</em> the trees, the more it falls (Lecture 7, slide 18/21).</p>
+<p>Getting independence is the whole trick, and it comes in two layers. The first is <strong>bagging</strong> (bootstrap aggregating): each tree is trained on a <em>bootstrap sample</em> — <code>n</code> rows drawn <strong>with replacement</strong> from the training set, so each tree sees a different ~63% of the unique rows (Lecture 7, slides 6–7/21; the 0.632 limit, [disagreements R9-6]). But bagged trees alone stay <strong>highly correlated</strong>: if one feature is strongly predictive, nearly every tree splits on it first, so the trees look alike and their errors do <em>not</em> cancel. The second layer fixes this: <strong>feature randomness</strong>. At <em>every split</em>, the tree is only allowed to consider a <strong>random subset of about <code>√p</code> features</strong> (out of <code>p</code> total), forcing different trees to build around different predictors and thereby <strong>decorrelating</strong> them (Lecture 7, slides 19–20/21). That decorrelation is what buys variance reduction <em>beyond</em> plain bagging — the defining idea of a random forest.</p>
+<p><strong>Extra Trees</strong> (Extremely Randomized Trees) push the randomness one notch further: in addition to the random feature subset, they pick the <strong>split threshold at random</strong> rather than searching for the optimal one (Lecture 7, slide 21/21). Each individual tree is then a little worse (higher bias), but the trees are even less correlated, so the ensemble’s variance can drop further still.</p>
+<p>Trees need <strong>no feature scaling</strong>, handle mixed data types, and capture non-linear interactions automatically — so RF is the natural non-linear, low-tuning alternative to <a href="../methods/ols.html">OLS</a>/<a href="../methods/regularization.html">regularization</a> when you care about prediction more than a “+1 unit ⇒ +β” coefficient story. The price is interpretability: a forest gives you <strong>feature importances</strong> (a ranking of drivers), not signed coefficients with standard errors (Lecture 7, slide 3/21; see <a href="#sec-rf-diag">§6</a>).</p>
+</section>
+<section id="sec-rf-when" class="level2">
+<h2 class="anchored" data-anchor-id="sec-rf-when">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for a random forest when…</strong></p>
+<ul>
+<li>A single <a href="../methods/decision_trees.html"><strong>decision tree</strong></a> is <strong>overfitting</strong> (large train–test gap) and you want the same non-linear, no-scaling flexibility with far less variance. RF is the standard fix.</li>
+<li>The relationship is <strong>non-linear with interactions</strong> and you don’t want to hand-engineer the form — trees find the structure; the forest stabilizes it.</li>
+<li>You have a <strong>wide feature space</strong> (many predictors, mixed types) and want strong <strong>out-of-the-box</strong> performance with little tuning (Lecture 7, slide 20/21).</li>
+<li>You want a <strong>ranking of which features matter</strong> (feature importances) more than a per-feature effect size. This is exactly the Spring exam’s Assignment 3 ask on <strong>WDBC</strong> (see <a href="#sec-rf-exam">§7</a>).</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else when…</strong></p>
+<ul>
+<li><strong>You need interpretable, signed effects</strong> (“how does this predictor move the outcome, with a standard error?”) → <a href="../methods/ols.html"><strong>OLS</strong></a> / <a href="../methods/logistic.html"><strong>logistic regression</strong></a>. A forest’s importances rank drivers but cannot say “+1 unit ⇒ +β” (see the <a href="#sec-rf-diag">big-picture callout in §6</a>).</li>
+<li><strong>You want to squeeze out the last bit of accuracy and can afford to tune</strong> → <a href="../methods/ensembles.html"><strong>gradient boosting</strong></a> often edges out RF on structured data by reducing <strong>bias</strong> sequentially, where RF reduces <strong>variance</strong> in parallel. The exam’s Assignment 3.8 asks you to contrast exactly these two (see <a href="#sec-rf-exam">§7</a>).</li>
+<li><strong>The truth is genuinely linear and <code>p ≪ n</code></strong> → a forest will under-perform a well-specified <a href="../methods/ols.html">linear model</a> and is far less transparent.</li>
+<li><strong>A single shallow tree already generalizes well and you need a human-readable rule set</strong> → keep the <a href="../methods/decision_trees.html">single tree</a>; a forest sacrifices the readable flowchart.</li>
+</ul>
+</div>
+</section>
+<section id="sec-rf-code" class="level2">
+<h2 class="anchored" data-anchor-id="sec-rf-code">3. Code idiom</h2>
+<p>The canonical course idiom is <code>scikit-learn</code>’s <code>RandomForestClassifier</code> (and <code>ExtraTreesClassifier</code>); the course <em>also</em> hand-builds a forest from <code>DecisionTreeClassifier</code> so the bootstrap-plus-feature-subset machinery is not a black box.</p>
+<p><strong>Canonical (sklearn)</strong> — <em>(notebook <code>13_Random_forests.ipynb</code>, cells 12 &amp; 16)</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier, ExtraTreesClassifier</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>rfc <span class="op">=</span> RandomForestClassifier(n_estimators<span class="op">=</span><span class="dv">100</span>, max_depth<span class="op">=</span><span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>rfc.fit(X_train, y_train)            <span class="co"># X: (n, p); trees need no scaling</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>rfc.predict(X_test)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>rfc.feature_importances_             <span class="co"># impurity-decrease ranking, one per feature</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>etc <span class="op">=</span> ExtraTreesClassifier(n_estimators<span class="op">=</span><span class="dv">100</span>, max_depth<span class="op">=</span><span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">1</span>)  <span class="co"># random split thresholds</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>etc.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The hyperparameters that matter, annotated: <code>n_estimators</code> (number of trees — more is steadier, with diminishing returns; never <em>hurts</em> variance, only compute); <code>max_depth</code> (depth cap — the course pins <code>3</code> here to keep trees shallow); <strong><code>max_features</code></strong> (features considered per split — sklearn’s default is <code>"sqrt"</code>, i.e.&nbsp;<code>√p</code>, <strong>the random-forest knob</strong>; set it to <code>None</code> and you get plain <em>bagging</em>); <code>random_state</code> (reproducibility — note the course uses <code>30</code> for the RF and <code>1</code> for Extra Trees). With <code>p = 6</code> Titanic features, <code>√p = int(√6) = 2</code> features per split (computed).</p>
+<p><strong>From scratch — a teaching scaffold</strong> <em>(notebook <code>13_Random_forests.ipynb</code>, cells 4–7)</em>. This makes the two layers explicit: bootstrap the rows, subset the features, fit a tree; repeat; vote.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> random_subset(n_features):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> <span class="bu">int</span>(np.sqrt(n_features))                                   <span class="co"># √p feature count</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.random.choice(n_features, size<span class="op">=</span>k, replace<span class="op">=</span><span class="va">False</span>)     <span class="co"># random subset</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_tree(X_train, y_train, n_features):</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> X_train.shape[<span class="dv">0</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> np.random.choice(n, size<span class="op">=</span>n, replace<span class="op">=</span><span class="va">True</span>)                <span class="co"># bootstrap rows (with replacement)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    X_boot, y_boot <span class="op">=</span> X_train.iloc[idx], y_train.iloc[idx]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    feats <span class="op">=</span> random_subset(n_features)                              <span class="co"># subset features</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    dt <span class="op">=</span> DecisionTreeClassifier(max_features<span class="op">=</span><span class="va">None</span>, random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    dt.fit(X_boot.iloc[:, feats], y_boot)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dt, feats</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Build &amp; vote:</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>trees <span class="op">=</span> [train_tree(X_train, y_train, X_train.shape[<span class="dv">1</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">100</span>)]</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># majority vote across trees:  np.bincount(row).argmax()  per sample</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout-pitfall">
+<p><strong>Read the scratch forest as a scaffold, not a faithful RF — three caveats from nb13 ([disagreements NB-6]).</strong> (i) The notebook defines <code>max_depth = 3</code> in the loop but <strong>never passes it</strong> to <code>train_tree</code>’s <code>DecisionTreeClassifier</code>, so the hand-built trees grow to <strong>full depth</strong> while the sklearn <code>RandomForestClassifier</code>/<code>ExtraTreesClassifier</code> use <code>max_depth=3</code> — the two are <strong>not apples-to-apples</strong>. (ii) The feature subset is drawn <strong>once per tree</strong>, not <strong>per split</strong> — a <em>true</em> random forest re-subsets at <strong>every node</strong> (Lecture 7, slide 19/21), which is what <code>DecisionTreeClassifier(max_features="sqrt")</code> does internally and what makes sklearn’s version a real RF. (iii) The notebook also carries <strong>dead imports</strong> (<code>scipy.stats.mode</code>, <code>BaseEstimator</code>/<code>ClassifierMixin</code>) that the code never uses. Treat the scratch version as a <em>mechanism demo</em>; rely on the sklearn estimator for the canonical idiom.</p>
+</div>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<section id="sec-rf-titanic" class="level3">
+<h3 class="anchored" data-anchor-id="sec-rf-titanic">Example 1 — from-scratch RF vs sklearn RF vs Extra Trees on Titanic</h3>
+<p>The course compares all three on <strong>Titanic</strong> <em>(notebook <code>13_Random_forests.ipynb</code>, cells 3–17)</em>. After <code>dropna()</code> and encoding <code>Sex</code> (male=1, female=0), six features <code>['Pclass','Sex','Age','SibSp','Parch','Fare']</code> predict <code>Survived</code>, with a default-size split (<code>test_size=0.25</code>, <code>random_state=1</code>) — leaving just <strong>137 train / 46 test</strong> rows (computed). The stored metrics <em>(nb13, cells 9, 13, 16)</em>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Accuracy</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>From-scratch RF <em>(cell 9)</em></td>
+<td>0.7609</td>
+<td>0.7632</td>
+<td>0.9355</td>
+<td>0.8406</td>
+</tr>
+<tr class="even">
+<td>sklearn <code>RandomForestClassifier</code> <em>(cell 13)</em></td>
+<td>0.7609</td>
+<td>0.7632</td>
+<td>0.9355</td>
+<td>0.8406</td>
+</tr>
+<tr class="odd">
+<td>sklearn <code>ExtraTreesClassifier</code> <em>(cell 16)</em></td>
+<td>0.7391</td>
+<td>0.7879</td>
+<td>0.8387</td>
+<td>(0.8125)¹</td>
+</tr>
+</tbody>
+</table>
+<p>¹ nb13 cell 16 prints only Accuracy/Precision/Recall for Extra Trees; F1 = 0.8125 is computed via the course <code>.venv</code> from the same fit (<code>random_state=1</code>).</p>
+<div class="callout-pitfall">
+<p><strong>The identical metrics are a coincidence, not a validation ([disagreements NB-6]).</strong> The from-scratch and sklearn random forests print <em>byte-for-byte the same</em> four numbers — and it is tempting to read that as “my scratch RF is correct.” It is not a check: the two models are <strong>different</strong> (the scratch trees are full-depth and subset features per-tree; sklearn’s are depth-3 and subset per-split, per the <a href="#sec-rf-code">§3 caveat</a>). On this <strong>tiny 46-row test set</strong> the two happen to agree on every prediction, which is plausible by chance when only ~46 binary calls are being made. On any larger or different split they would generally diverge. Treat the agreement as a teaching artifact of the small post-<code>dropna()</code> set, not evidence the implementations match.</p>
+</div>
+<p>Reading the numbers: the random forest’s <strong>recall (0.94) far exceeds its precision (0.76)</strong> — with a 0.67 survival rate in this filtered test set <em>(nb13, cells 10, 17)</em>, the depth-3 forest catches almost all survivors but raises some false alarms. <strong>Extra Trees trades the opposite way</strong> (precision 0.79 &gt; recall 0.84… still recall-leaning, but higher precision and slightly lower accuracy) — its extra randomness produces a different, marginally less accurate but more precise classifier here. Neither dominates; on a 46-row test set these gaps are well within noise (computed).</p>
+</section>
+<section id="sec-rf-importance" class="level3">
+<h3 class="anchored" data-anchor-id="sec-rf-importance">Example 2 — reading the feature importances (Titanic)</h3>
+<p>The single most exam-relevant output of a forest is <code>feature_importances_</code> — how much each feature reduced impurity across all splits in all trees, normalized to sum to 1. Computing it for the sklearn RF above <em>(computed via the course <code>.venv</code>; <code>RandomForestClassifier(n_estimators=100, max_depth=3, random_state=30)</code>)</em>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>RF importance</th>
+<th>Extra Trees importance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Sex</strong></td>
+<td><strong>0.435</strong></td>
+<td><strong>0.685</strong></td>
+</tr>
+<tr class="even">
+<td>Age</td>
+<td>0.253</td>
+<td>0.129</td>
+</tr>
+<tr class="odd">
+<td>Fare</td>
+<td>0.220</td>
+<td>0.065</td>
+</tr>
+<tr class="even">
+<td>Parch</td>
+<td>0.039</td>
+<td>0.040</td>
+</tr>
+<tr class="odd">
+<td>SibSp</td>
+<td>0.033</td>
+<td>0.043</td>
+</tr>
+<tr class="even">
+<td>Pclass</td>
+<td>0.020</td>
+<td>0.038</td>
+</tr>
+</tbody>
+</table>
+<p>Both forests agree on the <strong>ranking</strong> — <code>Sex</code> dominates, then <code>Age</code> and <code>Fare</code> — recovering the well-known “women and children (and the wealthy) first” pattern with <strong>no coefficients, no scaling, and no manual interactions</strong> (computed). Note how the <em>concentration</em> differs: Extra Trees loads even more weight onto <code>Sex</code> (0.69 vs 0.44). This is a hint, not a verdict — impurity-based importances are biased toward high-cardinality features (continuous <code>Age</code>/<code>Fare</code> get more candidate splits than the binary <code>Sex</code>), so the <em>order</em> is more trustworthy than the exact shares (see <a href="#sec-rf-diag">§6</a>). The <a href="#sec-rf-viz">§5 chart</a> visualizes the RF column.</p>
+<div class="callout-bigpicture">
+<p>This is the move the exam wants on <strong>WDBC</strong> (<a href="#sec-rf-exam">§7</a>): fit the forest, pull <code>feature_importances_</code>, and <em>interpret the ranking</em> — which measurements drive the malignant/benign call. Contrast with <a href="../methods/ols.html#sec-ols-hitters">OLS</a>, where the diagnostic is signed coefficients; see the <a href="#sec-rf-diag">§6 big-picture callout</a>.</p>
+</div>
+</section>
+<section id="sec-rf-nest" class="level3">
+<h3 class="anchored" data-anchor-id="sec-rf-nest">Example 3 — does adding trees help? (a cautionary <code>n_estimators</code> sweep)</h3>
+<p>It is natural to assume “more trees = better.” Sweeping <code>n_estimators ∈ {1, 5, 10, 25, 50, 100, 200}</code> on the same Titanic split <em>(computed via the course <code>.venv</code>, <code>max_depth=3, random_state=30</code>)</em> gives test accuracies of <strong>0.78, 0.78, 0.76, 0.74, 0.74, 0.76, 0.72</strong> — <em>not</em> monotone, and the single-tree-per-forest run even scores highest. The lesson is <strong>not</strong> “fewer trees are better”: on a <strong>46-row test set the metric is dominated by sampling noise</strong>, so the curve is unreliable. What <em>is</em> reliable in theory is that adding trees <strong>cannot increase variance</strong> — it only stabilizes the estimate with diminishing returns — so in practice you pick <code>n_estimators</code> large enough that performance plateaus (here, ~100, the course default) and stop. This example exists to show <em>why</em> you need a real validation set (or <strong>OOB error</strong>, <a href="#sec-rf-diag">§6</a>) rather than reading a noisy hold-out curve.</p>
+</section>
+</section>
+<section id="sec-rf-viz" class="level2">
+<h2 class="anchored" data-anchor-id="sec-rf-viz">5. Visualization</h2>
+<p>The one figure that earns its place is the <strong>feature-importance bar chart</strong>: it is the forest’s primary interpretable output and the exact artifact the exam asks you to read. The bars below are the sklearn RF importances from <a href="#sec-rf-importance">Example 2</a>, computed on Titanic via the course <code>.venv</code> and transcribed inline.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="134" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 133;"><span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>famTree <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-tree'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#06A77D"</span>)</span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>rfImportances <span class="op">=</span> [</span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">feature</span><span class="op">:</span> <span class="st">"Sex"</span><span class="op">,</span>    <span class="dt">importance</span><span class="op">:</span> <span class="fl">0.435</span>}<span class="op">,</span></span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">feature</span><span class="op">:</span> <span class="st">"Age"</span><span class="op">,</span>    <span class="dt">importance</span><span class="op">:</span> <span class="fl">0.253</span>}<span class="op">,</span></span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">feature</span><span class="op">:</span> <span class="st">"Fare"</span><span class="op">,</span>   <span class="dt">importance</span><span class="op">:</span> <span class="fl">0.220</span>}<span class="op">,</span></span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">feature</span><span class="op">:</span> <span class="st">"Parch"</span><span class="op">,</span>  <span class="dt">importance</span><span class="op">:</span> <span class="fl">0.039</span>}<span class="op">,</span></span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">feature</span><span class="op">:</span> <span class="st">"SibSp"</span><span class="op">,</span>  <span class="dt">importance</span><span class="op">:</span> <span class="fl">0.033</span>}<span class="op">,</span></span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">feature</span><span class="op">:</span> <span class="st">"Pclass"</span><span class="op">,</span> <span class="dt">importance</span><span class="op">:</span> <span class="fl">0.020</span>}</span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">300</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">70</span><span class="op">,</span> <span class="dt">marginRight</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"Mean impurity decrease (importance)"</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="fl">0.5</span>]}<span class="op">,</span></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="kw">null</span><span class="op">,</span> <span class="dt">domain</span><span class="op">:</span> rfImportances<span class="op">.</span><span class="fu">map</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">feature</span>)}<span class="op">,</span></span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleX</span>([<span class="dv">0</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#999"</span>})<span class="op">,</span></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">barX</span>(rfImportances<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"importance"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> famTree<span class="op">,</span> <span class="dt">fillOpacity</span><span class="op">:</span> <span class="fl">0.85</span>})<span class="op">,</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>(rfImportances<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"importance"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"feature"</span><span class="op">,</span> <span class="dt">text</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">importance</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">3</span>)<span class="op">,</span> <span class="dt">dx</span><span class="op">:</span> <span class="dv">18</span><span class="op">,</span> <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> <span class="st">"#333"</span>})</span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-rf-importance" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-rf-importance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-rf-importance-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-rf-importance-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-rf-importance-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-rf-importance-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-rf-importance-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-rf-importance-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-rf-importance-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-rf-importance-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-rf-importance-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rf-importance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Random-forest feature importances on Titanic (RandomForestClassifier(n_estimators=100, max_depth=3, random_state=30); mean impurity decrease, normalized to sum to 1; computed via the course .venv). Sex dominates, then Age and Fare; the three family-structure features (Parch, SibSp, Pclass) contribute little. Caveat: impurity importances are biased toward high-cardinality features (continuous Age/Fare get more candidate split points than the binary Sex), so trust the ranking more than the exact shares.
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="sec-rf-diag" class="level2">
+<h2 class="anchored" data-anchor-id="sec-rf-diag">6. Diagnostics &amp; interpretation</h2>
+<p>What to report and inspect to judge a random forest:</p>
+<ul>
+<li><strong>Out-of-bag (OOB) error</strong> — because each tree omits ~37% of rows (its out-of-bag samples), the forest can score itself on held-out data <strong>for free</strong>: predict each row using only the trees that did <em>not</em> see it. Set <code>oob_score=True</code> and read <code>.oob_score_</code>. This is the principled alternative to the noisy hold-out curve in <a href="#sec-rf-nest">Example 3</a> (Lecture 7, slide 7/21; the ~63%/0.632 bootstrap fraction, [disagreements R9-6]).</li>
+<li><strong>Train vs test (or OOB) metrics</strong> — the whole reason to use a forest over a <a href="../methods/decision_trees.html">single tree</a> is a <em>narrower</em> train–test gap. If the forest still overfits, lower <code>max_depth</code> or <code>max_features</code>; if it underfits, raise them.</li>
+<li><strong>Feature importances</strong> — <code>feature_importances_</code> ranks drivers (<a href="#sec-rf-importance">Example 2</a>). <strong>Caveat:</strong> impurity-based importances are biased toward <strong>high-cardinality / continuous</strong> features (more candidate splits); when it matters, prefer <strong>permutation importance</strong> (model-agnostic, computed on held-out data). Trust the <em>ranking</em> over the exact shares.</li>
+<li><strong><code>n_estimators</code> plateau</strong> — increase trees until OOB/CV error flattens; more trees never raise variance, so the only cost is compute (<a href="#sec-rf-nest">Example 3</a>).</li>
+</ul>
+<div class="callout-bigpicture">
+<p><strong>Two contrasts to keep straight.</strong> <strong>(1) RF vs gradient boosting</strong> — both are tree ensembles, but they attack different errors. RF builds <em>deep, decorrelated</em> trees <strong>in parallel</strong> and <strong>averages</strong> them to cut <strong>variance</strong> (bagging); <a href="../methods/ensembles.html">gradient boosting</a> builds <em>shallow</em> trees <strong>sequentially</strong>, each correcting the last, to cut <strong>bias</strong> (boosting). RF is robust and nearly tuning-free; boosting can be more accurate but is touchier (learning rate, early stopping) and easier to overfit. This is the exact RF-vs-GB contrast the exam’s Assignment 3.8 asks for (<a href="#sec-rf-exam">§7</a>; Lecture 7, slide 4/21). <strong>(2) RF feature importance vs OLS coefficients</strong> — a forest’s importance says <em>“this feature mattered a lot for splitting,”</em> a ranking with no sign and no units; an <a href="../methods/ols.html#sec-ols-hitters">OLS</a> coefficient says <em>“+1 unit ⇒ +β, with a standard error.”</em> Different diagnostics for different questions: use importances to <em>find the drivers</em>, coefficients to <em>quantify an effect</em>.</p>
+</div>
+</section>
+<section id="sec-rf-exam" class="level2">
+<h2 class="anchored" data-anchor-id="sec-rf-exam">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How random forests show up — this is core.</strong> In <strong>Assignment 3</strong> the random forest is fit on the <strong>Wisconsin Diagnostic Breast Cancer (WDBC)</strong> dataset (the malignant/benign classification task), and the graded skills are: (i) write the <code>RandomForestClassifier</code> idiom from <a href="#sec-rf-code">§3</a> and fit/evaluate it (accuracy plus precision/recall/F1 as in <a href="#sec-rf-titanic">Example 1</a> — clinically, <em>recall</em> on malignant cases matters); (ii) <strong>extract and interpret <code>feature_importances_</code></strong> — which cell-nucleus measurements drive the diagnosis (<a href="#sec-rf-importance">Example 2</a>); and (iii) <strong>contrast the random forest with <a href="../methods/ensembles.html">gradient boosting</a></strong> — Assignment <strong>3.8</strong> asks explicitly for RF-vs-GB, i.e.&nbsp;<strong>bagging (parallel, variance-reduction) vs boosting (sequential, bias-reduction)</strong> (see the <a href="#sec-rf-diag">§6 big-picture callout</a>). The grade rests on the <em>reasoning</em> — why decorrelated trees reduce variance, what the importances mean and their cardinality caveat, when you’d prefer boosting — at least as much as the code. Note nb13 demonstrates RF on <strong>Titanic</strong>; <strong>WDBC</strong> is the exam dataset.</p>
+<p><strong>Computed on the exam’s <code>wdbc.data</code></strong> (569 rows, 30 features, target M/B; 75/25 stratified split, <code>random_state=1</code>; estimators <code>random_state=30</code>, <code>n_estimators=100</code>, computed via the course <code>.venv</code>). On the 143-row test set the <strong><code>RandomForestClassifier</code> reaches accuracy 0.951</strong> (precision 0.979, <strong>recall 0.887</strong>, F1 0.931) and <strong><code>GradientBoostingClassifier</code> accuracy 0.944</strong> (precision 0.979, recall 0.868, F1 0.920) — the two are essentially tied here, RF a hair ahead, both with the high precision and slightly lower recall typical on this dataset (a handful of malignant cases missed; clinically it is <em>recall</em> on malignant you would scrutinize). The RF’s <strong>top feature importances</strong> are <code>perimeter_worst</code> (0.175), <code>area_worst</code> (0.147), <code>concave_points_worst</code> (0.094), <code>radius_worst</code> (0.083) and <code>concave_points_mean</code> (0.073) — the “worst” (largest-nucleus) size and concavity measurements dominate the malignant/benign call. Gradient boosting concentrates its importance even harder on a few features (<code>concave_points_worst</code> 0.307, <code>radius_worst</code> 0.283, <code>perimeter_worst</code> 0.226), a reminder that the two methods rank the same drivers but spread the weight differently. With <span class="math inline">p=30</span>, each RF split considers <span class="math inline">\lfloor\sqrt{30}\rfloor = 5</span> features (see <a href="#sec-rf-math">§8</a>).</p>
+</div>
+</section>
+<section id="sec-rf-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-rf-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> The course states the random forest as a procedure, not a derivation <em>(Lecture 7, slides 18–20/21; notebook <code>13_Random_forests.ipynb</code>, cells 4–7)</em>. For <span class="math inline">b = 1,\dots,B</span> trees:</p>
+<ol type="1">
+<li>draw a <strong>bootstrap sample</strong> of <span class="math inline">n</span> rows from the training set, sampling <strong>with replacement</strong> (Lecture 7, slide 6/21);</li>
+<li>grow a tree, but at <strong>each split</strong> randomly select a subset of about <span class="math inline">m \approx \sqrt{p}</span> of the <span class="math inline">p</span> features and pick the best variable and threshold <em>among that subset only</em> (Lecture 7, slide 19/21) — this is the <strong>feature randomness</strong> that decorrelates the trees;</li>
+<li>aggregate the <span class="math inline">B</span> trees by <strong>majority vote</strong> for classification, <span class="math inline">\hat C_{\text{rf}}(x) = \text{majority vote}\,\{\hat C_b(x)\}_{b=1}^B</span>, or by <strong>averaging</strong> for regression (Lecture 7, slide 20/21).</li>
+</ol>
+<p><strong>Reading it:</strong> each tree sees a different bootstrap view of the rows <em>and</em> a different random handful of features at every split, so the trees disagree; pooling their votes cancels the disagreement and drives down variance. The <strong>out-of-bag (OOB) error</strong> scores the forest for free: each tree leaves out the ~37% of rows missing from its bootstrap sample, so each row can be predicted using only the trees that never saw it. The expected fraction of <em>unique</em> original rows in a bootstrap sample of size <span class="math inline">n</span> is <span class="math inline">1-\bigl(1-\tfrac1n\bigr)^n \to 1-e^{-1}\approx 0.632</span> (Lecture 7, slide 7/21; the 0.632 limit, [disagreements R9-6]). <strong>Extra Trees</strong> keep this recipe but additionally pick each split <em>threshold</em> at random instead of optimizing it (Lecture 7, slide 21/21). Why decorrelation cuts variance is the subject of Mode B; for the underlying trade-off see the <a href="../appendix/math_appendix.html#sec-biasvar">bias–variance appendix</a>.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor.</strong> <em>(Anchored to ESL §15, eqs 15.1–15.3.)</em> The point of random forests is <strong>variance reduction by decorrelation</strong>, and ESL §15.2 makes it precise. The forest estimate is the average of <span class="math inline">B</span> trees, each grown on a bootstrap sample with parameters <span class="math inline">\Theta_b</span> (split variables, cutpoints, terminal values): <span class="math display">\hat f^{B}_{\text{rf}}(x) = \frac1B \sum_{b=1}^{B} T(x;\Theta_b) \qquad \text{(ESL 15.2).}</span> Because the trees are <strong>identically distributed</strong> (i.d.), the expectation of the average equals the expectation of any one tree, so averaging leaves the <strong>bias unchanged</strong> — the only hope of improvement is reducing variance (ESL §15.2). Now take <span class="math inline">B</span> trees each with variance <span class="math inline">\sigma^2</span> and <strong>positive pairwise correlation <span class="math inline">\rho</span></strong>. The variance of their average is <span class="math display">\operatorname{Var}\!\bigl(\hat f^{B}_{\text{rf}}(x)\bigr) = \rho\,\sigma^2 + \frac{1-\rho}{B}\,\sigma^2 \qquad \text{(ESL 15.1, Exercise 15.1).}</span> <strong>Reading it — the key result.</strong> As <span class="math inline">B\to\infty</span> the second term vanishes, but the <strong>first term <span class="math inline">\rho\sigma^2</span> does not</strong>: it is a floor set by how <em>correlated</em> the trees are. So once you have enough trees, the only lever left is <span class="math inline">\rho</span>. Restricting each split to a random subset of <span class="math inline">m\le p</span> candidate features (drawing a fresh subset at <em>every</em> node) makes the trees build around different predictors, lowering <span class="math inline">\rho</span> and therefore the whole ensemble’s variance — this is exactly why the <span class="math inline">\sqrt p</span> feature subsetting is the defining trick, not an afterthought (ESL §15.2: <em>“reducing <span class="math inline">m</span> will reduce the correlation between any pair of trees… and hence by (15.1) reduce the variance of the average”</em>). The trade-off is that shrinking <span class="math inline">m</span> too far can raise each tree’s variance/bias, so <span class="math inline">m</span> is a tuning knob with a sensible default.</p>
+<p><strong>The default <span class="math inline">m</span>, by task</strong> ([disagreements R9-7]). The slides give only <span class="math inline">m\approx\sqrt p</span>, which is ESL’s <strong>classification</strong> default <span class="math inline">m=\lfloor\sqrt p\rfloor</span> (minimum node size 1); for <strong>regression</strong> ESL §15.3 recommends <span class="math inline">m=\lfloor p/3\rfloor</span> (minimum node size 5). For the WDBC classification task in <a href="#sec-rf-exam">§7</a>, <span class="math inline">p=30</span>, so <span class="math inline">m=\lfloor\sqrt{30}\rfloor = 5</span> features are considered per split (computed).</p>
+<p><strong>Bias–variance link &amp; OOB.</strong> Averaging trees attacks the <strong>variance</strong> term of the prediction-error decomposition while leaving bias roughly fixed — the formal decomposition <span class="math inline">\mathrm{Err}=\sigma^2+\mathrm{Bias}^2+\mathrm{Var}</span> is in the <a href="../appendix/math_appendix.html#sec-biasvar">bias–variance appendix</a> and is not re-derived here. In the limit the forest approaches the expectation over the tree-randomness <span class="math inline">\Theta</span>, <span class="math display">\hat f_{\text{rf}}(x) = \mathrm{E}_{\Theta}\,T(x;\Theta) = \lim_{B\to\infty}\hat f^{B}_{\text{rf}}(x) \qquad \text{(ESL 15.3),}</span> so increasing <span class="math inline">B</span> <strong>cannot</strong> increase variance — it only stabilizes the estimate, confirming <a href="#sec-rf-nest">Example 3</a>. Finally, ESL §15.3.1 notes the <strong>out-of-bag</strong> error estimate is “almost identical to that obtained by <span class="math inline">N</span>-fold cross-validation,” letting the forest be fit in one pass with validation done along the way; the OOB rows are the ~<span class="math inline">e^{-1}\approx 0.368</span> fraction each bootstrap omits ([disagreements R9-6]). See the <a href="../appendix/math_appendix.html#sec-biasvar">math appendix</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbVRyZWUgPSAoZ2V0Q29tcHV0ZWRTdHlsZShkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQpLmdldFByb3BlcnR5VmFsdWUoJy0tZmFtaWx5LXRyZWUnKS50cmltKCkgfHwgXCIjMDZBNzdEXCIpXG5yZkltcG9ydGFuY2VzID0gW1xuICB7ZmVhdHVyZTogXCJTZXhcIiwgICAgaW1wb3J0YW5jZTogMC40MzV9LFxuICB7ZmVhdHVyZTogXCJBZ2VcIiwgICAgaW1wb3J0YW5jZTogMC4yNTN9LFxuICB7ZmVhdHVyZTogXCJGYXJlXCIsICAgaW1wb3J0YW5jZTogMC4yMjB9LFxuICB7ZmVhdHVyZTogXCJQYXJjaFwiLCAgaW1wb3J0YW5jZTogMC4wMzl9LFxuICB7ZmVhdHVyZTogXCJTaWJTcFwiLCAgaW1wb3J0YW5jZTogMC4wMzN9LFxuICB7ZmVhdHVyZTogXCJQY2xhc3NcIiwgaW1wb3J0YW5jZTogMC4wMjB9XG5dXG5QbG90LnBsb3Qoe1xuICBoZWlnaHQ6IDMwMCwgbWFyZ2luTGVmdDogNzAsIG1hcmdpblJpZ2h0OiA1MCwgZ3JpZDogdHJ1ZSxcbiAgeDoge2xhYmVsOiBcIk1lYW4gaW1wdXJpdHkgZGVjcmVhc2UgKGltcG9ydGFuY2UpXCIsIGRvbWFpbjogWzAsIDAuNV19LFxuICB5OiB7bGFiZWw6IG51bGwsIGRvbWFpbjogcmZJbXBvcnRhbmNlcy5tYXAoZCA9PiBkLmZlYXR1cmUpfSxcbiAgbWFya3M6IFtcbiAgICBQbG90LnJ1bGVYKFswXSwge3N0cm9rZTogXCIjOTk5XCJ9KSxcbiAgICBQbG90LmJhclgocmZJbXBvcnRhbmNlcywge3g6IFwiaW1wb3J0YW5jZVwiLCB5OiBcImZlYXR1cmVcIiwgZmlsbDogZmFtVHJlZSwgZmlsbE9wYWNpdHk6IDAuODV9KSxcbiAgICBQbG90LnRleHQocmZJbXBvcnRhbmNlcywge3g6IFwiaW1wb3J0YW5jZVwiLCB5OiBcImZlYXR1cmVcIiwgdGV4dDogZCA9PiBkLmltcG9ydGFuY2UudG9GaXhlZCgzKSwgZHg6IDE4LCBmb250U2l6ZTogMTAsIGZpbGw6IFwiIzMzM1wifSlcbiAgXVxufSlcbiJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/decision_trees.html" class="pagination-link" aria-label="Decision Trees">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Decision Trees</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/ensembles.html" class="pagination-link" aria-label="Ensemble Methods">
+        <span class="nav-page-text">Ensemble Methods</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

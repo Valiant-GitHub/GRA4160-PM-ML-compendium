@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Ordinary Least Squares (OLS) – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../methods/knn.html" rel="next">
+<link href="../big_picture/workflow_patterns.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-linear quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/ols.html">Ordinary Least Squares (OLS)</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#essence" id="toc-essence" class="nav-link active" data-scroll-target="#essence">1. Essence</a></li>
+  <li><a href="#when-to-use-when-not-to-use" id="toc-when-to-use-when-not-to-use" class="nav-link" data-scroll-target="#when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</a></li>
+  <li><a href="#code-idiom" id="toc-code-idiom" class="nav-link" data-scroll-target="#code-idiom">3. Code idiom</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">4. Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#sec-ols-synth" id="toc-sec-ols-synth" class="nav-link" data-scroll-target="#sec-ols-synth">Example 1 — recovering a known line (synthetic)</a></li>
+  <li><a href="#sec-ols-hitters" id="toc-sec-ols-hitters" class="nav-link" data-scroll-target="#sec-ols-hitters">Example 2 — OLS as a regression baseline on Hitters</a></li>
+  </ul></li>
+  <li><a href="#visualization" id="toc-visualization" class="nav-link" data-scroll-target="#visualization">5. Visualization</a></li>
+  <li><a href="#diagnostics-interpretation" id="toc-diagnostics-interpretation" class="nav-link" data-scroll-target="#diagnostics-interpretation">6. Diagnostics &amp; interpretation</a></li>
+  <li><a href="#past-exam-lens" id="toc-past-exam-lens" class="nav-link" data-scroll-target="#past-exam-lens">7. Past-exam lens</a></li>
+  <li><a href="#sec-ols-math" id="toc-sec-ols-math" class="nav-link" data-scroll-target="#sec-ols-math">8. Math</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../methods/ols.html">Methods — Linear family</a></li><li class="breadcrumb-item"><a href="../methods/ols.html">Ordinary Least Squares (OLS)</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Ordinary Least Squares (OLS)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Linear family</strong></span> · the baseline you reach for first in regression, and the reference every other regressor is judged against. Siblings: <a href="../methods/regularization.html">Ridge / Lasso / Elastic Net</a> (shrink OLS), <a href="../methods/knn.html">kNN</a> and <a href="../methods/decision_trees.html">Decision Trees</a> (non-parametric alternatives), <a href="../methods/logistic.html">Logistic Regression</a> (the classification analogue).</p>
+<section id="essence" class="level2">
+<h2 class="anchored" data-anchor-id="essence">1. Essence</h2>
+<p>Ordinary least squares fits a straight-line relationship between a set of predictors and a continuous target by choosing the coefficients that make the model’s predictions miss the observed values by as little as possible — specifically, by minimizing the <strong>sum of squared residuals</strong>. The output is one number per predictor (a <em>coefficient</em>, or weight) plus an intercept, which together describe how the target is expected to move when each predictor moves by one unit. That interpretability is the whole point: OLS is used as much for <em>inference</em> (“how does this feature influence the outcome?”) as for <em>prediction</em> (Lecture 2, slide 7/10).</p>
+<p>It is a <strong>parametric</strong> model: you commit to a fixed functional form (linear) with a fixed number of parameters, so it trains instantly, needs little data, and is easy to read — but it is misleading if the true relationship is far from linear. Under the Gauss–Markov assumptions (linearity, no perfect multicollinearity, homoscedastic uncorrelated errors), OLS is the <strong>Best Linear Unbiased Estimator</strong> (BLUE) — among all unbiased linear estimators it has the smallest variance (Lecture 2, slide 7/10).</p>
+<p>Compared with its nearest neighbors: <a href="../methods/regularization.html">Ridge and Lasso</a> are OLS with a penalty that trades a little bias for much lower variance when predictors are many or correlated; <a href="../methods/knn.html">kNN</a> and <a href="../methods/decision_trees.html">trees</a> drop the linear-form assumption entirely (more flexible, less interpretable, hungrier for data); and <a href="../methods/logistic.html">logistic regression</a> is the same linear machinery aimed at a binary target instead of a continuous one.</p>
+</section>
+<section id="when-to-use-when-not-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-when-not-to-use">2. When to use / when <em>not</em> to use</h2>
+<div class="callout-intuition">
+<p><strong>Reach for OLS when…</strong></p>
+<ul>
+<li>The target is <strong>continuous</strong> and you expect a roughly <strong>linear</strong> relationship (or you can make it linear with transforms / interactions).</li>
+<li>You want <strong>interpretable coefficients</strong> for inference — the sign and size of each effect, with standard errors.</li>
+<li>You have <strong>more rows than predictors</strong> (<span class="math inline">n &gt; p</span>), little multicollinearity, and roughly constant-variance noise.</li>
+<li>You need a <strong>fast, transparent baseline</strong> before trying anything fancier. On the Spring-2025 exam’s Hitters task, OLS is exactly that baseline (see §7).</li>
+</ul>
+</div>
+<div class="callout-pitfall">
+<p><strong>Reach for something else when…</strong></p>
+<ul>
+<li><strong>Predictors outnumber or rival observations (<span class="math inline">p \gtrsim n</span>), or are strongly correlated</strong> → coefficients become unstable and variance explodes. Use <a href="../methods/regularization.html"><strong>Ridge</strong></a> (shrinks correlated coefficients together) or <a href="../methods/regularization.html"><strong>Lasso</strong></a> (zeros out the irrelevant ones). The Hitters example in §4 shows the symptom: a large train–test <span class="math inline">R^2</span> gap.</li>
+<li><strong>The relationship is clearly non-linear</strong> and you don’t want to hand-engineer the form → <a href="../methods/random_forests.html"><strong>Decision Trees / Random Forests</strong></a> or <a href="../methods/knn.html"><strong>kNN</strong></a> capture curvature automatically.</li>
+<li><strong>The target is a class, not a number</strong> → <a href="../methods/logistic.html"><strong>Logistic Regression</strong></a> or <a href="../methods/lda.html"><strong>LDA</strong></a>.</li>
+<li><strong>Outliers dominate</strong> → squared error is sensitive to them; consider robust regression or at least diagnose with residual plots (§6).</li>
+</ul>
+</div>
+</section>
+<section id="code-idiom" class="level2">
+<h2 class="anchored" data-anchor-id="code-idiom">3. Code idiom</h2>
+<p>The canonical course idiom is <code>scikit-learn</code>’s <code>LinearRegression</code>; the course also builds OLS from scratch from the normal equations so the mechanics are not a black box.</p>
+<p><strong>Canonical (sklearn)</strong> — <em>(notebook <code>02_OLS (1).ipynb</code>, cell 13)</em></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.linear_model <span class="im">as</span> lm</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> lm.LinearRegression(fit_intercept<span class="op">=</span><span class="va">True</span>)  <span class="co"># fit_intercept=True → also estimate β₀</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>model.fit(X, y)                                   <span class="co"># X: (n_samples, n_features), y: (n_samples,)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>model.coef_        <span class="co"># the slopes β₁…β_p</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>model.intercept_   <span class="co"># the intercept β₀</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>model.predict(X_new)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The only hyperparameter you normally touch is <code>fit_intercept</code> (leave it <code>True</code> unless your data is already centered). Everything else is <code>default</code>.</p>
+<p><strong>From scratch — the normal equations</strong> <em>(notebook <code>02_OLS (1).ipynb</code>, cell 8)</em>. This is what <code>fit</code> is doing under the hood, <span class="math inline">\hat\beta = (X^\top X)^{-1}X^\top y</span>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>X_ <span class="op">=</span> np.column_stack((np.ones(n_samples), X))  <span class="co"># prepend a column of 1s for the intercept</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>betas <span class="op">=</span> np.linalg.inv(X_.T <span class="op">@</span> X_) <span class="op">@</span> (X_.T <span class="op">@</span> y)  <span class="co"># betas[0] = intercept, betas[1:] = slopes</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout-pitfall">
+<p><strong>Idiom variation worth knowing.</strong> Inverting <span class="math inline">X^\top X</span> explicitly (<code>np.linalg.inv</code>) is fine for teaching but numerically fragile. The course’s OOP version <em>(notebook <code>02_OLS (1).ipynb</code>, cell 10)</em> prefers <code>np.linalg.solve(XTX, XTY)</code>, which solves the system without forming the inverse — use <code>solve</code> (or sklearn) in real work.</p>
+</div>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">4. Worked examples</h2>
+<section id="sec-ols-synth" class="level3">
+<h3 class="anchored" data-anchor-id="sec-ols-synth">Example 1 — recovering a known line (synthetic)</h3>
+<p>The course generates data from a known process and checks that OLS recovers it <em>(notebook <code>02_OLS (1).ipynb</code>, cell 3)</em> — the cleanest possible sanity check:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Data-generating process: y = intercept + coeff·x + 0.2·noise</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>X      <span class="op">=</span> np.random.rand(n_samples, <span class="dv">1</span>)          <span class="co"># 100 points, one feature ~ Uniform(0,1)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>coeffs <span class="op">=</span> np.random.rand(<span class="dv">1</span>).<span class="bu">round</span>(<span class="dv">2</span>)            <span class="co"># the "truth" we want to recover</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>intercept <span class="op">=</span> np.random.rand(<span class="dv">1</span>).<span class="bu">round</span>(<span class="dv">2</span>)[<span class="dv">0</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> intercept <span class="op">+</span> X <span class="op">@</span> coeffs <span class="op">+</span> <span class="fl">0.2</span><span class="op">*</span>np.random.randn(n_samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fitting OLS on a fixed draw (seed 0: true intercept 0.27, true slope 0.68) recovers <strong>intercept ≈ 0.290, slope ≈ 0.712</strong> — close to the truth, the small gap being the <span class="math inline">0.2</span>-scale noise. The in-sample <span class="math inline">R^2 \approx 0.52</span> is modest <em>because the noise is large relative to the signal</em>, not because the fit is wrong: a vivid reminder that <span class="math inline">R^2</span> measures explained variance, not correctness, and that there is an irreducible noise floor no model can beat (see <a href="../methods/bias_variance.html">Bias–Variance</a>).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="85" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 84;"><span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>famLinear <span class="op">=</span> (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(<span class="st">'--family-linear'</span>)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> <span class="st">"#2E86AB"</span>)</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>olsData <span class="op">=</span> {</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>  <span class="kw">function</span> <span class="fu">mulberry32</span>(a){<span class="cf">return</span> <span class="kw">function</span>(){a<span class="op">|=</span><span class="dv">0</span><span class="op">;</span>a<span class="op">=</span>a<span class="op">+</span><span class="bn">0x6D2B79F5</span><span class="op">|</span><span class="dv">0</span><span class="op">;</span><span class="kw">let</span> t<span class="op">=</span><span class="bu">Math</span><span class="op">.</span><span class="fu">imul</span>(a<span class="op">^</span>a<span class="op">&gt;&gt;&gt;</span><span class="dv">15</span><span class="op">,</span><span class="dv">1</span><span class="op">|</span>a)<span class="op">;</span>t<span class="op">=</span>t<span class="op">+</span><span class="bu">Math</span><span class="op">.</span><span class="fu">imul</span>(t<span class="op">^</span>t<span class="op">&gt;&gt;&gt;</span><span class="dv">7</span><span class="op">,</span><span class="dv">61</span><span class="op">|</span>t)<span class="op">^</span>t<span class="op">;</span><span class="cf">return</span> ((t<span class="op">^</span>t<span class="op">&gt;&gt;&gt;</span><span class="dv">14</span>)<span class="op">&gt;&gt;&gt;</span><span class="dv">0</span>)<span class="op">/</span><span class="dv">4294967296</span>}}</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> r <span class="op">=</span> <span class="fu">mulberry32</span>(<span class="dv">7</span>)<span class="op">;</span></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> gauss <span class="op">=</span> () <span class="kw">=&gt;</span> { <span class="kw">let</span> u<span class="op">=</span><span class="dv">0</span><span class="op">,</span>v<span class="op">=</span><span class="dv">0</span><span class="op">;</span> <span class="cf">while</span>(<span class="op">!</span>u)u<span class="op">=</span><span class="fu">r</span>()<span class="op">;</span> <span class="cf">while</span>(<span class="op">!</span>v)v<span class="op">=</span><span class="fu">r</span>()<span class="op">;</span> <span class="cf">return</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sqrt</span>(<span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="bu">Math</span><span class="op">.</span><span class="fu">log</span>(u))<span class="op">*</span><span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(<span class="dv">2</span><span class="op">*</span><span class="bu">Math</span><span class="op">.</span><span class="cn">PI</span><span class="op">*</span>v)<span class="op">;</span> }<span class="op">;</span></span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>({<span class="dt">length</span><span class="op">:</span> <span class="dv">60</span>}<span class="op">,</span> () <span class="kw">=&gt;</span> { <span class="kw">const</span> x <span class="op">=</span> <span class="fu">r</span>()<span class="op">;</span> <span class="cf">return</span> {x<span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="fl">0.27</span> <span class="op">+</span> <span class="fl">0.68</span><span class="op">*</span>x <span class="op">+</span> <span class="fl">0.2</span><span class="op">*</span><span class="fu">gauss</span>()}<span class="op">;</span> })<span class="op">;</span></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>olsFit <span class="op">=</span> {</span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> xs <span class="op">=</span> olsData<span class="op">.</span><span class="fu">map</span>(d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">x</span>)<span class="op">,</span> ys <span class="op">=</span> olsData<span class="op">.</span><span class="fu">map</span>(d<span class="kw">=&gt;</span>d<span class="op">.</span><span class="at">y</span>)<span class="op">;</span></span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> mx <span class="op">=</span> d3<span class="op">.</span><span class="fu">mean</span>(xs)<span class="op">,</span> my <span class="op">=</span> d3<span class="op">.</span><span class="fu">mean</span>(ys)<span class="op">;</span></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> b1 <span class="op">=</span> d3<span class="op">.</span><span class="fu">sum</span>(xs<span class="op">.</span><span class="fu">map</span>((x<span class="op">,</span>i)<span class="kw">=&gt;</span>(x<span class="op">-</span>mx)<span class="op">*</span>(ys[i]<span class="op">-</span>my))) <span class="op">/</span> d3<span class="op">.</span><span class="fu">sum</span>(xs<span class="op">.</span><span class="fu">map</span>(x<span class="kw">=&gt;</span>(x<span class="op">-</span>mx)<span class="op">**</span><span class="dv">2</span>))<span class="op">;</span></span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {<span class="dt">b0</span><span class="op">:</span> my <span class="op">-</span> b1<span class="op">*</span>mx<span class="op">,</span> b1}<span class="op">;</span></span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">300</span><span class="op">,</span> <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span> <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"x"</span>}<span class="op">,</span> <span class="dt">y</span><span class="op">:</span> {<span class="dt">label</span><span class="op">:</span> <span class="st">"y"</span>}<span class="op">,</span></span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>([<span class="dv">0</span>]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> <span class="st">"#ddd"</span>})<span class="op">,</span></span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">link</span>(olsData<span class="op">,</span> {<span class="dt">x1</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">x2</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y1</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span> <span class="dt">y2</span><span class="op">:</span> d <span class="kw">=&gt;</span> olsFit<span class="op">.</span><span class="at">b0</span> <span class="op">+</span> olsFit<span class="op">.</span><span class="at">b1</span><span class="op">*</span>d<span class="op">.</span><span class="at">x</span><span class="op">,</span> <span class="dt">stroke</span><span class="op">:</span> <span class="st">"#2e8b57"</span><span class="op">,</span> <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"2,2"</span><span class="op">,</span> <span class="dt">strokeOpacity</span><span class="op">:</span> <span class="fl">0.7</span>})<span class="op">,</span></span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(olsData<span class="op">,</span> {<span class="dt">x</span><span class="op">:</span> <span class="st">"x"</span><span class="op">,</span> <span class="dt">y</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span> <span class="dt">fill</span><span class="op">:</span> famLinear<span class="op">,</span> <span class="dt">fillOpacity</span><span class="op">:</span> <span class="fl">0.75</span><span class="op">,</span> <span class="dt">r</span><span class="op">:</span> <span class="dv">3</span>})<span class="op">,</span></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">line</span>([[<span class="dv">0</span><span class="op">,</span> olsFit<span class="op">.</span><span class="at">b0</span>]<span class="op">,</span> [<span class="dv">1</span><span class="op">,</span> olsFit<span class="op">.</span><span class="at">b0</span> <span class="op">+</span> olsFit<span class="op">.</span><span class="at">b1</span>]]<span class="op">,</span> {<span class="dt">stroke</span><span class="op">:</span> famLinear<span class="op">,</span> <span class="dt">strokeWidth</span><span class="op">:</span> <span class="fl">2.5</span>})</span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-ols-fit" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ols-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<div id="fig-ols-fit-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ols-fit-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ols-fit-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-ols-fit-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ols-fit-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ols-fit-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-ols-fit-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ols-fit-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ols-fit-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="fig-ols-fit-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-ols-fit-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="ojs-cell-1-4" data-nodetype="expression">
+
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-ols-fit-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ols-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Least squares on synthetic data (y = 0.27 + 0.68x + noise). Blue points are observations; the line is the fitted OLS model; green segments are residuals — OLS chooses the line that minimizes the sum of their squares. Reload to see a new noise draw: the line barely moves (low variance), the points scatter (the noise floor).
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="sec-ols-hitters" class="level3">
+<h3 class="anchored" data-anchor-id="sec-ols-hitters">Example 2 — OLS as a regression baseline on Hitters</h3>
+<p>The Spring-2025 exam’s first task is regression on <strong><code>Hitters.csv</code></strong> (263 players after dropping missing salaries, predicting <code>Salary</code> in $1000s). OLS is the natural baseline. Using the 16 numeric predictors with a 75/25 split (<code>random_state=1</code>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score, mean_squared_error</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"Hitters.csv"</span>).dropna(subset<span class="op">=</span>[<span class="st">"Salary"</span>])   <span class="co"># 322 → 263 rows</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df.select_dtypes(<span class="st">"number"</span>).drop(columns<span class="op">=</span>[<span class="st">"Salary"</span>])      <span class="co"># 16 numeric features</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df[<span class="st">"Salary"</span>]</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>Xtr, Xte, ytr, yte <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.25</span>, random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ols <span class="op">=</span> LinearRegression().fit(Xtr, ytr)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r2_score(ytr, ols.predict(Xtr)), r2_score(yte, ols.predict(Xte)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This yields <strong>train <span class="math inline">R^2 = 0.55</span> but test <span class="math inline">R^2 = 0.36</span></strong> (test RMSE ≈ $377k). The gap between training and test performance is the fingerprint of <strong>variance</strong>: with 16 partly-redundant predictors (career totals like <code>CAtBat</code>, <code>CHits</code>, <code>CRuns</code> move together), OLS fits the training sample’s noise. The largest coefficients — <code>Hits</code> (+7.7), <code>HmRun</code> (−5.0), <code>Walks</code> (+4.7) — are also unstable (note <code>HmRun</code> coming out <em>negative</em> once <code>Hits</code>/<code>RBI</code> are in the model, a classic multicollinearity artifact, not a claim that home runs lower salary).</p>
+<div class="callout-bigpicture">
+<p>This is precisely the setup where <a href="../methods/regularization.html"><strong>Ridge and Lasso</strong></a> earn their keep, and why the exam pairs OLS with them: shrink the correlated coefficients to close the train–test gap. See the <a href="../cross_method/showdowns.html">regression showdown</a> for OLS vs Ridge vs Lasso vs Tree vs RF on this same dataset.</p>
+</div>
+</section>
+</section>
+<section id="visualization" class="level2">
+<h2 class="anchored" data-anchor-id="visualization">5. Visualization</h2>
+<p>The figure in §4 (Example 1) is the one visualization that earns its place for OLS: it makes the <em>objective itself</em> visible — the green residual segments are exactly the quantities OLS squares and sums, so you can see why the fitted line sits where it does and why a single outlier (a very long green segment) would tug the line toward itself. Static prose can state “minimize squared residuals”; only the picture shows the line balancing them.</p>
+</section>
+<section id="diagnostics-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-interpretation">6. Diagnostics &amp; interpretation</h2>
+<p>What to report and look at to decide whether an OLS model is working:</p>
+<ul>
+<li><strong><span class="math inline">R^2</span> and adjusted <span class="math inline">R^2</span></strong> — fraction of variance explained; adjusted <span class="math inline">R^2</span> penalizes adding useless predictors. Compare <strong>train vs test</strong> <span class="math inline">R^2</span>: a large gap (as in Hitters: 0.55 vs 0.36) signals overfitting/variance.</li>
+<li><strong>Residual plots</strong> — residuals vs fitted values should look like structureless noise around zero. A funnel shape ⇒ heteroscedasticity (a Gauss–Markov violation); curvature ⇒ the linear form is wrong (consider transforms, or a non-linear model).</li>
+<li><strong>Coefficient signs and magnitudes</strong> — read them for inference, but only after checking scale: unscaled coefficients aren’t comparable across predictors on different units. A coefficient with a “wrong” sign (Hitters’ negative <code>HmRun</code>) is usually a <strong>multicollinearity</strong> symptom.</li>
+<li><strong>Multicollinearity</strong> — correlated predictors inflate coefficient variance (check a correlation matrix or VIF). This is the cue to move to <a href="../methods/regularization.html">Ridge</a>.</li>
+</ul>
+<div class="callout-bigpicture">
+<p>Comparative diagnostic vs siblings: OLS gives you <em>coefficients with standard errors</em> (great for inference) where a <a href="../methods/random_forests.html">Random Forest</a> gives you <em>feature importances</em> (great for ranking drivers, useless for “+1 unit ⇒ +β”). Choose the diagnostic that matches the question you’re answering.</p>
+</div>
+</section>
+<section id="past-exam-lens" class="level2">
+<h2 class="anchored" data-anchor-id="past-exam-lens">7. Past-exam lens</h2>
+<div class="callout-exam">
+<p><strong>How OLS shows up.</strong> In the <strong>Spring-2025 take-home (Assignment 1, on <code>Hitters.csv</code>)</strong>, OLS is the <strong>baseline</strong> against which regularized regressions are compared: fit it, report in/out-of-sample error, then introduce Ridge/Lasso with cross-validated <code>alpha</code> and <strong>interpret the change in coefficients and the bias–variance trade-off</strong> (<code>phase0/exam_spring2025_notebook.md</code>). The grade rests on the <em>justification</em> — explaining why shrinkage helps here — at least as much as on the code. Expect to (i) write the <code>LinearRegression</code> idiom from §3, (ii) report and <em>interpret</em> <span class="math inline">R^2</span>/MSE in and out of sample, and (iii) connect the train–test gap to variance. OLS itself has not appeared as a stand-alone derivation question; it appears as the regression starting point.</p>
+</div>
+</section>
+<section id="sec-ols-math" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ols-math">8. Math</h2>
+<div class="math-section">
+<div class="math-off-hint">
+<p><em>Math is off. Use the <strong>Math</strong> toggle in the top bar to show the course-level derivation (and “full” for the rigorous version).</em></p>
+</div>
+<div class="callout-math-a">
+<p><strong>Mode A — course level.</strong> The course states OLS as an optimization problem and a closed-form solution <em>(notebook <code>02_OLS (1).ipynb</code>, cell 7; Lecture 2, slide 7/10)</em>. We pick the coefficient vector <span class="math inline">\beta</span> that minimizes the residual sum of squares: <span class="math display">\hat\beta = \arg\min_{\beta} \sum_{i=1}^n \bigl(y_i - \beta^\top x_i\bigr)^2 .</span> Setting the derivative of this objective to zero and solving gives the closed form <span class="math display">\hat\beta = (X^\top X)^{-1} X^\top y,</span> where <span class="math inline">X</span> is the <span class="math inline">n\times p</span> design matrix (a leading column of ones absorbs the intercept) and <span class="math inline">y</span> the <span class="math inline">n</span>-vector of targets. <strong>Reading it:</strong> each <span class="math inline">\hat\beta_j</span> is the expected change in <span class="math inline">y</span> per one-unit change in <span class="math inline">x_j</span> with the other predictors held fixed; geometrically, <span class="math inline">X\hat\beta</span> is the linear combination of the predictor columns closest to <span class="math inline">y</span>. Minimizing squared error is also the <strong>maximum-likelihood</strong> estimate under Gaussian noise (see <a href="../appendix/math_appendix.html#sec-mle">MLE in the math appendix</a>), and under the Gauss–Markov assumptions this estimator is <strong>BLUE</strong> (Lecture 2, slide 7/10). Foundations: <a href="../appendix/math_appendix.html#sec-linalg">linear algebra essentials</a>.</p>
+</div>
+<div class="callout-math-b">
+<p><strong>Mode B — full rigor.</strong> <em>(Anchored to ESL §3.2, eqs 3.3–3.11.)</em> Write the residual sum of squares in matrix form and minimize it directly: <span class="math display">\mathrm{RSS}(\beta) = (y - X\beta)^\top (y - X\beta) \qquad \text{(ESL 3.3).}</span> Differentiating, <span class="math display">\frac{\partial \mathrm{RSS}}{\partial \beta} = -2X^\top (y - X\beta), \qquad \frac{\partial^2 \mathrm{RSS}}{\partial \beta\,\partial \beta^\top} = 2X^\top X \qquad \text{(ESL 3.4).}</span> The Hessian <span class="math inline">2X^\top X</span> is positive semidefinite, so <span class="math inline">\mathrm{RSS}</span> is <strong>convex</strong>; when <span class="math inline">X</span> has full column rank <span class="math inline">X^\top X \succ 0</span> and the stationary point is the unique global minimum. Setting the gradient to zero gives the <strong>normal equations</strong> <span class="math inline">X^\top(y - X\beta) = 0</span> (ESL 3.5), hence <span class="math display">\hat\beta = (X^\top X)^{-1} X^\top y \qquad \text{(ESL 3.6).}</span> The fitted values are <span class="math inline">\hat y = X\hat\beta = X(X^\top X)^{-1}X^\top y = Hy</span>, where <span class="math inline">H</span> is the <strong>“hat” / projection matrix</strong> (ESL 3.7). <strong>Geometry:</strong> <span class="math inline">\hat y</span> is the <em>orthogonal projection</em> of <span class="math inline">y</span> onto the column space of <span class="math inline">X</span>; the residual <span class="math inline">y-\hat y</span> is orthogonal to that subspace (ESL Fig 3.2). If <span class="math inline">X</span> is rank-deficient (e.g.&nbsp;perfectly collinear predictors) <span class="math inline">X^\top X</span> is singular and <span class="math inline">\hat\beta</span> is <strong>not unique</strong> — although <span class="math inline">\hat y</span> still is. This is the failure mode that motivates <a href="../methods/regularization.html">Ridge</a>, whose <span class="math inline">(X^\top X + \lambda I)^{-1}</span> is always invertible.</p>
+<p><strong>Inference.</strong> Assuming the <span class="math inline">y_i</span> are uncorrelated with constant variance <span class="math inline">\sigma^2</span> and <span class="math inline">X</span> fixed, <span class="math display">\mathrm{Var}(\hat\beta) = (X^\top X)^{-1}\sigma^2 \quad \text{(ESL 3.8)}, \qquad \hat\sigma^2 = \tfrac{1}{N-p-1}\textstyle\sum_i (y_i-\hat y_i)^2 ,</span> the <span class="math inline">N-p-1</span> denominator making <span class="math inline">\hat\sigma^2</span> unbiased. Adding Gaussian errors <span class="math inline">\varepsilon \sim N(0,\sigma^2)</span> gives <span class="math inline">\hat\beta \sim N\!\bigl(\beta,\,(X^\top X)^{-1}\sigma^2\bigr)</span> (ESL 3.10) and <span class="math inline">(N-p-1)\hat\sigma^2 \sim \sigma^2\chi^2_{N-p-1}</span> (ESL 3.11) — the basis for the coefficient <span class="math inline">t</span>/<span class="math inline">z</span>-tests in §6. The <strong>Gauss–Markov theorem</strong> (ESL §3.2.2) makes “BLUE” precise: among all linear unbiased estimators of any <span class="math inline">a^\top\beta</span>, OLS has the smallest variance. Via the <strong>SVD</strong> <span class="math inline">X = UDV^\top</span>, <span class="math inline">\hat y = UU^\top y</span> (projection onto the column space), and small singular values — near-collinearity — inflate <span class="math inline">\mathrm{Var}(\hat\beta)</span>, the bridge to ESL §3.4’s ridge treatment. See the <a href="../appendix/math_appendix.html#sec-linalg">linear-algebra appendix</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImZhbUxpbmVhciA9IChnZXRDb21wdXRlZFN0eWxlKGRvY3VtZW50LmRvY3VtZW50RWxlbWVudCkuZ2V0UHJvcGVydHlWYWx1ZSgnLS1mYW1pbHktbGluZWFyJykudHJpbSgpIHx8IFwiIzJFODZBQlwiKVxub2xzRGF0YSA9IHtcbiAgZnVuY3Rpb24gbXVsYmVycnkzMihhKXtyZXR1cm4gZnVuY3Rpb24oKXthfD0wO2E9YSsweDZEMkI3OUY1fDA7bGV0IHQ9TWF0aC5pbXVsKGFeYT4+PjE1LDF8YSk7dD10K01hdGguaW11bCh0XnQ+Pj43LDYxfHQpXnQ7cmV0dXJuICgodF50Pj4+MTQpPj4+MCkvNDI5NDk2NzI5Nn19XG4gIGNvbnN0IHIgPSBtdWxiZXJyeTMyKDcpO1xuICBjb25zdCBnYXVzcyA9ICgpID0+IHsgbGV0IHU9MCx2PTA7IHdoaWxlKCF1KXU9cigpOyB3aGlsZSghdil2PXIoKTsgcmV0dXJuIE1hdGguc3FydCgtMipNYXRoLmxvZyh1KSkqTWF0aC5jb3MoMipNYXRoLlBJKnYpOyB9O1xuICByZXR1cm4gQXJyYXkuZnJvbSh7bGVuZ3RoOiA2MH0sICgpID0+IHsgY29uc3QgeCA9IHIoKTsgcmV0dXJuIHt4LCB5OiAwLjI3ICsgMC42OCp4ICsgMC4yKmdhdXNzKCl9OyB9KTtcbn1cbm9sc0ZpdCA9IHtcbiAgY29uc3QgeHMgPSBvbHNEYXRhLm1hcChkPT5kLngpLCB5cyA9IG9sc0RhdGEubWFwKGQ9PmQueSk7XG4gIGNvbnN0IG14ID0gZDMubWVhbih4cyksIG15ID0gZDMubWVhbih5cyk7XG4gIGNvbnN0IGIxID0gZDMuc3VtKHhzLm1hcCgoeCxpKT0+KHgtbXgpKih5c1tpXS1teSkpKSAvIGQzLnN1bSh4cy5tYXAoeD0+KHgtbXgpKioyKSk7XG4gIHJldHVybiB7YjA6IG15IC0gYjEqbXgsIGIxfTtcbn1cblBsb3QucGxvdCh7XG4gIGhlaWdodDogMzAwLCBtYXJnaW5MZWZ0OiA1MCwgZ3JpZDogdHJ1ZSxcbiAgeDoge2xhYmVsOiBcInhcIn0sIHk6IHtsYWJlbDogXCJ5XCJ9LFxuICBtYXJrczogW1xuICAgIFBsb3QucnVsZVkoWzBdLCB7c3Ryb2tlOiBcIiNkZGRcIn0pLFxuICAgIFBsb3QubGluayhvbHNEYXRhLCB7eDE6IFwieFwiLCB4MjogXCJ4XCIsIHkxOiBcInlcIiwgeTI6IGQgPT4gb2xzRml0LmIwICsgb2xzRml0LmIxKmQueCwgc3Ryb2tlOiBcIiMyZThiNTdcIiwgc3Ryb2tlRGFzaGFycmF5OiBcIjIsMlwiLCBzdHJva2VPcGFjaXR5OiAwLjd9KSxcbiAgICBQbG90LmRvdChvbHNEYXRhLCB7eDogXCJ4XCIsIHk6IFwieVwiLCBmaWxsOiBmYW1MaW5lYXIsIGZpbGxPcGFjaXR5OiAwLjc1LCByOiAzfSksXG4gICAgUGxvdC5saW5lKFtbMCwgb2xzRml0LmIwXSwgWzEsIG9sc0ZpdC5iMCArIG9sc0ZpdC5iMV1dLCB7c3Ryb2tlOiBmYW1MaW5lYXIsIHN0cm9rZVdpZHRoOiAyLjV9KVxuICBdXG59KVxuIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../methods";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../big_picture/workflow_patterns.html" class="pagination-link" aria-label="Workflow Patterns">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Workflow Patterns</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../methods/knn.html" class="pagination-link" aria-label="k-Nearest Neighbors (kNN)">
+        <span class="nav-page-text">k-Nearest Neighbors (kNN)</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

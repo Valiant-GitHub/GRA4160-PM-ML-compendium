@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Decision Dashboard – GRA 4160 — ML Study Companion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../cross_method/family_comparisons.html" rel="next">
+<link href="../methods/build_a_nn.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-66fa0dec26673a26df00effe0ca27799.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-711f5ecf112ef9306da6e666d5447632.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+  <script defer="" src="../assets/katex/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet" href="../assets/katex/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fam-cross quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GRA 4160 — ML Study Companion</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-big-picture" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Big picture</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-big-picture">    
+        <li>
+    <a class="dropdown-item" href="../big_picture/reading_the_data.html">
+ <span class="dropdown-text">Reading the Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../big_picture/workflow_patterns.html">
+ <span class="dropdown-text">Workflow Patterns</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cross_method/decision_dashboard.html"> 
+<span class="menu-text">Decision dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../drill/index.html"> 
+<span class="menu-text">Drill</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../cross_method/decision_dashboard.html">Cross-method</a></li><li class="breadcrumb-item"><a href="../cross_method/decision_dashboard.html">Decision Dashboard</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Big picture</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/reading_the_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reading the Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../big_picture/workflow_patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workflow Patterns</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Linear family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Least Squares (OLS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/knn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">k-Nearest Neighbors (kNN)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logistic Regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/lda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Discriminant Analysis (LDA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/adaline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Adaline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/regularization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regularization — Ridge, Lasso, Elastic Net</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Cross-cutting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/bias_variance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bias–Variance Trade-off</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/cv_info_criteria.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cross-Validation &amp; Information Criteria</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Tree family</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/decision_trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/random_forests.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Random Forests</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ensemble Methods</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Unsupervised</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Principal Component Analysis (PCA)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/kmeans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">K-Means Clustering</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Methods — Neural</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Network Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/autodiff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Automatic Differentiation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/nn_pytorch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural Networks with PyTorch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../methods/build_a_nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build a Neural Network</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Cross-method</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/decision_dashboard.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Decision Dashboard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/family_comparisons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Family Comparisons</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/showdowns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Showdowns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../cross_method/exercise_dependency_map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exercise Dependency Map</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Drill</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill — Index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exam_spring2025.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spring 2025 Take-Home Exam</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_01_titanic_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Titanic Preprocessing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_02_spam_naive_bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Spam Filtering (Naive Bayes)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_03_house_prices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Predicting House Prices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_04_mnist_digits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Recognising Handwritten Digits</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_05_model_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Model Selection &amp; Evaluation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../drill/exercise_06_customer_segmentation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Drill: Customer Segmentation</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/notation_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/math_appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Math Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Build Log</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#how-this-works" id="toc-how-this-works" class="nav-link active" data-scroll-target="#how-this-works">How this works</a></li>
+  <li><a href="#sec-dashboard-full" id="toc-sec-dashboard-full" class="nav-link" data-scroll-target="#sec-dashboard-full">The dashboard</a></li>
+  <li><a href="#how-the-four-spring-2025-assignments-map-to-dashboard-paths" id="toc-how-the-four-spring-2025-assignments-map-to-dashboard-paths" class="nav-link" data-scroll-target="#how-the-four-spring-2025-assignments-map-to-dashboard-paths">How the four Spring-2025 assignments map to dashboard paths</a></li>
+  <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See also</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../cross_method/decision_dashboard.html">Cross-method</a></li><li class="breadcrumb-item"><a href="../cross_method/decision_dashboard.html">Decision Dashboard</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Decision Dashboard</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="fam-badge"><strong>Cross-method</strong></span> · the front door for “I have a dataset — what should I reach for?” Describe your problem with the controls below and the panel returns a <strong>ranked shortlist</strong> of methods, each with a one-line justification and a link to its page. This is the full version of the <a href="../index.html#sec-dashboard">placeholder dashboard on the home page</a>.</p>
+<section id="how-this-works" class="level2">
+<h2 class="anchored" data-anchor-id="how-this-works">How this works</h2>
+<p>The dashboard is not a model and it does not run your data. It is a <strong>lookup over the course’s own method pages</strong>: every ranking rule below is lifted from the <em>“When to use / when <strong>not</strong> to use”</em> callouts in <strong>§2</strong> of a method page — the same conditions the course states for reaching toward, or away from, each technique. So when the panel says “regression + many correlated predictors → Ridge/Lasso,” that is not a heuristic invented here; it is <a href="../methods/ols.html">OLS §2’s</a> own “reach for something else when <span class="math inline">p \gtrsim n</span> or predictors are correlated” pointing at <a href="../methods/regularization.html">Regularization §2</a>. The justifications are paraphrases of those callouts, and each card links straight to the page so you can read the full reasoning and the worked example behind it.</p>
+<p>Use it two ways. <strong>Diagnose first:</strong> answer the controls honestly about your data — task type, whether predictors rival the sample size, linearity, whether you need an interpretable model, and the data-shape flags (categoricals, missing values, class imbalance) — and read the top of the list as your starting candidate, the rest as fallbacks. <strong>Then read the pages:</strong> the shortlist is a map, not a verdict; the §2 callouts it points to carry the caveats (e.g.&nbsp;“Lasso is unstable under correlation,” “kNN needs scaling,” “trees overfit unless you ensemble”) that decide the final call. The notes panel surfaces the cross-cutting habits — stratified CV, <code>class_weight</code>, scaling, pipelines — that apply <em>regardless</em> of which method wins.</p>
+<div class="callout-bigpicture">
+<p><strong>Where the rules come from — the §2 “when NOT to use” reasoning.</strong> Each ranking and each one-line justification is derived from a method page’s §2 callout, not invented for this page. The regression rules trace to <a href="../methods/ols.html">OLS §2</a> (“non-linear → trees; <span class="math inline">p\gtrsim n</span> or correlated → Ridge/Lasso”) and <a href="../methods/regularization.html">Regularization §2</a> (“Lasso selects, Ridge shrinks, Elastic Net for correlated + sparse; non-linear → trees; keep interpretable axes → not PCA”). The classification rules trace to <a href="../methods/logistic.html">Logistic §2</a> (“interpretable linear boundary; non-linear → trees/kNN; well-separated Gaussians → LDA”), <a href="../methods/lda.html">LDA §2</a> (“Gaussian classes, shared covariance; different covariances → QDA; minimal assumptions → logistic”), <a href="../methods/knn.html">kNN §2</a> (“irregular local boundary, must scale; high-dimensional → reduce/parametric”), and <a href="../methods/decision_trees.html">Decision Trees §2</a> / <a href="../methods/random_forests.html">Random Forests §2</a> / <a href="../methods/ensembles.html">Ensembles §2</a> (“non-linear, mixed types, no scaling; a lone tree overfits → bag into a forest or boost”). The unsupervised rules trace to <a href="../methods/kmeans.html">K-Means §2</a> (“find groups, spherical, scale first, pair with PCA”) and <a href="../methods/pca.html">PCA §2</a> (“compress many correlated features; labels + separation → LDA instead”). The neural rules trace to <a href="../methods/nn_basics.html">NN basics §2</a> / <a href="../methods/build_a_nn.html">Build a NN §2</a> (“large unstructured data; small tabular → trees/linear”). The cross-cutting notes (stratified CV under imbalance, scaling for distance/gradient models) trace to <a href="../methods/cv_info_criteria.html">CV &amp; Information Criteria §2</a> and <a href="../methods/knn.html">kNN §2</a>.</p>
+</div>
+</section>
+<section id="sec-dashboard-full" class="level2">
+<h2 class="anchored" data-anchor-id="sec-dashboard-full">The dashboard</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="22" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 21;"><span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>viewof task <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  [<span class="st">"Regression (predict a number)"</span><span class="op">,</span> <span class="st">"Classification (predict a class)"</span><span class="op">,</span> <span class="st">"Clustering (find groups, no labels)"</span><span class="op">,</span> <span class="st">"Dimensionality reduction"</span>]<span class="op">,</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">label</span><span class="op">:</span> <span class="st">"Task"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="st">"Classification (predict a class)"</span>}</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>viewof bign <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Predictors rival or outnumber rows (p ≳ n), or strongly correlated?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>viewof nonlinear <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Relationship / boundary looks non-linear?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>viewof interp <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Need an interpretable / explainable model (signed effects)?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">true</span>})</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>viewof categorical <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Categorical features present (mixed types)?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>viewof missing <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Missing data present?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>viewof imbalance <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Class imbalance present?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-5" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-6" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="40" data-source-offset="-325"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 39;"><span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>famColor <span class="op">=</span> (name<span class="op">,</span> fallback) <span class="kw">=&gt;</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">getComputedStyle</span>(<span class="bu">document</span><span class="op">.</span><span class="at">documentElement</span>)<span class="op">.</span><span class="fu">getPropertyValue</span>(name)<span class="op">.</span><span class="fu">trim</span>() <span class="op">||</span> fallback)</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>COL <span class="op">=</span> ({</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="dt">linear</span><span class="op">:</span> <span class="fu">famColor</span>(<span class="st">'--family-linear'</span><span class="op">,</span> <span class="st">'#2E86AB'</span>)<span class="op">,</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>  <span class="dt">tree</span><span class="op">:</span>   <span class="fu">famColor</span>(<span class="st">'--family-tree'</span><span class="op">,</span>   <span class="st">'#06A77D'</span>)<span class="op">,</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="dt">neural</span><span class="op">:</span> <span class="fu">famColor</span>(<span class="st">'--family-neural'</span><span class="op">,</span> <span class="st">'#7B2CBF'</span>)<span class="op">,</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="dt">unsup</span><span class="op">:</span>  <span class="fu">famColor</span>(<span class="st">'--family-unsup'</span><span class="op">,</span>  <span class="st">'#F18F01'</span>)<span class="op">,</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="dt">cross</span><span class="op">:</span>  <span class="fu">famColor</span>(<span class="st">'--family-cross'</span><span class="op">,</span>  <span class="st">'#3D405B'</span>)</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="52" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 51;"><span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="co">// ----------------------------------------------------------------------------</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="co">// RANKING LOGIC — every rule and justification is DERIVED FROM a method page's</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="co">// §2 "When to use / when NOT to use" callout (cited in the comment on each push).</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="co">// Higher score = ranked higher. Pure JS, no data, no network (C8).</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="co">// ----------------------------------------------------------------------------</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>ranked <span class="op">=</span> {</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> out <span class="op">=</span> []<span class="op">;</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="co">// add(score, name, href, fam, why) — why is a paraphrase of the cited §2 callout.</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> add <span class="op">=</span> (score<span class="op">,</span> name<span class="op">,</span> href<span class="op">,</span> fam<span class="op">,</span> why) <span class="kw">=&gt;</span> out<span class="op">.</span><span class="fu">push</span>({score<span class="op">,</span> name<span class="op">,</span> href<span class="op">,</span> fam<span class="op">,</span> why})<span class="op">;</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ===================== REGRESSION =====================</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Regression"</span>)) {</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (nonlinear) {</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>      <span class="co">// OLS §2 "reach for something else when the relationship is clearly non-linear → Trees/RF";</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Random Forests §2 "non-linear with interactions, no scaling, strong out-of-the-box".</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"Random Forest"</span><span class="op">,</span> <span class="st">"../methods/random_forests.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>          <span class="st">"OLS §2 sends a non-linear target to trees; RF §2: captures non-linearity and interactions with little tuning, no scaling."</span>)<span class="op">;</span></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">82</span><span class="op">,</span> <span class="st">"Decision Tree"</span><span class="op">,</span> <span class="st">"../methods/decision_trees.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Trees §2: non-linear, mixed types, no scaling — but a lone tree overfits, so use it as the readable baseline before the forest."</span>)<span class="op">;</span></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">70</span><span class="op">,</span> <span class="st">"Gradient Boosting (ensemble)"</span><span class="op">,</span> <span class="st">"../methods/ensembles.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Ensembles §2: boosting reduces bias sequentially and often edges out RF on structured data when you can afford to tune."</span>)<span class="op">;</span></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>      <span class="co">// OLS §2 still names OLS only if you can linearize; offered as a low-rank interpretable fallback.</span></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (interp) <span class="fu">add</span>(<span class="dv">40</span><span class="op">,</span> <span class="st">"OLS (with transforms)"</span><span class="op">,</span> <span class="st">"../methods/ols.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>          <span class="st">"OLS §2: usable on a non-linear target only if you hand-engineer transforms/interactions to make it linear."</span>)<span class="op">;</span></span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (bign) {</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>      <span class="co">// OLS §2 "reach for something else when p ≳ n or strongly correlated → Ridge/Lasso";</span></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Regularization §2 "Lasso selects, Ridge shrinks; Elastic Net for correlated + sparse".</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"Lasso"</span><span class="op">,</span> <span class="st">"../methods/regularization.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regularization §2: penalize when p ≳ n / collinear; Lasso (L1) also zeros irrelevant predictors for a sparse, interpretable model."</span>)<span class="op">;</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">93</span><span class="op">,</span> <span class="st">"Ridge"</span><span class="op">,</span> <span class="st">"../methods/regularization.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regularization §2: many small genuine effects under multicollinearity → Ridge shrinks them together (keeps every predictor)."</span>)<span class="op">;</span></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">85</span><span class="op">,</span> <span class="st">"Elastic Net"</span><span class="op">,</span> <span class="st">"../methods/regularization.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regularization §2: correlated predictors AND want sparsity → Elastic Net keeps correlated groups together where plain Lasso is unstable."</span>)<span class="op">;</span></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>      <span class="co">// PCA §2 is the dim-reduction alternative for many correlated predictors.</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">55</span><span class="op">,</span> <span class="st">"PCA → regression"</span><span class="op">,</span> <span class="st">"../methods/pca.qmd"</span><span class="op">,</span> <span class="st">"unsup"</span><span class="op">,</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>          <span class="st">"PCA §2: the alternative to shrinkage — compress many correlated features into a few uncorrelated directions, then regress."</span>)<span class="op">;</span></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>      <span class="co">// OLS §2 explicitly says plain OLS overfits here; rank it last as the diagnostic baseline.</span></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">35</span><span class="op">,</span> <span class="st">"OLS (baseline only)"</span><span class="op">,</span> <span class="st">"../methods/ols.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>          <span class="st">"OLS §2: with p ≳ n or correlated predictors, plain OLS overfits (wide train–test gap) — fit it only as the baseline to beat."</span>)<span class="op">;</span></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>      <span class="co">// OLS §2 "reach for OLS when target is continuous, roughly linear, n &gt; p, interpretable coefficients wanted".</span></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"OLS"</span><span class="op">,</span> <span class="st">"../methods/ols.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>          <span class="st">"OLS §2: continuous target, roughly linear, n &gt; p, little collinearity — the fast, interpretable baseline. Reach here first."</span>)<span class="op">;</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Regularization §2: even with p ≪ n, a small penalty can help; offered as a guardrail.</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">60</span><span class="op">,</span> <span class="st">"Ridge / Lasso"</span><span class="op">,</span> <span class="st">"../methods/regularization.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regularization §2: if the OLS train–test gap opens up, shrink — Ridge for stability, Lasso for built-in feature selection."</span>)<span class="op">;</span></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Random Forests §2: the non-linear fallback to keep in mind even when you assumed linearity.</span></span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">45</span><span class="op">,</span> <span class="st">"Random Forest"</span><span class="op">,</span> <span class="st">"../methods/random_forests.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>          <span class="st">"RF §2: the non-linear fallback if residual plots reveal curvature OLS can't fit — prediction over a coefficient story."</span>)<span class="op">;</span></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ===================== CLASSIFICATION =====================</span></span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Classification"</span>)) {</span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (nonlinear) {</span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Logistic §2 / LDA §2 "boundary clearly non-linear → Trees/RF or kNN";</span></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Decision Trees §2 / Random Forests §2 / kNN §2.</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"Random Forest"</span><span class="op">,</span> <span class="st">"../methods/random_forests.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Logistic §2 sends a non-linear boundary to trees/RF; RF §2: tames a single tree's variance, strong out-of-the-box, no scaling."</span>)<span class="op">;</span></span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">82</span><span class="op">,</span> <span class="st">"Decision Tree"</span><span class="op">,</span> <span class="st">"../methods/decision_trees.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Trees §2: axis-aligned splits capture non-linearity + interactions, fully interpretable flowchart — the baseline before the forest."</span>)<span class="op">;</span></span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">74</span><span class="op">,</span> <span class="st">"kNN"</span><span class="op">,</span> <span class="st">"../methods/knn.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>          <span class="st">"kNN §2: an assumption-free non-parametric baseline that follows an irregular but locally smooth boundary — but you must scale features."</span>)<span class="op">;</span></span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">60</span><span class="op">,</span> <span class="st">"Gradient Boosting (ensemble)"</span><span class="op">,</span> <span class="st">"../methods/ensembles.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Ensembles §2: boosting sharpens weak learners to reduce bias — top accuracy on structured data when you can tune."</span>)<span class="op">;</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Logistic §2 "interpretable linear boundary, calibrated probabilities, fast baseline".</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"Logistic Regression"</span><span class="op">,</span> <span class="st">"../methods/logistic.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Logistic §2: linear boundary, calibrated probabilities, coefficients read as log-odds/odds ratios — the interpretable first classifier."</span>)<span class="op">;</span></span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a>      <span class="co">// LDA §2 "two+ reasonably-separated classes with similar covariances; supervised low-dim view".</span></span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">85</span><span class="op">,</span> <span class="st">"LDA"</span><span class="op">,</span> <span class="st">"../methods/lda.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a>          <span class="st">"LDA §2: well-separated Gaussian-ish classes with similar covariances → a stable linear boundary (and a supervised low-dim view)."</span>)<span class="op">;</span></span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a>      <span class="co">// kNN §2 baseline; Trees §2 even a linear-boundary case can use a tree, but they note it overfits a diagonal.</span></span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">60</span><span class="op">,</span> <span class="st">"kNN"</span><span class="op">,</span> <span class="st">"../methods/knn.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a>          <span class="st">"kNN §2: a quick assumption-free baseline alongside logistic/LDA — scale first, and watch the curse of dimensionality."</span>)<span class="op">;</span></span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add</span>(<span class="dv">45</span><span class="op">,</span> <span class="st">"Random Forest"</span><span class="op">,</span> <span class="st">"../methods/random_forests.qmd"</span><span class="op">,</span> <span class="st">"tree"</span><span class="op">,</span></span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a>          <span class="st">"RF §2: the non-linear fallback if a linear boundary underfits — Trees §2 warn a tree needs a jagged staircase for a truly linear boundary."</span>)<span class="op">;</span></span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ===================== CLUSTERING =====================</span></span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> <span class="cf">if</span> (task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Clustering"</span>)) {</span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a>    <span class="co">// K-Means §2 "no labels, want groups, roughly spherical, continuous + scaled, pair with PCA".</span></span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"K-Means"</span><span class="op">,</span> <span class="st">"../methods/kmeans.qmd"</span><span class="op">,</span> <span class="st">"unsup"</span><span class="op">,</span></span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a>        <span class="st">"K-Means §2: no labels, want groups/segments, roughly spherical and similar-sized clusters — standardize first (the #1 mistake)."</span>)<span class="op">;</span></span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a>    <span class="co">// K-Means §2 + PCA §2: the course-recommended PCA→K-Means pipeline (denoise/reduce, then cluster).</span></span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="dv">80</span><span class="op">,</span> <span class="st">"PCA → K-Means"</span><span class="op">,</span> <span class="st">"../methods/pca.qmd"</span><span class="op">,</span> <span class="st">"unsup"</span><span class="op">,</span></span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a>        <span class="st">"PCA §2 + K-Means §2: reduce/denoise with PCA, then cluster — the course's recommended pairing and the exam's Assignment-2 pipeline."</span>)<span class="op">;</span></span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ===================== DIMENSIONALITY REDUCTION =====================</span></span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span> {</span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a>    <span class="co">// PCA §2 "many correlated features → compress into a few uncorrelated directions; visualize; denoise".</span></span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="dv">95</span><span class="op">,</span> <span class="st">"PCA"</span><span class="op">,</span> <span class="st">"../methods/pca.qmd"</span><span class="op">,</span> <span class="st">"unsup"</span><span class="op">,</span></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a>        <span class="st">"PCA §2: compress many (correlated) features into a few uncorrelated, variance-ranked directions — visualize, denoise, compress. Standardize first."</span>)<span class="op">;</span></span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a>    <span class="co">// PCA §2 / LDA §2: if labels exist and you care about separation, LDA is the supervised reducer.</span></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="dv">70</span><span class="op">,</span> <span class="st">"LDA (if you have labels)"</span><span class="op">,</span> <span class="st">"../methods/lda.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a>        <span class="st">"LDA §2 / PCA §2: with labels and a goal of class separation, LDA keeps the directions that separate classes (PCA ignores y)."</span>)<span class="op">;</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Regularization §2: the interpretable alternative to projecting — keep the original axes.</span></span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (interp) <span class="fu">add</span>(<span class="dv">55</span><span class="op">,</span> <span class="st">"Regularization (keep original axes)"</span><span class="op">,</span> <span class="st">"../methods/regularization.qmd"</span><span class="op">,</span> <span class="st">"linear"</span><span class="op">,</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a>        <span class="st">"PCA §2 / Regularization §2: to keep interpretable original features instead of blended components, shrink with Ridge/Lasso."</span>)<span class="op">;</span></span>
+<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ----- sort high→low, stable -----</span></span>
+<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> out<span class="op">.</span><span class="fu">sort</span>((a<span class="op">,</span> b) <span class="kw">=&gt;</span> b<span class="op">.</span><span class="at">score</span> <span class="op">-</span> a<span class="op">.</span><span class="at">score</span>)<span class="op">;</span></span>
+<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="162" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 161;"><span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a><span class="co">// ----------------------------------------------------------------------------</span></span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a><span class="co">// Cross-cutting NOTES — surfaced by the data-shape flags. Each note paraphrases</span></span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a><span class="co">// a §2 callout (cited inline). These apply regardless of which method wins.</span></span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a><span class="co">// ----------------------------------------------------------------------------</span></span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>notes <span class="op">=</span> {</span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> ns <span class="op">=</span> []<span class="op">;</span></span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (imbalance) ns<span class="op">.</span><span class="fu">push</span>(</span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>    <span class="st">"**Class imbalance:** use **stratified V-fold CV** so every fold keeps the class ratio, and report precision/recall/F1, not just accuracy (CV &amp; Info Criteria §2; kNN/Logistic §6). For logistic regression set `class_weight='balanced'` (Logistic §3)."</span>)<span class="op">;</span></span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (categorical) ns<span class="op">.</span><span class="fu">push</span>(</span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>    <span class="st">"**Categorical / mixed-type features:** **trees and random forests split on thresholds and need no one-hot encoding or scaling** (Decision Trees §2). Distance/linear models (kNN, logistic, LDA) require you to encode and scale first (kNN §2)."</span>)<span class="op">;</span></span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (missing) ns<span class="op">.</span><span class="fu">push</span>(</span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>    <span class="st">"**Missing data:** trees tolerate mixed, messy inputs more gracefully (Decision Trees §2: mixed types, no preprocessing); distance/gradient models (kNN, logistic, NN) need complete, scaled rows — impute inside a pipeline so nothing leaks (CV &amp; Info Criteria §2)."</span>)<span class="op">;</span></span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (bign <span class="op">&amp;&amp;</span> <span class="op">!</span>task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Regression"</span>)) ns<span class="op">.</span><span class="fu">push</span>(</span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>    <span class="st">"**p ≳ n / many predictors:** for classification this destabilizes linear coefficients — use the built-in L2/L1 penalty (`C`/`penalty`, Logistic §2) or reduce dimensions with **PCA** before a distance model (kNN §2: the curse of dimensionality makes 'nearest' meaningless)."</span>)<span class="op">;</span></span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>  ns<span class="op">.</span><span class="fu">push</span>(</span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>    <span class="st">"**Always:** standardize *inside* a `make_pipeline` / CV loop for any distance- or gradient-based model (kNN, logistic, K-Means, PCA, NN), so scaling is learned on training folds only and never leaks (CV &amp; Info Criteria §2; kNN §2; PCA §2). Trees are the exception — they need no scaling (Decision Trees §2)."</span>)<span class="op">;</span></span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> ns<span class="op">;</span></span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb5" data-startfrom="184" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 183;"><span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a><span class="co">// ----------------------------------------------------------------------------</span></span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a><span class="co">// RENDER — ranked cards + the notes panel. Pure HTML/DOM, no network.</span></span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a><span class="co">// ----------------------------------------------------------------------------</span></span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a><span class="fu">html</span><span class="vs">`</span></span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a><span class="vs">&lt;div style="display:flex; flex-direction:column; gap:0.55rem; margin:0.5rem 0 1rem;"&gt;</span></span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a><span class="vs">  </span><span class="sc">${</span>ranked<span class="op">.</span><span class="fu">map</span>((c<span class="op">,</span> i) <span class="kw">=&gt;</span> <span class="fu">html</span><span class="vs">`</span></span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a><span class="vs">    &lt;div style="display:flex; align-items:flex-start; gap:0.7rem;</span></span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a><span class="vs">                border-left:5px solid </span><span class="sc">${</span>COL[c<span class="op">.</span><span class="at">fam</span>]<span class="sc">}</span><span class="vs">; background:rgba(0,0,0,0.025);</span></span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a><span class="vs">                padding:0.55rem 0.8rem; border-radius:0 6px 6px 0;"&gt;</span></span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a><span class="vs">      &lt;div style="flex:0 0 1.6rem; font-weight:700; font-size:1.05rem;</span></span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a><span class="vs">                  color:</span><span class="sc">${</span>COL[c<span class="op">.</span><span class="at">fam</span>]<span class="sc">}</span><span class="vs">;"&gt;</span><span class="sc">${</span>i <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="vs">.&lt;/div&gt;</span></span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a><span class="vs">      &lt;div style="flex:1;"&gt;</span></span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a><span class="vs">        &lt;a href="</span><span class="sc">${</span>c<span class="op">.</span><span class="at">href</span><span class="sc">}</span><span class="vs">" style="font-weight:700; color:</span><span class="sc">${</span>COL[c<span class="op">.</span><span class="at">fam</span>]<span class="sc">}</span><span class="vs">; text-decoration:none;"&gt;</span></span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a><span class="vs">          </span><span class="sc">${</span>c<span class="op">.</span><span class="at">name</span><span class="sc">}</span><span class="vs">&lt;/a&gt;</span></span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a><span class="vs">        &lt;div style="font-size:0.9rem; color:#444; margin-top:0.15rem;"&gt;</span><span class="sc">${</span>c<span class="op">.</span><span class="at">why</span><span class="sc">}</span><span class="vs">&lt;/div&gt;</span></span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a><span class="vs">      &lt;/div&gt;</span></span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a><span class="vs">    &lt;/div&gt;`</span>)<span class="sc">}</span></span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a><span class="vs">&lt;/div&gt;`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-5" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb6" data-startfrom="206" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 205;"><span id="cb6-206"><a href="#cb6-206" aria-hidden="true" tabindex="-1"></a><span class="fu">html</span><span class="vs">`</span></span>
+<span id="cb6-207"><a href="#cb6-207" aria-hidden="true" tabindex="-1"></a><span class="vs">&lt;div style="border:1px solid #ddd; border-radius:6px; padding:0.6rem 0.9rem;</span></span>
+<span id="cb6-208"><a href="#cb6-208" aria-hidden="true" tabindex="-1"></a><span class="vs">            background:rgba(61,64,91,0.05);"&gt;</span></span>
+<span id="cb6-209"><a href="#cb6-209" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;div style="font-weight:700; color:</span><span class="sc">${</span>COL<span class="op">.</span><span class="at">cross</span><span class="sc">}</span><span class="vs">; margin-bottom:0.35rem;"&gt;</span></span>
+<span id="cb6-210"><a href="#cb6-210" aria-hidden="true" tabindex="-1"></a><span class="vs">    Cross-cutting notes for this problem&lt;/div&gt;</span></span>
+<span id="cb6-211"><a href="#cb6-211" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;ul style="margin:0; padding-left:1.2rem;"&gt;</span></span>
+<span id="cb6-212"><a href="#cb6-212" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="sc">${</span>notes<span class="op">.</span><span class="fu">map</span>(n <span class="kw">=&gt;</span> <span class="fu">html</span><span class="vs">`&lt;li style="margin:0.25rem 0; font-size:0.9rem;"&gt;</span><span class="sc">${</span><span class="fu">boldify</span>(n)<span class="sc">}</span><span class="vs">&lt;/li&gt;`</span>)<span class="sc">}</span></span>
+<span id="cb6-213"><a href="#cb6-213" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;/ul&gt;</span></span>
+<span id="cb6-214"><a href="#cb6-214" aria-hidden="true" tabindex="-1"></a><span class="vs">&lt;/div&gt;`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-6" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb7" data-startfrom="219" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 218;"><span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a><span class="co">// Render a string with **bold** markup as an HTML fragment — pure JS, no imports,</span></span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a><span class="co">// no network (C8). Splits on the **…** delimiters and wraps the odd segments in &lt;b&gt;.</span></span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a>boldify <span class="op">=</span> (s) <span class="kw">=&gt;</span> {</span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> parts <span class="op">=</span> s<span class="op">.</span><span class="fu">split</span>(<span class="st">"**"</span>)<span class="op">;</span></span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">html</span><span class="vs">`&lt;span&gt;</span><span class="sc">${</span>parts<span class="op">.</span><span class="fu">map</span>((seg<span class="op">,</span> i) <span class="kw">=&gt;</span> i <span class="op">%</span> <span class="dv">2</span> <span class="op">===</span> <span class="dv">1</span> <span class="op">?</span> <span class="fu">html</span><span class="vs">`&lt;b&gt;</span><span class="sc">${</span>seg<span class="sc">}</span><span class="vs">&lt;/b&gt;`</span> <span class="op">:</span> seg)<span class="sc">}</span><span class="vs">&lt;/span&gt;`</span><span class="op">;</span></span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-7" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</section>
+<section id="how-the-four-spring-2025-assignments-map-to-dashboard-paths" class="level2">
+<h2 class="anchored" data-anchor-id="how-the-four-spring-2025-assignments-map-to-dashboard-paths">How the four Spring-2025 assignments map to dashboard paths</h2>
+<div class="callout-exam">
+<p><strong>The exam <em>is</em> four trips through this dashboard.</strong> Each Spring-2025 take-home assignment corresponds to one path through the controls above — set them as listed and the panel returns the methods the exam actually expects (<code>phase0/concept_inventory.md</code>; <code>phase0/exam_spring2025_notebook.md</code>).</p>
+<ul>
+<li><strong>Assignment 1 — regression on <code>Hitters.csv</code>.</strong> Path: <em>Regression</em> → <em>p ≳ n / correlated</em> <strong>on</strong> → the panel ranks <strong>Lasso / Ridge / Elastic Net</strong> with <strong>OLS as the baseline to beat</strong>. This is exactly the exam ask: fit <a href="../methods/ols.html">OLS</a> as baseline, then <a href="../methods/regularization.html">Ridge/Lasso with cross-validated <code>alpha</code></a>, and interpret the coefficient change and the <a href="../methods/bias_variance.html">bias–variance</a> trade-off.</li>
+<li><strong>Assignment 2 — clustering + PCA on <code>WholesaleCustomers</code>.</strong> Path: <em>Clustering</em> (or <em>Dimensionality reduction</em>) → the panel ranks <strong>PCA → K-Means</strong>. The exam pipeline is the course-recommended one: scale → <a href="../methods/pca.html">PCA</a> to 90 % variance → <a href="../methods/kmeans.html">K-Means</a> with elbow + silhouette to choose <span class="math inline">K</span>.</li>
+<li><strong>Assignment 3 — ensembles on <code>WDBC</code> (breast cancer).</strong> Path: <em>Classification</em> → <em>non-linear</em> <strong>on</strong> → the panel ranks <strong>Random Forest / Decision Tree / Gradient Boosting</strong>. The exam walks the <a href="../methods/decision_trees.html">single tree</a> → <a href="../methods/random_forests.html">Random Forest</a> → <a href="../methods/ensembles.html">gradient boosting</a> progression and asks you to contrast bagging-vs-boosting (Assignment 3.8).</li>
+<li><strong>Assignment 4 — classification on <code>SimulatedData.csv</code>.</strong> Path: <em>Classification</em>, with <em>categorical features</em> and <em>imbalance</em> flags as the data demands → the panel ranks candidate classifiers (<a href="../methods/logistic.html">logistic</a>, <a href="../methods/knn.html">kNN</a>, <a href="../methods/random_forests.html">trees/RF</a>) and the <strong>notes</strong> surface “scale distance/gradient models, not trees” and “stratified CV + class metrics” — precisely Assignment 4’s “encode + scale if necessary,” “tune by CV,” and “report accuracy/precision/recall/F1.”</li>
+</ul>
+</div>
+</section>
+<section id="see-also" class="level2">
+<h2 class="anchored" data-anchor-id="see-also">See also</h2>
+<ul>
+<li>The condensed <a href="../index.html#sec-dashboard">home-page dashboard</a> (same idea, fewer controls).</li>
+<li><a href="../cross_method/family_comparisons.html">Family Comparisons</a> — side-by-side tables of the method families.</li>
+<li><a href="../cross_method/showdowns.html">Showdowns</a> — same dataset, several methods, what to notice.</li>
+<li><a href="../methods/bias_variance.html">Bias–Variance</a> and <a href="../methods/cv_info_criteria.html">CV &amp; Information Criteria</a> — the cross-cutting lenses every choice above is read through.</li>
+<li>The <a href="../drill/index.html">Drill index</a> — the Spring-2025 take-home worked end-to-end.  </li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<!-- Auto-generated from theme/toggle.js — do not edit by hand. Inlined site-wide via _quarto.yml include-after-body so the math toggle works offline at any page depth. -->
+<script>
+/* GRA 4160 study companion — global math-mode toggle (C9).
+ *
+ * Persists to localStorage key `gra4160.mathMode` ∈ {off, course, full}.
+ * Drives <body> classes math-off | math-a | math-b, which the SCSS uses to
+ * show/hide .math-mode-a / .math-mode-b regions site-wide WITHOUT page reload.
+ * Default on first visit: off (both math modes collapsed).
+ *
+ * This file is the canonical source. It is injected on every page via
+ * `include-after-body: theme/toggle-after-body.html` in _quarto.yml, which
+ * inlines an identical copy inside <script> tags (kept in sync with this file).
+ */
+(function () {
+  "use strict";
+  var KEY = "gra4160.mathMode";
+  var ORDER = ["off", "course", "full"];
+  var BODYCLASS = { off: "math-off", course: "math-a", full: "math-b" };
+  var LABEL = { off: "off", course: "course level", full: "full" };
+
+  function read() {
+    var v = null;
+    try { v = window.localStorage.getItem(KEY); } catch (e) { /* private mode */ }
+    return ORDER.indexOf(v) >= 0 ? v : "off";
+  }
+  function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function apply(mode) {
+    var b = document.body;
+    if (!b) return;
+    b.classList.remove("math-off", "math-a", "math-b");
+    b.classList.add(BODYCLASS[mode]);
+    var st = document.querySelector("#math-mode-toggle .mm-state");
+    if (st) st.textContent = LABEL[mode];
+    var btn = document.getElementById("math-mode-toggle");
+    if (btn) btn.setAttribute("aria-label", "Math display: " + LABEL[mode] + " (click to change)");
+  }
+
+  function next(mode) { return ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]; }
+
+  function makeButton() {
+    if (document.getElementById("math-mode-toggle")) return;
+    var btn = document.createElement("button");
+    btn.id = "math-mode-toggle";
+    btn.type = "button";
+    btn.title = "Cycle math display: off → course level → full";
+    btn.innerHTML = 'Math: <span class="mm-state">off</span>';
+    btn.addEventListener("click", function () {
+      var m = next(read());
+      write(m);
+      apply(m);
+    });
+
+    // Prefer the Quarto navbar; fall back to a fixed floating control.
+    var host = document.querySelector(".navbar .navbar-nav.navbar-nav-scroll")
+            || document.querySelector("#quarto-search ~ *")
+            || document.querySelector(".navbar .quarto-navbar-tools")
+            || document.querySelector(".navbar");
+    if (host && host.classList.contains("navbar")) {
+      var wrap = document.createElement("div");
+      wrap.className = "navbar-nav ms-auto";
+      wrap.appendChild(btn);
+      host.appendChild(wrap);
+    } else if (host) {
+      host.appendChild(btn);
+    } else {
+      btn.style.position = "fixed";
+      btn.style.top = "0.5rem";
+      btn.style.right = "0.75rem";
+      btn.style.zIndex = "1080";
+      document.body.appendChild(btn);
+    }
+  }
+
+  function init() {
+    makeButton();
+    apply(read());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiB0YXNrID0gSW5wdXRzLnJhZGlvKFxuICBbXCJSZWdyZXNzaW9uIChwcmVkaWN0IGEgbnVtYmVyKVwiLCBcIkNsYXNzaWZpY2F0aW9uIChwcmVkaWN0IGEgY2xhc3MpXCIsIFwiQ2x1c3RlcmluZyAoZmluZCBncm91cHMsIG5vIGxhYmVscylcIiwgXCJEaW1lbnNpb25hbGl0eSByZWR1Y3Rpb25cIl0sXG4gIHtsYWJlbDogXCJUYXNrXCIsIHZhbHVlOiBcIkNsYXNzaWZpY2F0aW9uIChwcmVkaWN0IGEgY2xhc3MpXCJ9XG4pXG52aWV3b2YgYmlnbiA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIlByZWRpY3RvcnMgcml2YWwgb3Igb3V0bnVtYmVyIHJvd3MgKHAg4omzIG4pLCBvciBzdHJvbmdseSBjb3JyZWxhdGVkP1wiLCB2YWx1ZTogZmFsc2V9KVxudmlld29mIG5vbmxpbmVhciA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIlJlbGF0aW9uc2hpcCAvIGJvdW5kYXJ5IGxvb2tzIG5vbi1saW5lYXI/XCIsIHZhbHVlOiBmYWxzZX0pXG52aWV3b2YgaW50ZXJwID0gSW5wdXRzLnRvZ2dsZSh7bGFiZWw6IFwiTmVlZCBhbiBpbnRlcnByZXRhYmxlIC8gZXhwbGFpbmFibGUgbW9kZWwgKHNpZ25lZCBlZmZlY3RzKT9cIiwgdmFsdWU6IHRydWV9KVxudmlld29mIGNhdGVnb3JpY2FsID0gSW5wdXRzLnRvZ2dsZSh7bGFiZWw6IFwiQ2F0ZWdvcmljYWwgZmVhdHVyZXMgcHJlc2VudCAobWl4ZWQgdHlwZXMpP1wiLCB2YWx1ZTogZmFsc2V9KVxudmlld29mIG1pc3NpbmcgPSBJbnB1dHMudG9nZ2xlKHtsYWJlbDogXCJNaXNzaW5nIGRhdGEgcHJlc2VudD9cIiwgdmFsdWU6IGZhbHNlfSlcbnZpZXdvZiBpbWJhbGFuY2UgPSBJbnB1dHMudG9nZ2xlKHtsYWJlbDogXCJDbGFzcyBpbWJhbGFuY2UgcHJlc2VudD9cIiwgdmFsdWU6IGZhbHNlfSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ii8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbi8vIEZhbWlseSBjb2xvcnMg4oCUIHJlYWQgZnJvbSB0aGUgcGFnZSdzIENTUyBjdXN0b20gcHJvcGVydGllcyAoc2V0IGluIGN1c3RvbS5zY3NzKSxcbi8vIHdpdGggdGhlIGNvbmNlcHQtaW52ZW50b3J5IGhleCB2YWx1ZXMgYXMgb2ZmbGluZSBmYWxsYmFja3MuIE5vIG5ldHdvcmsgY2FsbHMuXG4vLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5mYW1Db2xvciA9IChuYW1lLCBmYWxsYmFjaykgPT5cbiAgKGdldENvbXB1dGVkU3R5bGUoZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50KS5nZXRQcm9wZXJ0eVZhbHVlKG5hbWUpLnRyaW0oKSB8fCBmYWxsYmFjaylcbkNPTCA9ICh7XG4gIGxpbmVhcjogZmFtQ29sb3IoJy0tZmFtaWx5LWxpbmVhcicsICcjMkU4NkFCJyksXG4gIHRyZWU6ICAgZmFtQ29sb3IoJy0tZmFtaWx5LXRyZWUnLCAgICcjMDZBNzdEJyksXG4gIG5ldXJhbDogZmFtQ29sb3IoJy0tZmFtaWx5LW5ldXJhbCcsICcjN0IyQ0JGJyksXG4gIHVuc3VwOiAgZmFtQ29sb3IoJy0tZmFtaWx5LXVuc3VwJywgICcjRjE4RjAxJyksXG4gIGNyb3NzOiAgZmFtQ29sb3IoJy0tZmFtaWx5LWNyb3NzJywgICcjM0Q0MDVCJylcbn0pXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTMiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiIvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4vLyBSQU5LSU5HIExPR0lDIOKAlCBldmVyeSBydWxlIGFuZCBqdXN0aWZpY2F0aW9uIGlzIERFUklWRUQgRlJPTSBhIG1ldGhvZCBwYWdlJ3Ncbi8vIMKnMiBcIldoZW4gdG8gdXNlIC8gd2hlbiBOT1QgdG8gdXNlXCIgY2FsbG91dCAoY2l0ZWQgaW4gdGhlIGNvbW1lbnQgb24gZWFjaCBwdXNoKS5cbi8vIEhpZ2hlciBzY29yZSA9IHJhbmtlZCBoaWdoZXIuIFB1cmUgSlMsIG5vIGRhdGEsIG5vIG5ldHdvcmsgKEM4KS5cbi8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbnJhbmtlZCA9IHtcbiAgY29uc3Qgb3V0ID0gW107XG4gIC8vIGFkZChzY29yZSwgbmFtZSwgaHJlZiwgZmFtLCB3aHkpIOKAlCB3aHkgaXMgYSBwYXJhcGhyYXNlIG9mIHRoZSBjaXRlZCDCpzIgY2FsbG91dC5cbiAgY29uc3QgYWRkID0gKHNjb3JlLCBuYW1lLCBocmVmLCBmYW0sIHdoeSkgPT4gb3V0LnB1c2goe3Njb3JlLCBuYW1lLCBocmVmLCBmYW0sIHdoeX0pO1xuXG4gIC8vID09PT09PT09PT09PT09PT09PT09PSBSRUdSRVNTSU9OID09PT09PT09PT09PT09PT09PT09PVxuICBpZiAodGFzay5zdGFydHNXaXRoKFwiUmVncmVzc2lvblwiKSkge1xuICAgIGlmIChub25saW5lYXIpIHtcbiAgICAgIC8vIE9MUyDCpzIgXCJyZWFjaCBmb3Igc29tZXRoaW5nIGVsc2Ugd2hlbiB0aGUgcmVsYXRpb25zaGlwIGlzIGNsZWFybHkgbm9uLWxpbmVhciDihpIgVHJlZXMvUkZcIjtcbiAgICAgIC8vIFJhbmRvbSBGb3Jlc3RzIMKnMiBcIm5vbi1saW5lYXIgd2l0aCBpbnRlcmFjdGlvbnMsIG5vIHNjYWxpbmcsIHN0cm9uZyBvdXQtb2YtdGhlLWJveFwiLlxuICAgICAgYWRkKDk1LCBcIlJhbmRvbSBGb3Jlc3RcIiwgXCIuLi9tZXRob2RzL3JhbmRvbV9mb3Jlc3RzLnFtZFwiLCBcInRyZWVcIixcbiAgICAgICAgICBcIk9MUyDCpzIgc2VuZHMgYSBub24tbGluZWFyIHRhcmdldCB0byB0cmVlczsgUkYgwqcyOiBjYXB0dXJlcyBub24tbGluZWFyaXR5IGFuZCBpbnRlcmFjdGlvbnMgd2l0aCBsaXR0bGUgdHVuaW5nLCBubyBzY2FsaW5nLlwiKTtcbiAgICAgIGFkZCg4MiwgXCJEZWNpc2lvbiBUcmVlXCIsIFwiLi4vbWV0aG9kcy9kZWNpc2lvbl90cmVlcy5xbWRcIiwgXCJ0cmVlXCIsXG4gICAgICAgICAgXCJUcmVlcyDCpzI6IG5vbi1saW5lYXIsIG1peGVkIHR5cGVzLCBubyBzY2FsaW5nIOKAlCBidXQgYSBsb25lIHRyZWUgb3ZlcmZpdHMsIHNvIHVzZSBpdCBhcyB0aGUgcmVhZGFibGUgYmFzZWxpbmUgYmVmb3JlIHRoZSBmb3Jlc3QuXCIpO1xuICAgICAgYWRkKDcwLCBcIkdyYWRpZW50IEJvb3N0aW5nIChlbnNlbWJsZSlcIiwgXCIuLi9tZXRob2RzL2Vuc2VtYmxlcy5xbWRcIiwgXCJ0cmVlXCIsXG4gICAgICAgICAgXCJFbnNlbWJsZXMgwqcyOiBib29zdGluZyByZWR1Y2VzIGJpYXMgc2VxdWVudGlhbGx5IGFuZCBvZnRlbiBlZGdlcyBvdXQgUkYgb24gc3RydWN0dXJlZCBkYXRhIHdoZW4geW91IGNhbiBhZmZvcmQgdG8gdHVuZS5cIik7XG4gICAgICAvLyBPTFMgwqcyIHN0aWxsIG5hbWVzIE9MUyBvbmx5IGlmIHlvdSBjYW4gbGluZWFyaXplOyBvZmZlcmVkIGFzIGEgbG93LXJhbmsgaW50ZXJwcmV0YWJsZSBmYWxsYmFjay5cbiAgICAgIGlmIChpbnRlcnApIGFkZCg0MCwgXCJPTFMgKHdpdGggdHJhbnNmb3JtcylcIiwgXCIuLi9tZXRob2RzL29scy5xbWRcIiwgXCJsaW5lYXJcIixcbiAgICAgICAgICBcIk9MUyDCpzI6IHVzYWJsZSBvbiBhIG5vbi1saW5lYXIgdGFyZ2V0IG9ubHkgaWYgeW91IGhhbmQtZW5naW5lZXIgdHJhbnNmb3Jtcy9pbnRlcmFjdGlvbnMgdG8gbWFrZSBpdCBsaW5lYXIuXCIpO1xuICAgIH0gZWxzZSBpZiAoYmlnbikge1xuICAgICAgLy8gT0xTIMKnMiBcInJlYWNoIGZvciBzb21ldGhpbmcgZWxzZSB3aGVuIHAg4omzIG4gb3Igc3Ryb25nbHkgY29ycmVsYXRlZCDihpIgUmlkZ2UvTGFzc29cIjtcbiAgICAgIC8vIFJlZ3VsYXJpemF0aW9uIMKnMiBcIkxhc3NvIHNlbGVjdHMsIFJpZGdlIHNocmlua3M7IEVsYXN0aWMgTmV0IGZvciBjb3JyZWxhdGVkICsgc3BhcnNlXCIuXG4gICAgICBhZGQoOTUsIFwiTGFzc29cIiwgXCIuLi9tZXRob2RzL3JlZ3VsYXJpemF0aW9uLnFtZFwiLCBcImxpbmVhclwiLFxuICAgICAgICAgIFwiUmVndWxhcml6YXRpb24gwqcyOiBwZW5hbGl6ZSB3aGVuIHAg4omzIG4gLyBjb2xsaW5lYXI7IExhc3NvIChMMSkgYWxzbyB6ZXJvcyBpcnJlbGV2YW50IHByZWRpY3RvcnMgZm9yIGEgc3BhcnNlLCBpbnRlcnByZXRhYmxlIG1vZGVsLlwiKTtcbiAgICAgIGFkZCg5MywgXCJSaWRnZVwiLCBcIi4uL21ldGhvZHMvcmVndWxhcml6YXRpb24ucW1kXCIsIFwibGluZWFyXCIsXG4gICAgICAgICAgXCJSZWd1bGFyaXphdGlvbiDCpzI6IG1hbnkgc21hbGwgZ2VudWluZSBlZmZlY3RzIHVuZGVyIG11bHRpY29sbGluZWFyaXR5IOKGkiBSaWRnZSBzaHJpbmtzIHRoZW0gdG9nZXRoZXIgKGtlZXBzIGV2ZXJ5IHByZWRpY3RvcikuXCIpO1xuICAgICAgYWRkKDg1LCBcIkVsYXN0aWMgTmV0XCIsIFwiLi4vbWV0aG9kcy9yZWd1bGFyaXphdGlvbi5xbWRcIiwgXCJsaW5lYXJcIixcbiAgICAgICAgICBcIlJlZ3VsYXJpemF0aW9uIMKnMjogY29ycmVsYXRlZCBwcmVkaWN0b3JzIEFORCB3YW50IHNwYXJzaXR5IOKGkiBFbGFzdGljIE5ldCBrZWVwcyBjb3JyZWxhdGVkIGdyb3VwcyB0b2dldGhlciB3aGVyZSBwbGFpbiBMYXNzbyBpcyB1bnN0YWJsZS5cIik7XG4gICAgICAvLyBQQ0EgwqcyIGlzIHRoZSBkaW0tcmVkdWN0aW9uIGFsdGVybmF0aXZlIGZvciBtYW55IGNvcnJlbGF0ZWQgcHJlZGljdG9ycy5cbiAgICAgIGFkZCg1NSwgXCJQQ0Eg4oaSIHJlZ3Jlc3Npb25cIiwgXCIuLi9tZXRob2RzL3BjYS5xbWRcIiwgXCJ1bnN1cFwiLFxuICAgICAgICAgIFwiUENBIMKnMjogdGhlIGFsdGVybmF0aXZlIHRvIHNocmlua2FnZSDigJQgY29tcHJlc3MgbWFueSBjb3JyZWxhdGVkIGZlYXR1cmVzIGludG8gYSBmZXcgdW5jb3JyZWxhdGVkIGRpcmVjdGlvbnMsIHRoZW4gcmVncmVzcy5cIik7XG4gICAgICAvLyBPTFMgwqcyIGV4cGxpY2l0bHkgc2F5cyBwbGFpbiBPTFMgb3ZlcmZpdHMgaGVyZTsgcmFuayBpdCBsYXN0IGFzIHRoZSBkaWFnbm9zdGljIGJhc2VsaW5lLlxuICAgICAgYWRkKDM1LCBcIk9MUyAoYmFzZWxpbmUgb25seSlcIiwgXCIuLi9tZXRob2RzL29scy5xbWRcIiwgXCJsaW5lYXJcIixcbiAgICAgICAgICBcIk9MUyDCpzI6IHdpdGggcCDiibMgbiBvciBjb3JyZWxhdGVkIHByZWRpY3RvcnMsIHBsYWluIE9MUyBvdmVyZml0cyAod2lkZSB0cmFpbuKAk3Rlc3QgZ2FwKSDigJQgZml0IGl0IG9ubHkgYXMgdGhlIGJhc2VsaW5lIHRvIGJlYXQuXCIpO1xuICAgIH0gZWxzZSB7XG4gICAgICAvLyBPTFMgwqcyIFwicmVhY2ggZm9yIE9MUyB3aGVuIHRhcmdldCBpcyBjb250aW51b3VzLCByb3VnaGx5IGxpbmVhciwgbiA+IHAsIGludGVycHJldGFibGUgY29lZmZpY2llbnRzIHdhbnRlZFwiLlxuICAgICAgYWRkKDk1LCBcIk9MU1wiLCBcIi4uL21ldGhvZHMvb2xzLnFtZFwiLCBcImxpbmVhclwiLFxuICAgICAgICAgIFwiT0xTIMKnMjogY29udGludW91cyB0YXJnZXQsIHJvdWdobHkgbGluZWFyLCBuID4gcCwgbGl0dGxlIGNvbGxpbmVhcml0eSDigJQgdGhlIGZhc3QsIGludGVycHJldGFibGUgYmFzZWxpbmUuIFJlYWNoIGhlcmUgZmlyc3QuXCIpO1xuICAgICAgLy8gUmVndWxhcml6YXRpb24gwqcyOiBldmVuIHdpdGggcCDiiaogbiwgYSBzbWFsbCBwZW5hbHR5IGNhbiBoZWxwOyBvZmZlcmVkIGFzIGEgZ3VhcmRyYWlsLlxuICAgICAgYWRkKDYwLCBcIlJpZGdlIC8gTGFzc29cIiwgXCIuLi9tZXRob2RzL3JlZ3VsYXJpemF0aW9uLnFtZFwiLCBcImxpbmVhclwiLFxuICAgICAgICAgIFwiUmVndWxhcml6YXRpb24gwqcyOiBpZiB0aGUgT0xTIHRyYWlu4oCTdGVzdCBnYXAgb3BlbnMgdXAsIHNocmluayDigJQgUmlkZ2UgZm9yIHN0YWJpbGl0eSwgTGFzc28gZm9yIGJ1aWx0LWluIGZlYXR1cmUgc2VsZWN0aW9uLlwiKTtcbiAgICAgIC8vIFJhbmRvbSBGb3Jlc3RzIMKnMjogdGhlIG5vbi1saW5lYXIgZmFsbGJhY2sgdG8ga2VlcCBpbiBtaW5kIGV2ZW4gd2hlbiB5b3UgYXNzdW1lZCBsaW5lYXJpdHkuXG4gICAgICBhZGQoNDUsIFwiUmFuZG9tIEZvcmVzdFwiLCBcIi4uL21ldGhvZHMvcmFuZG9tX2ZvcmVzdHMucW1kXCIsIFwidHJlZVwiLFxuICAgICAgICAgIFwiUkYgwqcyOiB0aGUgbm9uLWxpbmVhciBmYWxsYmFjayBpZiByZXNpZHVhbCBwbG90cyByZXZlYWwgY3VydmF0dXJlIE9MUyBjYW4ndCBmaXQg4oCUIHByZWRpY3Rpb24gb3ZlciBhIGNvZWZmaWNpZW50IHN0b3J5LlwiKTtcbiAgICB9XG4gIH1cblxuICAvLyA9PT09PT09PT09PT09PT09PT09PT0gQ0xBU1NJRklDQVRJT04gPT09PT09PT09PT09PT09PT09PT09XG4gIGVsc2UgaWYgKHRhc2suc3RhcnRzV2l0aChcIkNsYXNzaWZpY2F0aW9uXCIpKSB7XG4gICAgaWYgKG5vbmxpbmVhcikge1xuICAgICAgLy8gTG9naXN0aWMgwqcyIC8gTERBIMKnMiBcImJvdW5kYXJ5IGNsZWFybHkgbm9uLWxpbmVhciDihpIgVHJlZXMvUkYgb3Iga05OXCI7XG4gICAgICAvLyBEZWNpc2lvbiBUcmVlcyDCpzIgLyBSYW5kb20gRm9yZXN0cyDCpzIgLyBrTk4gwqcyLlxuICAgICAgYWRkKDk1LCBcIlJhbmRvbSBGb3Jlc3RcIiwgXCIuLi9tZXRob2RzL3JhbmRvbV9mb3Jlc3RzLnFtZFwiLCBcInRyZWVcIixcbiAgICAgICAgICBcIkxvZ2lzdGljIMKnMiBzZW5kcyBhIG5vbi1saW5lYXIgYm91bmRhcnkgdG8gdHJlZXMvUkY7IFJGIMKnMjogdGFtZXMgYSBzaW5nbGUgdHJlZSdzIHZhcmlhbmNlLCBzdHJvbmcgb3V0LW9mLXRoZS1ib3gsIG5vIHNjYWxpbmcuXCIpO1xuICAgICAgYWRkKDgyLCBcIkRlY2lzaW9uIFRyZWVcIiwgXCIuLi9tZXRob2RzL2RlY2lzaW9uX3RyZWVzLnFtZFwiLCBcInRyZWVcIixcbiAgICAgICAgICBcIlRyZWVzIMKnMjogYXhpcy1hbGlnbmVkIHNwbGl0cyBjYXB0dXJlIG5vbi1saW5lYXJpdHkgKyBpbnRlcmFjdGlvbnMsIGZ1bGx5IGludGVycHJldGFibGUgZmxvd2NoYXJ0IOKAlCB0aGUgYmFzZWxpbmUgYmVmb3JlIHRoZSBmb3Jlc3QuXCIpO1xuICAgICAgYWRkKDc0LCBcImtOTlwiLCBcIi4uL21ldGhvZHMva25uLnFtZFwiLCBcImxpbmVhclwiLFxuICAgICAgICAgIFwia05OIMKnMjogYW4gYXNzdW1wdGlvbi1mcmVlIG5vbi1wYXJhbWV0cmljIGJhc2VsaW5lIHRoYXQgZm9sbG93cyBhbiBpcnJlZ3VsYXIgYnV0IGxvY2FsbHkgc21vb3RoIGJvdW5kYXJ5IOKAlCBidXQgeW91IG11c3Qgc2NhbGUgZmVhdHVyZXMuXCIpO1xuICAgICAgYWRkKDYwLCBcIkdyYWRpZW50IEJvb3N0aW5nIChlbnNlbWJsZSlcIiwgXCIuLi9tZXRob2RzL2Vuc2VtYmxlcy5xbWRcIiwgXCJ0cmVlXCIsXG4gICAgICAgICAgXCJFbnNlbWJsZXMgwqcyOiBib29zdGluZyBzaGFycGVucyB3ZWFrIGxlYXJuZXJzIHRvIHJlZHVjZSBiaWFzIOKAlCB0b3AgYWNjdXJhY3kgb24gc3RydWN0dXJlZCBkYXRhIHdoZW4geW91IGNhbiB0dW5lLlwiKTtcbiAgICB9IGVsc2Uge1xuICAgICAgLy8gTG9naXN0aWMgwqcyIFwiaW50ZXJwcmV0YWJsZSBsaW5lYXIgYm91bmRhcnksIGNhbGlicmF0ZWQgcHJvYmFiaWxpdGllcywgZmFzdCBiYXNlbGluZVwiLlxuICAgICAgYWRkKDk1LCBcIkxvZ2lzdGljIFJlZ3Jlc3Npb25cIiwgXCIuLi9tZXRob2RzL2xvZ2lzdGljLnFtZFwiLCBcImxpbmVhclwiLFxuICAgICAgICAgIFwiTG9naXN0aWMgwqcyOiBsaW5lYXIgYm91bmRhcnksIGNhbGlicmF0ZWQgcHJvYmFiaWxpdGllcywgY29lZmZpY2llbnRzIHJlYWQgYXMgbG9nLW9kZHMvb2RkcyByYXRpb3Mg4oCUIHRoZSBpbnRlcnByZXRhYmxlIGZpcnN0IGNsYXNzaWZpZXIuXCIpO1xuICAgICAgLy8gTERBIMKnMiBcInR3bysgcmVhc29uYWJseS1zZXBhcmF0ZWQgY2xhc3NlcyB3aXRoIHNpbWlsYXIgY292YXJpYW5jZXM7IHN1cGVydmlzZWQgbG93LWRpbSB2aWV3XCIuXG4gICAgICBhZGQoODUsIFwiTERBXCIsIFwiLi4vbWV0aG9kcy9sZGEucW1kXCIsIFwibGluZWFyXCIsXG4gICAgICAgICAgXCJMREEgwqcyOiB3ZWxsLXNlcGFyYXRlZCBHYXVzc2lhbi1pc2ggY2xhc3NlcyB3aXRoIHNpbWlsYXIgY292YXJpYW5jZXMg4oaSIGEgc3RhYmxlIGxpbmVhciBib3VuZGFyeSAoYW5kIGEgc3VwZXJ2aXNlZCBsb3ctZGltIHZpZXcpLlwiKTtcbiAgICAgIC8vIGtOTiDCpzIgYmFzZWxpbmU7IFRyZWVzIMKnMiBldmVuIGEgbGluZWFyLWJvdW5kYXJ5IGNhc2UgY2FuIHVzZSBhIHRyZWUsIGJ1dCB0aGV5IG5vdGUgaXQgb3ZlcmZpdHMgYSBkaWFnb25hbC5cbiAgICAgIGFkZCg2MCwgXCJrTk5cIiwgXCIuLi9tZXRob2RzL2tubi5xbWRcIiwgXCJsaW5lYXJcIixcbiAgICAgICAgICBcImtOTiDCpzI6IGEgcXVpY2sgYXNzdW1wdGlvbi1mcmVlIGJhc2VsaW5lIGFsb25nc2lkZSBsb2dpc3RpYy9MREEg4oCUIHNjYWxlIGZpcnN0LCBhbmQgd2F0Y2ggdGhlIGN1cnNlIG9mIGRpbWVuc2lvbmFsaXR5LlwiKTtcbiAgICAgIGFkZCg0NSwgXCJSYW5kb20gRm9yZXN0XCIsIFwiLi4vbWV0aG9kcy9yYW5kb21fZm9yZXN0cy5xbWRcIiwgXCJ0cmVlXCIsXG4gICAgICAgICAgXCJSRiDCpzI6IHRoZSBub24tbGluZWFyIGZhbGxiYWNrIGlmIGEgbGluZWFyIGJvdW5kYXJ5IHVuZGVyZml0cyDigJQgVHJlZXMgwqcyIHdhcm4gYSB0cmVlIG5lZWRzIGEgamFnZ2VkIHN0YWlyY2FzZSBmb3IgYSB0cnVseSBsaW5lYXIgYm91bmRhcnkuXCIpO1xuICAgIH1cbiAgfVxuXG4gIC8vID09PT09PT09PT09PT09PT09PT09PSBDTFVTVEVSSU5HID09PT09PT09PT09PT09PT09PT09PVxuICBlbHNlIGlmICh0YXNrLnN0YXJ0c1dpdGgoXCJDbHVzdGVyaW5nXCIpKSB7XG4gICAgLy8gSy1NZWFucyDCpzIgXCJubyBsYWJlbHMsIHdhbnQgZ3JvdXBzLCByb3VnaGx5IHNwaGVyaWNhbCwgY29udGludW91cyArIHNjYWxlZCwgcGFpciB3aXRoIFBDQVwiLlxuICAgIGFkZCg5NSwgXCJLLU1lYW5zXCIsIFwiLi4vbWV0aG9kcy9rbWVhbnMucW1kXCIsIFwidW5zdXBcIixcbiAgICAgICAgXCJLLU1lYW5zIMKnMjogbm8gbGFiZWxzLCB3YW50IGdyb3Vwcy9zZWdtZW50cywgcm91Z2hseSBzcGhlcmljYWwgYW5kIHNpbWlsYXItc2l6ZWQgY2x1c3RlcnMg4oCUIHN0YW5kYXJkaXplIGZpcnN0ICh0aGUgIzEgbWlzdGFrZSkuXCIpO1xuICAgIC8vIEstTWVhbnMgwqcyICsgUENBIMKnMjogdGhlIGNvdXJzZS1yZWNvbW1lbmRlZCBQQ0HihpJLLU1lYW5zIHBpcGVsaW5lIChkZW5vaXNlL3JlZHVjZSwgdGhlbiBjbHVzdGVyKS5cbiAgICBhZGQoODAsIFwiUENBIOKGkiBLLU1lYW5zXCIsIFwiLi4vbWV0aG9kcy9wY2EucW1kXCIsIFwidW5zdXBcIixcbiAgICAgICAgXCJQQ0EgwqcyICsgSy1NZWFucyDCpzI6IHJlZHVjZS9kZW5vaXNlIHdpdGggUENBLCB0aGVuIGNsdXN0ZXIg4oCUIHRoZSBjb3Vyc2UncyByZWNvbW1lbmRlZCBwYWlyaW5nIGFuZCB0aGUgZXhhbSdzIEFzc2lnbm1lbnQtMiBwaXBlbGluZS5cIik7XG4gIH1cblxuICAvLyA9PT09PT09PT09PT09PT09PT09PT0gRElNRU5TSU9OQUxJVFkgUkVEVUNUSU9OID09PT09PT09PT09PT09PT09PT09PVxuICBlbHNlIHtcbiAgICAvLyBQQ0EgwqcyIFwibWFueSBjb3JyZWxhdGVkIGZlYXR1cmVzIOKGkiBjb21wcmVzcyBpbnRvIGEgZmV3IHVuY29ycmVsYXRlZCBkaXJlY3Rpb25zOyB2aXN1YWxpemU7IGRlbm9pc2VcIi5cbiAgICBhZGQoOTUsIFwiUENBXCIsIFwiLi4vbWV0aG9kcy9wY2EucW1kXCIsIFwidW5zdXBcIixcbiAgICAgICAgXCJQQ0EgwqcyOiBjb21wcmVzcyBtYW55IChjb3JyZWxhdGVkKSBmZWF0dXJlcyBpbnRvIGEgZmV3IHVuY29ycmVsYXRlZCwgdmFyaWFuY2UtcmFua2VkIGRpcmVjdGlvbnMg4oCUIHZpc3VhbGl6ZSwgZGVub2lzZSwgY29tcHJlc3MuIFN0YW5kYXJkaXplIGZpcnN0LlwiKTtcbiAgICAvLyBQQ0EgwqcyIC8gTERBIMKnMjogaWYgbGFiZWxzIGV4aXN0IGFuZCB5b3UgY2FyZSBhYm91dCBzZXBhcmF0aW9uLCBMREEgaXMgdGhlIHN1cGVydmlzZWQgcmVkdWNlci5cbiAgICBhZGQoNzAsIFwiTERBIChpZiB5b3UgaGF2ZSBsYWJlbHMpXCIsIFwiLi4vbWV0aG9kcy9sZGEucW1kXCIsIFwibGluZWFyXCIsXG4gICAgICAgIFwiTERBIMKnMiAvIFBDQSDCpzI6IHdpdGggbGFiZWxzIGFuZCBhIGdvYWwgb2YgY2xhc3Mgc2VwYXJhdGlvbiwgTERBIGtlZXBzIHRoZSBkaXJlY3Rpb25zIHRoYXQgc2VwYXJhdGUgY2xhc3NlcyAoUENBIGlnbm9yZXMgeSkuXCIpO1xuICAgIC8vIFJlZ3VsYXJpemF0aW9uIMKnMjogdGhlIGludGVycHJldGFibGUgYWx0ZXJuYXRpdmUgdG8gcHJvamVjdGluZyDigJQga2VlcCB0aGUgb3JpZ2luYWwgYXhlcy5cbiAgICBpZiAoaW50ZXJwKSBhZGQoNTUsIFwiUmVndWxhcml6YXRpb24gKGtlZXAgb3JpZ2luYWwgYXhlcylcIiwgXCIuLi9tZXRob2RzL3JlZ3VsYXJpemF0aW9uLnFtZFwiLCBcImxpbmVhclwiLFxuICAgICAgICBcIlBDQSDCpzIgLyBSZWd1bGFyaXphdGlvbiDCpzI6IHRvIGtlZXAgaW50ZXJwcmV0YWJsZSBvcmlnaW5hbCBmZWF0dXJlcyBpbnN0ZWFkIG9mIGJsZW5kZWQgY29tcG9uZW50cywgc2hyaW5rIHdpdGggUmlkZ2UvTGFzc28uXCIpO1xuICB9XG5cbiAgLy8gLS0tLS0gc29ydCBoaWdo4oaSbG93LCBzdGFibGUgLS0tLS1cbiAgcmV0dXJuIG91dC5zb3J0KChhLCBiKSA9PiBiLnNjb3JlIC0gYS5zY29yZSk7XG59XG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTQiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiIvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4vLyBDcm9zcy1jdXR0aW5nIE5PVEVTIOKAlCBzdXJmYWNlZCBieSB0aGUgZGF0YS1zaGFwZSBmbGFncy4gRWFjaCBub3RlIHBhcmFwaHJhc2VzXG4vLyBhIMKnMiBjYWxsb3V0IChjaXRlZCBpbmxpbmUpLiBUaGVzZSBhcHBseSByZWdhcmRsZXNzIG9mIHdoaWNoIG1ldGhvZCB3aW5zLlxuLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxubm90ZXMgPSB7XG4gIGNvbnN0IG5zID0gW107XG4gIGlmIChpbWJhbGFuY2UpIG5zLnB1c2goXG4gICAgXCIqKkNsYXNzIGltYmFsYW5jZToqKiB1c2UgKipzdHJhdGlmaWVkIFYtZm9sZCBDVioqIHNvIGV2ZXJ5IGZvbGQga2VlcHMgdGhlIGNsYXNzIHJhdGlvLCBhbmQgcmVwb3J0IHByZWNpc2lvbi9yZWNhbGwvRjEsIG5vdCBqdXN0IGFjY3VyYWN5IChDViAmIEluZm8gQ3JpdGVyaWEgwqcyOyBrTk4vTG9naXN0aWMgwqc2KS4gRm9yIGxvZ2lzdGljIHJlZ3Jlc3Npb24gc2V0IGBjbGFzc193ZWlnaHQ9J2JhbGFuY2VkJ2AgKExvZ2lzdGljIMKnMykuXCIpO1xuICBpZiAoY2F0ZWdvcmljYWwpIG5zLnB1c2goXG4gICAgXCIqKkNhdGVnb3JpY2FsIC8gbWl4ZWQtdHlwZSBmZWF0dXJlczoqKiAqKnRyZWVzIGFuZCByYW5kb20gZm9yZXN0cyBzcGxpdCBvbiB0aHJlc2hvbGRzIGFuZCBuZWVkIG5vIG9uZS1ob3QgZW5jb2Rpbmcgb3Igc2NhbGluZyoqIChEZWNpc2lvbiBUcmVlcyDCpzIpLiBEaXN0YW5jZS9saW5lYXIgbW9kZWxzIChrTk4sIGxvZ2lzdGljLCBMREEpIHJlcXVpcmUgeW91IHRvIGVuY29kZSBhbmQgc2NhbGUgZmlyc3QgKGtOTiDCpzIpLlwiKTtcbiAgaWYgKG1pc3NpbmcpIG5zLnB1c2goXG4gICAgXCIqKk1pc3NpbmcgZGF0YToqKiB0cmVlcyB0b2xlcmF0ZSBtaXhlZCwgbWVzc3kgaW5wdXRzIG1vcmUgZ3JhY2VmdWxseSAoRGVjaXNpb24gVHJlZXMgwqcyOiBtaXhlZCB0eXBlcywgbm8gcHJlcHJvY2Vzc2luZyk7IGRpc3RhbmNlL2dyYWRpZW50IG1vZGVscyAoa05OLCBsb2dpc3RpYywgTk4pIG5lZWQgY29tcGxldGUsIHNjYWxlZCByb3dzIOKAlCBpbXB1dGUgaW5zaWRlIGEgcGlwZWxpbmUgc28gbm90aGluZyBsZWFrcyAoQ1YgJiBJbmZvIENyaXRlcmlhIMKnMikuXCIpO1xuICBpZiAoYmlnbiAmJiAhdGFzay5zdGFydHNXaXRoKFwiUmVncmVzc2lvblwiKSkgbnMucHVzaChcbiAgICBcIioqcCDiibMgbiAvIG1hbnkgcHJlZGljdG9yczoqKiBmb3IgY2xhc3NpZmljYXRpb24gdGhpcyBkZXN0YWJpbGl6ZXMgbGluZWFyIGNvZWZmaWNpZW50cyDigJQgdXNlIHRoZSBidWlsdC1pbiBMMi9MMSBwZW5hbHR5IChgQ2AvYHBlbmFsdHlgLCBMb2dpc3RpYyDCpzIpIG9yIHJlZHVjZSBkaW1lbnNpb25zIHdpdGggKipQQ0EqKiBiZWZvcmUgYSBkaXN0YW5jZSBtb2RlbCAoa05OIMKnMjogdGhlIGN1cnNlIG9mIGRpbWVuc2lvbmFsaXR5IG1ha2VzICduZWFyZXN0JyBtZWFuaW5nbGVzcykuXCIpO1xuICBucy5wdXNoKFxuICAgIFwiKipBbHdheXM6Kiogc3RhbmRhcmRpemUgKmluc2lkZSogYSBgbWFrZV9waXBlbGluZWAgLyBDViBsb29wIGZvciBhbnkgZGlzdGFuY2UtIG9yIGdyYWRpZW50LWJhc2VkIG1vZGVsIChrTk4sIGxvZ2lzdGljLCBLLU1lYW5zLCBQQ0EsIE5OKSwgc28gc2NhbGluZyBpcyBsZWFybmVkIG9uIHRyYWluaW5nIGZvbGRzIG9ubHkgYW5kIG5ldmVyIGxlYWtzIChDViAmIEluZm8gQ3JpdGVyaWEgwqcyOyBrTk4gwqcyOyBQQ0EgwqcyKS4gVHJlZXMgYXJlIHRoZSBleGNlcHRpb24g4oCUIHRoZXkgbmVlZCBubyBzY2FsaW5nIChEZWNpc2lvbiBUcmVlcyDCpzIpLlwiKTtcbiAgcmV0dXJuIG5zO1xufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC01IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuLy8gUkVOREVSIOKAlCByYW5rZWQgY2FyZHMgKyB0aGUgbm90ZXMgcGFuZWwuIFB1cmUgSFRNTC9ET00sIG5vIG5ldHdvcmsuXG4vLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5odG1sYFxuPGRpdiBzdHlsZT1cImRpc3BsYXk6ZmxleDsgZmxleC1kaXJlY3Rpb246Y29sdW1uOyBnYXA6MC41NXJlbTsgbWFyZ2luOjAuNXJlbSAwIDFyZW07XCI+XG4gICR7cmFua2VkLm1hcCgoYywgaSkgPT4gaHRtbGBcbiAgICA8ZGl2IHN0eWxlPVwiZGlzcGxheTpmbGV4OyBhbGlnbi1pdGVtczpmbGV4LXN0YXJ0OyBnYXA6MC43cmVtO1xuICAgICAgICAgICAgICAgIGJvcmRlci1sZWZ0OjVweCBzb2xpZCAke0NPTFtjLmZhbV19OyBiYWNrZ3JvdW5kOnJnYmEoMCwwLDAsMC4wMjUpO1xuICAgICAgICAgICAgICAgIHBhZGRpbmc6MC41NXJlbSAwLjhyZW07IGJvcmRlci1yYWRpdXM6MCA2cHggNnB4IDA7XCI+XG4gICAgICA8ZGl2IHN0eWxlPVwiZmxleDowIDAgMS42cmVtOyBmb250LXdlaWdodDo3MDA7IGZvbnQtc2l6ZToxLjA1cmVtO1xuICAgICAgICAgICAgICAgICAgY29sb3I6JHtDT0xbYy5mYW1dfTtcIj4ke2kgKyAxfS48L2Rpdj5cbiAgICAgIDxkaXYgc3R5bGU9XCJmbGV4OjE7XCI+XG4gICAgICAgIDxhIGhyZWY9XCIke2MuaHJlZn1cIiBzdHlsZT1cImZvbnQtd2VpZ2h0OjcwMDsgY29sb3I6JHtDT0xbYy5mYW1dfTsgdGV4dC1kZWNvcmF0aW9uOm5vbmU7XCI+XG4gICAgICAgICAgJHtjLm5hbWV9PC9hPlxuICAgICAgICA8ZGl2IHN0eWxlPVwiZm9udC1zaXplOjAuOXJlbTsgY29sb3I6IzQ0NDsgbWFyZ2luLXRvcDowLjE1cmVtO1wiPiR7Yy53aHl9PC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5gKX1cbjwvZGl2PmBcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtNiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Imh0bWxgXG48ZGl2IHN0eWxlPVwiYm9yZGVyOjFweCBzb2xpZCAjZGRkOyBib3JkZXItcmFkaXVzOjZweDsgcGFkZGluZzowLjZyZW0gMC45cmVtO1xuICAgICAgICAgICAgYmFja2dyb3VuZDpyZ2JhKDYxLDY0LDkxLDAuMDUpO1wiPlxuICA8ZGl2IHN0eWxlPVwiZm9udC13ZWlnaHQ6NzAwOyBjb2xvcjoke0NPTC5jcm9zc307IG1hcmdpbi1ib3R0b206MC4zNXJlbTtcIj5cbiAgICBDcm9zcy1jdXR0aW5nIG5vdGVzIGZvciB0aGlzIHByb2JsZW08L2Rpdj5cbiAgPHVsIHN0eWxlPVwibWFyZ2luOjA7IHBhZGRpbmctbGVmdDoxLjJyZW07XCI+XG4gICAgJHtub3Rlcy5tYXAobiA9PiBodG1sYDxsaSBzdHlsZT1cIm1hcmdpbjowLjI1cmVtIDA7IGZvbnQtc2l6ZTowLjlyZW07XCI+JHtib2xkaWZ5KG4pfTwvbGk+YCl9XG4gIDwvdWw+XG48L2Rpdj5gXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTciLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiIvLyBSZW5kZXIgYSBzdHJpbmcgd2l0aCAqKmJvbGQqKiBtYXJrdXAgYXMgYW4gSFRNTCBmcmFnbWVudCDigJQgcHVyZSBKUywgbm8gaW1wb3J0cyxcbi8vIG5vIG5ldHdvcmsgKEM4KS4gU3BsaXRzIG9uIHRoZSAqKuKApioqIGRlbGltaXRlcnMgYW5kIHdyYXBzIHRoZSBvZGQgc2VnbWVudHMgaW4gPGI+LlxuYm9sZGlmeSA9IChzKSA9PiB7XG4gIGNvbnN0IHBhcnRzID0gcy5zcGxpdChcIioqXCIpO1xuICByZXR1cm4gaHRtbGA8c3Bhbj4ke3BhcnRzLm1hcCgoc2VnLCBpKSA9PiBpICUgMiA9PT0gMSA/IGh0bWxgPGI+JHtzZWd9PC9iPmAgOiBzZWcpfTwvc3Bhbj5gO1xufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCd0YXNrJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2JpZ24nKSJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnbm9ubGluZWFyJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2ludGVycCcpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdjYXRlZ29yaWNhbCcpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdtaXNzaW5nJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2ltYmFsYW5jZScpIn1dfQ==
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../cross_method";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../methods/build_a_nn.html" class="pagination-link" aria-label="Build a Neural Network">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Build a Neural Network</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../cross_method/family_comparisons.html" class="pagination-link" aria-label="Family Comparisons">
+        <span class="nav-page-text">Family Comparisons</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Built by Vilijam Cekov · GRA 4160 Study Companion</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p><a href="https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium">Source on GitHub</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
