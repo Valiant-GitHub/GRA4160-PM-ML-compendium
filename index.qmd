@@ -18,47 +18,11 @@ Beyond the per-method pages, the **cross-method layer** is where method *selecti
 
 ## Decision dashboard {#sec-dashboard}
 
-::: {.callout-intuition}
-**How to use it.** Describe your problem with the controls; the panel ranks candidate methods with one-line justifications and links. *This is a placeholder ranking; the full decision logic (derived from every method's "When NOT to use" section) is wired up in the [full dashboard](cross_method/decision_dashboard.qmd).*
+::: {.callout-bigpicture}
+**Which method should I reach for?** Describe your problem with a few inputs — task type, data shape, modeling preferences — and the decision dashboard returns a ranked shortlist of candidate methods, each with a one-line justification drawn from that method's *"When **not** to use"* callout and a link to its page.
+
+[Open the full decision dashboard →](cross_method/decision_dashboard.qmd){.btn .btn-primary}
 :::
-
-```{ojs}
-//| echo: false
-viewof task = Inputs.radio(
-  ["Regression (predict a number)", "Classification (predict a class)", "Clustering (find groups)", "Dimensionality reduction"],
-  {label: "Task", value: "Classification (predict a class)"}
-)
-viewof interp = Inputs.toggle({label: "Need an interpretable / explainable model?", value: true})
-viewof bign = Inputs.toggle({label: "Many more features than rows (p ≫ n)?", value: false})
-viewof nonlinear = Inputs.toggle({label: "Relationship looks non-linear?", value: false})
-```
-
-```{ojs}
-//| echo: false
-// Placeholder ranking logic — replaced by the real rules in Phase 4.1.
-candidates = {
-  const out = [];
-  const add = (name, href, why) => out.push({name, href, why});
-  if (task.startsWith("Regression")) {
-    add("OLS", "methods/ols.qmd", "interpretable linear baseline; start here");
-    if (bign) add("Lasso / Ridge", "methods/regularization.qmd", "p ≫ n → penalize; Lasso also selects features");
-    if (nonlinear) add("Random Forest", "methods/random_forests.qmd", "captures non-linearity, low tuning");
-  } else if (task.startsWith("Classification")) {
-    add(interp ? "Logistic Regression" : "Random Forest",
-        interp ? "methods/logistic.qmd" : "methods/random_forests.qmd",
-        interp ? "linear, interpretable log-odds" : "strong default, handles non-linearity");
-    add("kNN", "methods/knn.qmd", "non-parametric baseline");
-    if (!nonlinear) add("LDA", "methods/lda.qmd", "linear boundary, Gaussian classes");
-  } else if (task.startsWith("Clustering")) {
-    add("K-Means", "methods/kmeans.qmd", "fast, spherical clusters; pick k via elbow/silhouette");
-    add("PCA → K-Means", "methods/pca.qmd", "reduce dimensions/noise first");
-  } else {
-    add("PCA", "methods/pca.qmd", "linear variance-maximizing projection");
-  }
-  return out;
-}
-html`<ol>${candidates.map(c => html`<li><a href="${c.href}"><b>${c.name}</b></a> — ${c.why}</li>`)}</ol>`
-```
 
 ## How the math toggle works {#sec-math-demo}
 
@@ -82,7 +46,7 @@ $$\hat{\beta} = (X^\top X)^{-1} X^\top y.$$
 ## Orientation
 
 - **New to the material?** Start with [Reading the Data](big_picture/reading_the_data.qmd) and [Workflow Patterns](big_picture/workflow_patterns.qmd).
-- **Have a dataset?** Use the dashboard above, or the [full decision dashboard](cross_method/decision_dashboard.qmd).
+- **Have a dataset?** Jump to the [decision dashboard](cross_method/decision_dashboard.qmd).
 - **Comparing methods?** See [Family Comparisons](cross_method/family_comparisons.qmd) and [Showdowns](cross_method/showdowns.qmd).
 - **Practising for the exam?** Go to the [Drill index](drill/index.qmd) — the Spring-2025 take-home is worked there.
 - **Reference:** [Notation](appendix/notation_table.qmd) · [Math appendix](appendix/math_appendix.qmd) · [Sources](appendix/sources.qmd).

@@ -231,6 +231,27 @@ figure figcaption, .figure-caption, .quarto-figure figcaption {
   white-space: normal !important; overflow: visible !important; text-overflow: clip !important;
 }
 
+// Fix 2 (theme-port follow-up): Observable's toggle component carries inline/computed
+// styles that out-specificity our wrap rules, so long labels still scrolled. Force
+// the wrap with !important across every label-ish element in the controls scope, and
+// kill overflow-x on the row + cell wrappers so no horizontal scrollbar can appear.
+.dash-controls label,
+.dash-controls .observablehq-input-label,
+.dash-controls [class*="-label"] {
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  text-overflow: clip !important;
+  max-width: 100% !important;
+}
+.dash-controls form,
+.dash-controls .cell,
+.dash-controls .cell-output-display,
+.dash-controls .observablehq {
+  overflow-x: visible !important;
+  max-width: 100% !important;
+}
+
 // the Task radio: a wrapped row of option "pills". Its own Observable label is
 // suppressed at source (decision_dashboard.qmd drops the `label` prop), so only the
 // .dash-section-header "Task" shows — no duplicate (Issue 1).

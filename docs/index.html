@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -75,7 +40,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-e154b87f46de05cb9d2df9f9af250391.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-1aa24e27c06a7fae8712c44f8bd94403.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-f5c4287ff88daac39969cb05d78bfe35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -103,8 +68,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="module" src="site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
-<link href="site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
 
   <script defer="" src="assets/katex/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -590,83 +553,9 @@ window.Quarto = {
 </section>
 <section id="sec-dashboard" class="level2">
 <h2 class="anchored" data-anchor-id="sec-dashboard">Decision dashboard</h2>
-<div class="callout-intuition">
-<p><strong>How to use it.</strong> Describe your problem with the controls; the panel ranks candidate methods with one-line justifications and links. <em>This is a placeholder ranking; the full decision logic (derived from every method’s “When NOT to use” section) is wired up in the <a href="./cross_method/decision_dashboard.html">full dashboard</a>.</em></p>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="27" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 26;"><span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>viewof task <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">radio</span>(</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  [<span class="st">"Regression (predict a number)"</span><span class="op">,</span> <span class="st">"Classification (predict a class)"</span><span class="op">,</span> <span class="st">"Clustering (find groups)"</span><span class="op">,</span> <span class="st">"Dimensionality reduction"</span>]<span class="op">,</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">label</span><span class="op">:</span> <span class="st">"Task"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="st">"Classification (predict a class)"</span>}</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>viewof interp <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Need an interpretable / explainable model?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">true</span>})</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>viewof bign <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Many more features than rows (p ≫ n)?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>viewof nonlinear <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">toggle</span>({<span class="dt">label</span><span class="op">:</span> <span class="st">"Relationship looks non-linear?"</span><span class="op">,</span> <span class="dt">value</span><span class="op">:</span> <span class="kw">false</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-1-1" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-1-2" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-1-3" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-1-4" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="39" data-source-offset="-72"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 38;"><span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>candidates <span class="op">=</span> {</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> out <span class="op">=</span> []<span class="op">;</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> add <span class="op">=</span> (name<span class="op">,</span> href<span class="op">,</span> why) <span class="kw">=&gt;</span> out<span class="op">.</span><span class="fu">push</span>({name<span class="op">,</span> href<span class="op">,</span> why})<span class="op">;</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Regression"</span>)) {</span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="st">"OLS"</span><span class="op">,</span> <span class="st">"methods/ols.qmd"</span><span class="op">,</span> <span class="st">"interpretable linear baseline; start here"</span>)<span class="op">;</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (bign) <span class="fu">add</span>(<span class="st">"Lasso / Ridge"</span><span class="op">,</span> <span class="st">"methods/regularization.qmd"</span><span class="op">,</span> <span class="st">"p ≫ n → penalize; Lasso also selects features"</span>)<span class="op">;</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (nonlinear) <span class="fu">add</span>(<span class="st">"Random Forest"</span><span class="op">,</span> <span class="st">"methods/random_forests.qmd"</span><span class="op">,</span> <span class="st">"captures non-linearity, low tuning"</span>)<span class="op">;</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Classification"</span>)) {</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(interp <span class="op">?</span> <span class="st">"Logistic Regression"</span> <span class="op">:</span> <span class="st">"Random Forest"</span><span class="op">,</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>        interp <span class="op">?</span> <span class="st">"methods/logistic.qmd"</span> <span class="op">:</span> <span class="st">"methods/random_forests.qmd"</span><span class="op">,</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>        interp <span class="op">?</span> <span class="st">"linear, interpretable log-odds"</span> <span class="op">:</span> <span class="st">"strong default, handles non-linearity"</span>)<span class="op">;</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="st">"kNN"</span><span class="op">,</span> <span class="st">"methods/knn.qmd"</span><span class="op">,</span> <span class="st">"non-parametric baseline"</span>)<span class="op">;</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>nonlinear) <span class="fu">add</span>(<span class="st">"LDA"</span><span class="op">,</span> <span class="st">"methods/lda.qmd"</span><span class="op">,</span> <span class="st">"linear boundary, Gaussian classes"</span>)<span class="op">;</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (task<span class="op">.</span><span class="fu">startsWith</span>(<span class="st">"Clustering"</span>)) {</span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="st">"K-Means"</span><span class="op">,</span> <span class="st">"methods/kmeans.qmd"</span><span class="op">,</span> <span class="st">"fast, spherical clusters; pick k via elbow/silhouette"</span>)<span class="op">;</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="st">"PCA → K-Means"</span><span class="op">,</span> <span class="st">"methods/pca.qmd"</span><span class="op">,</span> <span class="st">"reduce dimensions/noise first"</span>)<span class="op">;</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add</span>(<span class="st">"PCA"</span><span class="op">,</span> <span class="st">"methods/pca.qmd"</span><span class="op">,</span> <span class="st">"linear variance-maximizing projection"</span>)<span class="op">;</span></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> out<span class="op">;</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="fu">html</span><span class="vs">`&lt;ol&gt;</span><span class="sc">${</span>candidates<span class="op">.</span><span class="fu">map</span>(c <span class="kw">=&gt;</span> <span class="fu">html</span><span class="vs">`&lt;li&gt;&lt;a href="</span><span class="sc">${</span>c<span class="op">.</span><span class="at">href</span><span class="sc">}</span><span class="vs">"&gt;&lt;b&gt;</span><span class="sc">${</span>c<span class="op">.</span><span class="at">name</span><span class="sc">}</span><span class="vs">&lt;/b&gt;&lt;/a&gt; — </span><span class="sc">${</span>c<span class="op">.</span><span class="at">why</span><span class="sc">}</span><span class="vs">&lt;/li&gt;`</span>)<span class="sc">}</span><span class="vs">&lt;/ol&gt;`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-2-1" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-2-2" data-nodetype="expression">
-
-</div>
-</div>
-</div>
+<div class="callout-bigpicture">
+<p><strong>Which method should I reach for?</strong> Describe your problem with a few inputs — task type, data shape, modeling preferences — and the decision dashboard returns a ranked shortlist of candidate methods, each with a one-line justification drawn from that method’s <em>“When <strong>not</strong> to use”</em> callout and a link to its page.</p>
+<p><a href="./cross_method/decision_dashboard.html" class="btn btn-primary">Open the full decision dashboard →</a></p>
 </div>
 </section>
 <section id="sec-math-demo" class="level2">
@@ -688,7 +577,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="orientation">Orientation</h2>
 <ul>
 <li><strong>New to the material?</strong> Start with <a href="./big_picture/reading_the_data.html">Reading the Data</a> and <a href="./big_picture/workflow_patterns.html">Workflow Patterns</a>.</li>
-<li><strong>Have a dataset?</strong> Use the dashboard above, or the <a href="./cross_method/decision_dashboard.html">full decision dashboard</a>.</li>
+<li><strong>Have a dataset?</strong> Jump to the <a href="./cross_method/decision_dashboard.html">decision dashboard</a>.</li>
 <li><strong>Comparing methods?</strong> See <a href="./cross_method/family_comparisons.html">Family Comparisons</a> and <a href="./cross_method/showdowns.html">Showdowns</a>.</li>
 <li><strong>Practising for the exam?</strong> Go to the <a href="./drill/index.html">Drill index</a> — the Spring-2025 take-home is worked there.</li>
 <li><strong>Reference:</strong> <a href="./appendix/notation_table.html">Notation</a> · <a href="./appendix/math_appendix.html">Math appendix</a> · <a href="./appendix/sources.html">Sources</a>.</li>
@@ -783,17 +672,6 @@ window.Quarto = {
     init();
   }
 })();
-</script>
-<script type="ojs-module-contents">
-eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InZpZXdvZiB0YXNrID0gSW5wdXRzLnJhZGlvKFxuICBbXCJSZWdyZXNzaW9uIChwcmVkaWN0IGEgbnVtYmVyKVwiLCBcIkNsYXNzaWZpY2F0aW9uIChwcmVkaWN0IGEgY2xhc3MpXCIsIFwiQ2x1c3RlcmluZyAoZmluZCBncm91cHMpXCIsIFwiRGltZW5zaW9uYWxpdHkgcmVkdWN0aW9uXCJdLFxuICB7bGFiZWw6IFwiVGFza1wiLCB2YWx1ZTogXCJDbGFzc2lmaWNhdGlvbiAocHJlZGljdCBhIGNsYXNzKVwifVxuKVxudmlld29mIGludGVycCA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIk5lZWQgYW4gaW50ZXJwcmV0YWJsZSAvIGV4cGxhaW5hYmxlIG1vZGVsP1wiLCB2YWx1ZTogdHJ1ZX0pXG52aWV3b2YgYmlnbiA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIk1hbnkgbW9yZSBmZWF0dXJlcyB0aGFuIHJvd3MgKHAg4omrIG4pP1wiLCB2YWx1ZTogZmFsc2V9KVxudmlld29mIG5vbmxpbmVhciA9IElucHV0cy50b2dnbGUoe2xhYmVsOiBcIlJlbGF0aW9uc2hpcCBsb29rcyBub24tbGluZWFyP1wiLCB2YWx1ZTogZmFsc2V9KVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiLy8gUGxhY2Vob2xkZXIgcmFua2luZyBsb2dpYyDigJQgcmVwbGFjZWQgYnkgdGhlIHJlYWwgcnVsZXMgaW4gUGhhc2UgNC4xLlxuY2FuZGlkYXRlcyA9IHtcbiAgY29uc3Qgb3V0ID0gW107XG4gIGNvbnN0IGFkZCA9IChuYW1lLCBocmVmLCB3aHkpID0+IG91dC5wdXNoKHtuYW1lLCBocmVmLCB3aHl9KTtcbiAgaWYgKHRhc2suc3RhcnRzV2l0aChcIlJlZ3Jlc3Npb25cIikpIHtcbiAgICBhZGQoXCJPTFNcIiwgXCJtZXRob2RzL29scy5xbWRcIiwgXCJpbnRlcnByZXRhYmxlIGxpbmVhciBiYXNlbGluZTsgc3RhcnQgaGVyZVwiKTtcbiAgICBpZiAoYmlnbikgYWRkKFwiTGFzc28gLyBSaWRnZVwiLCBcIm1ldGhvZHMvcmVndWxhcml6YXRpb24ucW1kXCIsIFwicCDiiasgbiDihpIgcGVuYWxpemU7IExhc3NvIGFsc28gc2VsZWN0cyBmZWF0dXJlc1wiKTtcbiAgICBpZiAobm9ubGluZWFyKSBhZGQoXCJSYW5kb20gRm9yZXN0XCIsIFwibWV0aG9kcy9yYW5kb21fZm9yZXN0cy5xbWRcIiwgXCJjYXB0dXJlcyBub24tbGluZWFyaXR5LCBsb3cgdHVuaW5nXCIpO1xuICB9IGVsc2UgaWYgKHRhc2suc3RhcnRzV2l0aChcIkNsYXNzaWZpY2F0aW9uXCIpKSB7XG4gICAgYWRkKGludGVycCA/IFwiTG9naXN0aWMgUmVncmVzc2lvblwiIDogXCJSYW5kb20gRm9yZXN0XCIsXG4gICAgICAgIGludGVycCA/IFwibWV0aG9kcy9sb2dpc3RpYy5xbWRcIiA6IFwibWV0aG9kcy9yYW5kb21fZm9yZXN0cy5xbWRcIixcbiAgICAgICAgaW50ZXJwID8gXCJsaW5lYXIsIGludGVycHJldGFibGUgbG9nLW9kZHNcIiA6IFwic3Ryb25nIGRlZmF1bHQsIGhhbmRsZXMgbm9uLWxpbmVhcml0eVwiKTtcbiAgICBhZGQoXCJrTk5cIiwgXCJtZXRob2RzL2tubi5xbWRcIiwgXCJub24tcGFyYW1ldHJpYyBiYXNlbGluZVwiKTtcbiAgICBpZiAoIW5vbmxpbmVhcikgYWRkKFwiTERBXCIsIFwibWV0aG9kcy9sZGEucW1kXCIsIFwibGluZWFyIGJvdW5kYXJ5LCBHYXVzc2lhbiBjbGFzc2VzXCIpO1xuICB9IGVsc2UgaWYgKHRhc2suc3RhcnRzV2l0aChcIkNsdXN0ZXJpbmdcIikpIHtcbiAgICBhZGQoXCJLLU1lYW5zXCIsIFwibWV0aG9kcy9rbWVhbnMucW1kXCIsIFwiZmFzdCwgc3BoZXJpY2FsIGNsdXN0ZXJzOyBwaWNrIGsgdmlhIGVsYm93L3NpbGhvdWV0dGVcIik7XG4gICAgYWRkKFwiUENBIOKGkiBLLU1lYW5zXCIsIFwibWV0aG9kcy9wY2EucW1kXCIsIFwicmVkdWNlIGRpbWVuc2lvbnMvbm9pc2UgZmlyc3RcIik7XG4gIH0gZWxzZSB7XG4gICAgYWRkKFwiUENBXCIsIFwibWV0aG9kcy9wY2EucW1kXCIsIFwibGluZWFyIHZhcmlhbmNlLW1heGltaXppbmcgcHJvamVjdGlvblwiKTtcbiAgfVxuICByZXR1cm4gb3V0O1xufVxuaHRtbGA8b2w+JHtjYW5kaWRhdGVzLm1hcChjID0+IGh0bWxgPGxpPjxhIGhyZWY9XCIke2MuaHJlZn1cIj48Yj4ke2MubmFtZX08L2I+PC9hPiDigJQgJHtjLndoeX08L2xpPmApfTwvb2w+YFxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCd0YXNrJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ2ludGVycCcpIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdiaWduJykifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6InNoaW55SW5wdXQoJ25vbmxpbmVhcicpIn1dfQ==
-</script>
-<script type="module">
-if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
-window._ojs.paths.runtimeToDoc = "../..";
-window._ojs.paths.runtimeToRoot = "../..";
-window._ojs.paths.docToRoot = "";
-window._ojs.selfContained = false;
-window._ojs.runtime.interpretFromScriptTags();
 </script>
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
