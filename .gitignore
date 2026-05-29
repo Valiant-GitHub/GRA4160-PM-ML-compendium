@@ -1,11 +1,35 @@
-_freeze/
-.quarto/
+# Build caches
 .venv/
-*.bak.*
+.quarto/
+/.quarto/
+_freeze/
 __pycache__/
 .ipynb_checkpoints/
 node_modules/
-.DS_Store
-
-/.quarto/
 **/*.quarto_ipynb
+
+# Backups
+*.bak.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Internal build artifacts
+phase0/
+phase*_summary.md
+workspace_inventory.md
+phase2_skills_inventory.md
+
+# Course materials (Vegard's IP, copyrighted texts, exam files)
+course_materials/
+Lecture slides/
+Lecture notebooks/
+Exercises and solutions(VHL)/
+Data/
+Final exam 2026/
+*.pdf
+Exam_GRA4160_*.ipynb
+
+# NOTE: _site/ is intentionally NOT ignored — the rendered site is the
+# deliverable and is committed so visitors see HTML without rebuilding.
