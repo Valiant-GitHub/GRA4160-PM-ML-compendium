@@ -48,4 +48,4 @@ The **chosen** column is what this site uses consistently. The **course usage** 
 - AdaBoost stage weight $\alpha_m = \tfrac12\ln\frac{1-\text{err}}{\text{err}}$ — not on L7 slides → ESL §10.1.
 - Random-forest regression feature-subset default $m\approx p/3$ — only $\sqrt p$ on slides → ISL §8.2.
 
-*Source: synthesized from `phase0/notation_table.md` (Phase 0.6), built from the lecture extracts. See [Sources](sources.qmd).*
+*Synthesized from the lecture material. See [Sources](sources.qmd).*

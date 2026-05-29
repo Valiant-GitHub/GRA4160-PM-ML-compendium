@@ -14,7 +14,7 @@
 - [Why this exists](#why-this-exists)
 - [What's covered](#whats-covered)
 - [How it's organized](#how-its-organized)
-- [Build philosophy and source fidelity](#build-philosophy-and-source-fidelity)
+- [How it was built](#how-it-was-built)
 - [Known limitations](#known-limitations)
 - [Tech stack](#tech-stack)
 - [How to view locally](#how-to-view-locally)
@@ -71,17 +71,11 @@ The site has six functional layers:
 
 Both modes are populated for every method. A shared math appendix covers seven foundations (linear algebra essentials, gradient descent, MLE/MAP, bias-variance decomposition, information criteria, backprop, KKT conditions) that method pages link into rather than re-derive.
 
-## Build philosophy and source fidelity
+## How it was built
 
-The site was built across seven phases by Claude Code (Opus 4.7), under a strict source-fidelity discipline:
+This site was built with AI assistance over several iterations, using your lecture material, the course notebooks, past exams, and the two textbooks as the source basis. The build was deliberately set up to keep AI-generated content grounded: every formula, code snippet, and claim cites the underlying source so it can be verified directly, formulas were cross-checked between the course material and the textbooks during construction, and gaps where a source was unclear were flagged inline rather than filled in by guessing.
 
-- **Prime directive:** every claim, formula, code snippet, hyperparameter value, and dataset reference must trace to a real source at a citable location (file + cell, slide + page, or textbook section). No fabrication; gaps are marked `[VERIFY: ...]` rather than invented around.
-- **Source hierarchy:** course lecture slides and notebooks are Tier 1 (canonical authority for concepts and code idioms). ESL and ISL are Tier 2 (reference for math depth and Mode B derivations). Past exams are a framing lens for the drill section, not a content source.
-- **Formula cross-checks (R9):** every formula transcribed from a slide or notebook is cross-checked against the corresponding formula in ESL or ISL. Discrepancies are flagged (📝 callout in the rendered page + entry in the build log) rather than silently rewritten in either direction — the course version stays primary, the textbook version is shown alongside as context.
-- **Structural typo flagging (R10):** formulas that look dimensionally inconsistent, have missing indices, or otherwise look structurally suspect get an inline `[?: suspected typo]` marker even when no textbook equivalent exists for cross-check.
-- **Deterministic verification pass:** 30 random claims were sampled across the site post-build, the cited sources opened, and the claims verified by re-reading. 29 of 30 passed (3.3% failure rate); the one failure was a mislabeled baseline rate which was corrected. Of eight sampled formulas, all eight passed the R9 cross-check.
-
-The build log (`appendix/build_log.qmd` on the live site) documents the full provenance, including deviations from the original specification and the rationale for each.
+AI-generated content is also flagged via the `NOT_GROUND_TRUTH.md` note in the rendered site. The site is offered for personal study, not as authoritative course material.
 
 ## Known limitations
 
@@ -138,10 +132,9 @@ The render produces output in `docs/`. The Windows `QUARTO_PYTHON` env var step 
 ├── cross_method/            # Decision dashboard, family comparisons, showdowns, exercise map
 ├── drill/                   # Past-exam and exercise walkthroughs
 ├── big_picture/             # Reading the data, workflow patterns
-├── appendix/                # Notation table, math appendix, sources, build log
+├── appendix/                # Notation table, math appendix, sources
 ├── theme/                   # Custom SCSS + math-mode toggle JS
 ├── assets/                  # Vendored KaTeX
-├── CLAUDE.md                # Context for future Claude Code sessions
 ├── requirements-build.txt   # Python build dependencies
 └── .nojekyll                # Disables Jekyll on GitHub Pages
 ```

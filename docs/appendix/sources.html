@@ -29,7 +29,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../appendix/build_log.html" rel="next">
 <link href="../appendix/math_appendix.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -452,12 +451,6 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Sources</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../appendix/build_log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Build Log</span></a>
-  </div>
-</li>
       </ul>
   </li>
     </ul>
@@ -471,7 +464,6 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#source-hierarchy" id="toc-source-hierarchy" class="nav-link active" data-scroll-target="#source-hierarchy">Source hierarchy</a></li>
-  <li><a href="#phase-0-extracts-build-provenance" id="toc-phase-0-extracts-build-provenance" class="nav-link" data-scroll-target="#phase-0-extracts-build-provenance">Phase-0 extracts (build provenance)</a></li>
   <li><a href="#cross-checks-disagreements" id="toc-cross-checks-disagreements" class="nav-link" data-scroll-target="#cross-checks-disagreements">Cross-checks &amp; disagreements</a></li>
   </ul>
 </nav>
@@ -499,37 +491,25 @@ ul.task-list li input[type="checkbox"] {
 
 
 <div class="callout-bigpicture">
-<p><strong>Source fidelity.</strong> Every claim, formula, code idiom, and hyperparameter on this site traces to one of the sources below, at a citable location (file + slide or cell). This page is the source registry; it grows as the build proceeds.</p>
+<p><strong>Source fidelity.</strong> Every claim, formula, code idiom, and hyperparameter on this site traces to one of the sources below, at a citable location (file + slide or cell). This page is the source registry.</p>
 </div>
 <section id="source-hierarchy" class="level2">
 <h2 class="anchored" data-anchor-id="source-hierarchy">Source hierarchy</h2>
-<p><strong>Tier 1 — Lecture material (canonical).</strong></p>
+<p><strong>Course material.</strong></p>
 <ul>
 <li><strong>Lecture slides</strong> (10 PDFs, <code>course_materials/Lecture slides/</code>) — Vegard Høghaug Larsen, GRA 4160, spring 2026. Lectures 1–10. Cited by <em>logical slide number</em> (the <code>n/N</code> footer), since the decks are progressive-build.</li>
 <li><strong>Course notebooks</strong> — 20 lecture notebooks (<code>course_materials/Lecture notebooks/</code>) + 11 exercise notebooks (<code>course_materials/Exercises and solutions(VHL)/</code>). Cited by <em>cell index</em>. Notebooks win for code, hyperparameters, and dataset details; slides win for conceptual framing and notation.</li>
 </ul>
-<p><strong>Tier 2 — Reference texts.</strong></p>
+<p><strong>Reference texts.</strong></p>
 <ul>
 <li><strong>ISL</strong> — <em>An Introduction to Statistical Learning</em> (Python ed.; James, Witten, Hastie, Tibshirani). Primary for <strong>Mode A</strong> depth. Explicitly cited on Lecture 9 (activation figure); the single-hidden-layer model matches ISL Eq. 10.1.</li>
-<li><strong>ESL</strong> — <em>The Elements of Statistical Learning</em>, 2nd ed.&nbsp;(Hastie, Tibshirani, Friedman, 2009). Primary for <strong>Mode B</strong> rigor and the formal <strong>notation anchor</strong> (GR1). The course’s primary textbook.</li>
+<li><strong>ESL</strong> — <em>The Elements of Statistical Learning</em>, 2nd ed.&nbsp;(Hastie, Tibshirani, Friedman, 2009). Primary for <strong>Mode B</strong> rigor and the formal <strong>notation anchor</strong>. The course’s primary textbook.</li>
 </ul>
 <p><strong>Lens (not a content source).</strong> Past exams — three single-page cover sheets, the <strong>Spring-2025 take-home notebook</strong> (representative format), and two guideline PDFs. Used only to frame the drill section and the Past-Exam Lens callouts; method content is never drawn from exams.</p>
 </section>
-<section id="phase-0-extracts-build-provenance" class="level2">
-<h2 class="anchored" data-anchor-id="phase-0-extracts-build-provenance">Phase-0 extracts (build provenance)</h2>
-<p>The per-source structured extracts produced in Phase 0 live in <code>phase0/</code> (not part of the rendered site):</p>
-<ul>
-<li><code>phase0/lecture_01..10_extract.md</code> — one per lecture (topics, formulas, notation, emphasis).</li>
-<li><code>phase0/notebook_*.md</code> — one per lecture notebook (datasets, preprocessing, methods, hyperparameters, cell indices).</li>
-<li><code>phase0/exercise_01..06_*.md</code> — one per exercise topic (stub + solution).</li>
-<li><code>phase0/exam_spring2025_notebook.md</code>, <code>phase0/guidelines_extract.md</code> — the exam lens.</li>
-<li><code>phase0/notation_table.md</code>, <code>phase0/concept_inventory.md</code>, <code>phase0/recurrence_map.md</code>, <code>phase0/disagreements.md</code>, <code>phase0/references.md</code> — synthesis.</li>
-</ul>
-</section>
 <section id="cross-checks-disagreements" class="level2">
 <h2 class="anchored" data-anchor-id="cross-checks-disagreements">Cross-checks &amp; disagreements</h2>
-<p>Formula cross-checks against ESL/ISL (R9), structural flags (R10), notebook code/prose mismatches, and dataset-availability notes (C7) are logged in <code>phase0/disagreements.md</code> and surfaced in callouts on the relevant pages. Two course datasets referenced by exercises (<code>SMSSpamCollection.csv</code>, <code>bank-additional-full.csv</code>) are not present locally; those drill pages document the method/idiom without fabricating outputs.</p>
-<p><em>Per-method ESL/ISL section citations are added as each method’s math section is written (Phase 3).</em></p>
+<p>Where the course material and the textbooks state a formula differently, the page shows both and flags the discrepancy in a callout rather than silently picking one. Two course datasets referenced by exercises (<code>SMSSpamCollection.csv</code>, <code>bank-additional-full.csv</code>) are not present locally; those drill pages document the method/idiom without fabricating outputs.</p>
 
 
 </section>
@@ -1079,9 +1059,6 @@ ul.task-list li input[type="checkbox"] {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../appendix/build_log.html" class="pagination-link" aria-label="Build Log">
-        <span class="nav-page-text">Build Log</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->

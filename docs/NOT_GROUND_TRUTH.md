@@ -19,8 +19,3 @@ python -m http.server 8000
 ```
 
 Then open **http://localhost:8000/**. Stop with `Ctrl+C`.
-
-## More context
-
-- Source-fidelity rules and the full ground-truth-vs-generated breakdown: `../CLAUDE.md`
-- Known limitations and unresolved `[VERIFY]` items from the build: `appendix/build_log.html`

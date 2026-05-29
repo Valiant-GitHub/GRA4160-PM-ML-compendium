@@ -4,35 +4,23 @@ body-classes: fam-cross
 ---
 
 ::: {.callout-bigpicture}
-**Source fidelity.** Every claim, formula, code idiom, and hyperparameter on this site traces to one of the sources below, at a citable location (file + slide or cell). This page is the source registry; it grows as the build proceeds.
+**Source fidelity.** Every claim, formula, code idiom, and hyperparameter on this site traces to one of the sources below, at a citable location (file + slide or cell). This page is the source registry.
 :::
 
 ## Source hierarchy
 
-**Tier 1 — Lecture material (canonical).**
+**Course material.**
 
 - **Lecture slides** (10 PDFs, `course_materials/Lecture slides/`) — Vegard Høghaug Larsen, GRA 4160, spring 2026. Lectures 1–10. Cited by *logical slide number* (the `n/N` footer), since the decks are progressive-build.
 - **Course notebooks** — 20 lecture notebooks (`course_materials/Lecture notebooks/`) + 11 exercise notebooks (`course_materials/Exercises and solutions(VHL)/`). Cited by *cell index*. Notebooks win for code, hyperparameters, and dataset details; slides win for conceptual framing and notation.
 
-**Tier 2 — Reference texts.**
+**Reference texts.**
 
 - **ISL** — *An Introduction to Statistical Learning* (Python ed.; James, Witten, Hastie, Tibshirani). Primary for **Mode A** depth. Explicitly cited on Lecture 9 (activation figure); the single-hidden-layer model matches ISL Eq. 10.1.
-- **ESL** — *The Elements of Statistical Learning*, 2nd ed. (Hastie, Tibshirani, Friedman, 2009). Primary for **Mode B** rigor and the formal **notation anchor** (GR1). The course's primary textbook.
+- **ESL** — *The Elements of Statistical Learning*, 2nd ed. (Hastie, Tibshirani, Friedman, 2009). Primary for **Mode B** rigor and the formal **notation anchor**. The course's primary textbook.
 
 **Lens (not a content source).** Past exams — three single-page cover sheets, the **Spring-2025 take-home notebook** (representative format), and two guideline PDFs. Used only to frame the drill section and the Past-Exam Lens callouts; method content is never drawn from exams.
 
-## Phase-0 extracts (build provenance)
-
-The per-source structured extracts produced in Phase 0 live in `phase0/` (not part of the rendered site):
-
-- `phase0/lecture_01..10_extract.md` — one per lecture (topics, formulas, notation, emphasis).
-- `phase0/notebook_*.md` — one per lecture notebook (datasets, preprocessing, methods, hyperparameters, cell indices).
-- `phase0/exercise_01..06_*.md` — one per exercise topic (stub + solution).
-- `phase0/exam_spring2025_notebook.md`, `phase0/guidelines_extract.md` — the exam lens.
-- `phase0/notation_table.md`, `phase0/concept_inventory.md`, `phase0/recurrence_map.md`, `phase0/disagreements.md`, `phase0/references.md` — synthesis.
-
 ## Cross-checks & disagreements
 
-Formula cross-checks against ESL/ISL (R9), structural flags (R10), notebook code/prose mismatches, and dataset-availability notes (C7) are logged in `phase0/disagreements.md` and surfaced in callouts on the relevant pages. Two course datasets referenced by exercises (`SMSSpamCollection.csv`, `bank-additional-full.csv`) are not present locally; those drill pages document the method/idiom without fabricating outputs.
-
-*Per-method ESL/ISL section citations are added as each method's math section is written (Phase 3).*
+Where the course material and the textbooks state a formula differently, the page shows both and flags the discrepancy in a callout rather than silently picking one. Two course datasets referenced by exercises (`SMSSpamCollection.csv`, `bank-additional-full.csv`) are not present locally; those drill pages document the method/idiom without fabricating outputs.
