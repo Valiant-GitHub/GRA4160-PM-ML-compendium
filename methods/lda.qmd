@@ -162,10 +162,19 @@ ldaMidpoint = {
       Plot.dot(ldaProj, {x: "v", y: "c", fill: d => d.c === 1 ? famLinear : "#E8A33D", fillOpacity: 0.7, r: 4})
     ]
   });
-  console.log("[DIAG-LDA] Plot.plot returned:", plotResult);
-  console.log("[DIAG-LDA] Plot tagName:", plotResult?.tagName, "| bbox:", plotResult?.getBoundingClientRect?.());
-  console.log("[DIAG-LDA] mark counts — circle:", plotResult?.querySelectorAll?.("circle")?.length, "line:", plotResult?.querySelectorAll?.("line")?.length, "path:", plotResult?.querySelectorAll?.("path")?.length);
-  return plotResult;
+  const diag = {
+    ldaProjLength: ldaProj.length,
+    hasNaN: ldaProj.some(d => isNaN(d.v) || isNaN(d.c)),
+    famLinear: famLinear,
+    famLinearType: typeof famLinear,
+    ldaMidpoint: ldaMidpoint,
+    svgTag: plotResult && plotResult.tagName,
+    circles: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("circle").length : "n/a",
+    lines: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("line").length : "n/a",
+    paths: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("path").length : "n/a"
+  };
+  console.log("[DIAG-LDA]", diag);
+  return html`<div>${plotResult}<pre id="diag-lda-panel" style="background:#ffffff;color:#111;border:2px solid red;padding:8px;font-size:12px;line-height:1.4;white-space:pre-wrap;overflow:auto;">[DIAG-LDA] ${JSON.stringify(diag, null, 2)}</pre></div>`;
 }
 ```
 

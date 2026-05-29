@@ -154,10 +154,18 @@ screeData = [
       Plot.text(screeData, {x: "pc", y: "cum", text: d => (d.cum*100).toFixed(0) + "%", dy: -12, fontSize: 9, fill: "#444"})
     ]
   });
-  console.log("[DIAG-PCA] Plot.plot returned:", plotResult);
-  console.log("[DIAG-PCA] Plot tagName:", plotResult?.tagName, "| bbox:", plotResult?.getBoundingClientRect?.());
-  console.log("[DIAG-PCA] mark counts — circle:", plotResult?.querySelectorAll?.("circle")?.length, "path:", plotResult?.querySelectorAll?.("path")?.length);
-  return plotResult;
+  const diag = {
+    screeDataLength: screeData.length,
+    hasNaN: screeData.some(d => isNaN(d.pc) || isNaN(d.cum)),
+    famUnsup: famUnsup,
+    famUnsupType: typeof famUnsup,
+    svgTag: plotResult && plotResult.tagName,
+    circles: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("circle").length : "n/a",
+    lines: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("line").length : "n/a",
+    paths: plotResult && plotResult.querySelectorAll ? plotResult.querySelectorAll("path").length : "n/a"
+  };
+  console.log("[DIAG-PCA]", diag);
+  return html`<div>${plotResult}<pre id="diag-pca-panel" style="background:#ffffff;color:#111;border:2px solid red;padding:8px;font-size:12px;line-height:1.4;white-space:pre-wrap;overflow:auto;">[DIAG-PCA] ${JSON.stringify(diag, null, 2)}</pre></div>`;
 }
 ```
 
