@@ -30,7 +30,7 @@ Task
 //| echo: false
 viewof task = Inputs.radio(
   ["Regression (predict a number)", "Classification (predict a class)", "Clustering (find groups, no labels)", "Dimensionality reduction"],
-  {label: "Task", value: "Classification (predict a class)"}
+  {value: "Classification (predict a class)"}
 )
 ```
 :::
