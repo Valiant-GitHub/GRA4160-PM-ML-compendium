@@ -401,3 +401,40 @@ main#quarto-document-content div.sourceCode {
   border-left-color: var(--page-family);
   font-weight: 600;
 }
+
+// ---------------------------------------------------------------------------
+// LEFT-SIDEBAR FAMILY COLOR-CODING. theme/sidebar-colors.html injects a .fam-*
+// class on each method page's sidebar link at load; .fam-* (defined above) sets
+// --page-family, which these rules read. Inset box-shadow draws a 3px left
+// accent with NO layout shift (no padding compensation needed). Additive —
+// only links carrying a family class are affected; all other links stay default.
+// ---------------------------------------------------------------------------
+#quarto-sidebar .sidebar-link.fam-linear,
+#quarto-sidebar .sidebar-link.fam-tree,
+#quarto-sidebar .sidebar-link.fam-neural,
+#quarto-sidebar .sidebar-link.fam-unsup,
+#quarto-sidebar .sidebar-link.fam-cross {
+  box-shadow: inset 3px 0 0 var(--page-family);
+  transition: background-color 0.12s ease;
+}
+#quarto-sidebar .sidebar-link.fam-linear:hover,
+#quarto-sidebar .sidebar-link.fam-tree:hover,
+#quarto-sidebar .sidebar-link.fam-neural:hover,
+#quarto-sidebar .sidebar-link.fam-unsup:hover,
+#quarto-sidebar .sidebar-link.fam-cross:hover {
+  background: color-mix(in srgb, var(--page-family) 13%, transparent);
+}
+#quarto-sidebar .sidebar-link.fam-linear.active,
+#quarto-sidebar .sidebar-link.fam-tree.active,
+#quarto-sidebar .sidebar-link.fam-neural.active,
+#quarto-sidebar .sidebar-link.fam-unsup.active,
+#quarto-sidebar .sidebar-link.fam-cross.active,
+#quarto-sidebar .sidebar-link.fam-linear[aria-current="page"],
+#quarto-sidebar .sidebar-link.fam-tree[aria-current="page"],
+#quarto-sidebar .sidebar-link.fam-neural[aria-current="page"],
+#quarto-sidebar .sidebar-link.fam-unsup[aria-current="page"],
+#quarto-sidebar .sidebar-link.fam-cross[aria-current="page"] {
+  background: color-mix(in srgb, var(--page-family) 19%, transparent);
+  color: var(--page-family);
+  font-weight: 600;
+}

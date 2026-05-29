@@ -76,7 +76,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-e154b87f46de05cb9d2df9f9af250391.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-f5c4287ff88daac39969cb05d78bfe35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f4c68e10038d4bfa514fc552df8c4432.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -985,6 +985,52 @@ Figure&nbsp;1: kNN classifies the red star (test point) by majority vote of its 
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
+  }
+})();
+</script>
+<!-- GRA 4160 — color-code left-sidebar method links by method family.
+     Runs once at load; for each sidebar link whose filename matches a method
+     page, adds the matching .fam-* class (which sets --page-family in custom.scss).
+     The SCSS sidebar rules read --page-family for the accent. Additive only;
+     non-method links (index, cross_method, drill, big_picture, appendix) are
+     left untouched, so a colored entry semantically means "method page". -->
+<script>
+(function () {
+  "use strict";
+  var familyMap = {
+    "ols.html": "fam-linear",
+    "knn.html": "fam-linear",
+    "logistic.html": "fam-linear",
+    "lda.html": "fam-linear",
+    "adaline.html": "fam-linear",
+    "regularization.html": "fam-linear",
+    "decision_trees.html": "fam-tree",
+    "random_forests.html": "fam-tree",
+    "ensembles.html": "fam-tree",
+    "pca.html": "fam-unsup",
+    "kmeans.html": "fam-unsup",
+    "nn_basics.html": "fam-neural",
+    "autodiff.html": "fam-neural",
+    "nn_pytorch.html": "fam-neural",
+    "build_a_nn.html": "fam-neural",
+    "bias_variance.html": "fam-cross",
+    "cv_info_criteria.html": "fam-cross"
+  };
+  function colorize() {
+    var sidebar = document.getElementById("quarto-sidebar");
+    if (!sidebar) return;
+    var links = sidebar.querySelectorAll("a[href]");
+    links.forEach(function (link) {
+      var href = link.getAttribute("href") || "";
+      var filename = href.split("/").pop().split("?")[0].split("#")[0];
+      var fam = familyMap[filename];
+      if (fam) link.classList.add(fam);
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", colorize);
+  } else {
+    colorize();
   }
 })();
 </script>

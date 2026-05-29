@@ -122,7 +122,9 @@ format:
     code-copy: true
     code-overflow: wrap
     link-external-newwindow: true
-    include-after-body: theme/toggle-after-body.html
+    include-after-body:
+      - theme/toggle-after-body.html
+      - theme/sidebar-colors.html
 
 execute:
   warning: false
