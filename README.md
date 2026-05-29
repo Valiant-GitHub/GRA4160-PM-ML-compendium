@@ -152,13 +152,11 @@ The original course material (lecture slides, notebooks, datasets, exam files, E
 
 This is a derivative work built on materials I don't own (the GRA 4160 course content owned by the instructor; the ESL and ISL textbooks owned by their respective authors and publishers). Accordingly, no permissive license is offered for the code in this repository — **all rights reserved**.
 
-You are welcome to view the live site for personal study. Forking, redistributing, or building on the repository should not be done without my permission, and any derivative work would inherit the same constraints around the underlying materials.
+You are welcome to view the live site for personal study. Forking, redistributing, or building on the repository is discouraged, and any derivative work would inherit the same constraints around the underlying materials.
 
 If you're a BI student in a future cohort of GRA 4160 considering whether to build something similar: I'd encourage it. Reach out and I'm happy to share notes on what worked and what didn't.
 
 ## Author
 
 Built by **Vilijam Cekov** — MSc student at BI Norwegian Business School.
-
-- GitHub: [github.com/Valiant-GitHub](https://github.com/Valiant-GitHub)
 - LinkedIn: [linkedin.com/in/vilijam-cekov](https://www.linkedin.com/in/vilijam-cekov/)
