@@ -141,3 +141,103 @@ body.math-b #math-mode-toggle { border-color: var(--cl-mathb-bd); background: va
 figure figcaption, .figure-caption, .quarto-figure figcaption {
   font-size: .9rem; color: #556; font-family: $font-family-sans-serif;
 }
+
+// ---------------------------------------------------------------------------
+// DECISION DASHBOARD (cross_method/decision_dashboard.qmd ONLY).
+// Additive + scoped under .dash-* wrappers — no other page is touched.
+// Two-column tool layout: controls left (~55%), ranked output right (~45%, sticky).
+// Reuses the family color tokens above; introduces no new colors.
+// ---------------------------------------------------------------------------
+.dash-grid {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin: 1rem 0 1.5rem;
+}
+
+// --- left column: grouped controls ---
+.dash-controls {
+  border: 1px solid #e3e6ec;
+  border-radius: $border-radius;
+  background: #fcfcfd;
+  padding: 0.75rem 1rem 1rem;
+}
+.dash-section-header {
+  font-family: $font-family-sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--page-family);
+  margin: 1.1rem 0 0.5rem; padding-bottom: 0.3rem;
+  border-bottom: 1px solid #e7e9ef;
+}
+.dash-controls > .dash-section-header:first-child { margin-top: 0.15rem; }
+
+// Tidy the Observable Inputs widgets inside the controls column.
+.dash-controls .cell,
+.dash-controls .cell-output-display { margin: 0; }
+.dash-controls form {
+  font-family: $font-family-sans-serif;
+  max-width: none;                 // override Observable's default 640px cap
+  margin: 0.4rem 0;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+// toggle rows: label flexes to fill, control sits at the right (settings-row look)
+.dash-controls form > label {
+  flex: 1 1 auto; min-width: 0; width: auto !important;  // override fixed inline label width
+  font-size: 0.9rem; line-height: 1.35; color: #2a2f3a;
+}
+
+// the Task radio: stack its label above a wrapped row of option "pills"
+.dash-task form { flex-direction: column; align-items: stretch; gap: 0.45rem; }
+.dash-task form > label { flex: none; font-weight: 600; font-size: 0.82rem;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--page-family); }
+.dash-task form > div { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.dash-task form > div > label {
+  flex: none; width: auto !important; display: inline-flex; align-items: center; gap: 0.4rem;
+  border: 1px solid #d7dbe3; border-radius: 1rem; padding: 0.28rem 0.75rem;
+  font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: border-color .12s, background .12s;
+}
+.dash-task form > div > label:hover { border-color: var(--page-family); background: #f3f6fb; }
+
+// --- right column: ranked output, sticky on desktop ---
+.dash-output { position: sticky; top: 1rem; align-self: start; }
+.dash-output-header {
+  font-family: $font-family-sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--page-family);
+  margin: 0 0 0.5rem; padding-bottom: 0.3rem;
+  border-bottom: 1px solid #e7e9ef;
+}
+
+.dash-cards { display: flex; flex-direction: column; gap: 0.55rem; margin: 0 0 1rem;
+  animation: dash-fade 0.25s ease; }
+@keyframes dash-fade { from { opacity: 0.45; } to { opacity: 1; } }
+.dash-card {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  border-left: 5px solid var(--accent, var(--family-cross));
+  background: rgba(0,0,0,0.025);
+  padding: 0.55rem 0.8rem; border-radius: 0 6px 6px 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.dash-card:hover { transform: translateX(3px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.dash-rank { flex: 0 0 1.6rem; font-weight: 700; font-size: 1.05rem;
+  color: var(--accent, var(--family-cross)); }
+.dash-card-body { flex: 1; }
+.dash-card-name { font-weight: 700; color: var(--accent, var(--family-cross)); text-decoration: none; }
+.dash-card-name:hover { text-decoration: underline; }
+.dash-card-why { font-size: 0.9rem; color: #444; margin-top: 0.15rem; }
+
+.dash-notes { border: 1px solid #ddd; border-radius: 6px; padding: 0.6rem 0.9rem;
+  background: rgba(61,64,91,0.05); }
+.dash-notes-title { font-family: $font-family-sans-serif; font-weight: 700;
+  color: var(--family-cross); margin-bottom: 0.35rem; }
+.dash-notes-list { margin: 0; padding-left: 1.2rem; }
+.dash-notes-list li { margin: 0.25rem 0; font-size: 0.9rem; }
+
+// --- mobile: single column, output below controls, non-sticky ---
+@media (max-width: 768px) {
+  .dash-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .dash-output { position: static; top: auto; }
+}

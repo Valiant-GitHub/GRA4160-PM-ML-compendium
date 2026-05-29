@@ -17,19 +17,53 @@ Use it two ways. **Diagnose first:** answer the controls honestly about your dat
 
 ## The dashboard {#sec-dashboard-full}
 
+::::: {.dash-grid}
+
+:::: {.dash-controls}
+
+::: {.dash-section-header}
+Task
+:::
+
+::: {.dash-task}
 ```{ojs}
 //| echo: false
 viewof task = Inputs.radio(
   ["Regression (predict a number)", "Classification (predict a class)", "Clustering (find groups, no labels)", "Dimensionality reduction"],
   {label: "Task", value: "Classification (predict a class)"}
 )
+```
+:::
+
+::: {.dash-section-header}
+Data shape
+:::
+
+```{ojs}
+//| echo: false
 viewof bign = Inputs.toggle({label: "Predictors rival or outnumber rows (p ≳ n), or strongly correlated?", value: false})
-viewof nonlinear = Inputs.toggle({label: "Relationship / boundary looks non-linear?", value: false})
-viewof interp = Inputs.toggle({label: "Need an interpretable / explainable model (signed effects)?", value: true})
 viewof categorical = Inputs.toggle({label: "Categorical features present (mixed types)?", value: false})
 viewof missing = Inputs.toggle({label: "Missing data present?", value: false})
 viewof imbalance = Inputs.toggle({label: "Class imbalance present?", value: false})
 ```
+
+::: {.dash-section-header}
+Modeling preferences
+:::
+
+```{ojs}
+//| echo: false
+viewof nonlinear = Inputs.toggle({label: "Relationship / boundary looks non-linear?", value: false})
+viewof interp = Inputs.toggle({label: "Need an interpretable / explainable model (signed effects)?", value: true})
+```
+
+::::
+
+:::: {.dash-output}
+
+::: {.dash-output-header}
+Ranked recommendations
+:::
 
 ```{ojs}
 //| echo: false
@@ -186,17 +220,13 @@ notes = {
 // RENDER — ranked cards + the notes panel. Pure HTML/DOM, no network.
 // ----------------------------------------------------------------------------
 html`
-<div style="display:flex; flex-direction:column; gap:0.55rem; margin:0.5rem 0 1rem;">
+<div class="dash-cards">
   ${ranked.map((c, i) => html`
-    <div style="display:flex; align-items:flex-start; gap:0.7rem;
-                border-left:5px solid ${COL[c.fam]}; background:rgba(0,0,0,0.025);
-                padding:0.55rem 0.8rem; border-radius:0 6px 6px 0;">
-      <div style="flex:0 0 1.6rem; font-weight:700; font-size:1.05rem;
-                  color:${COL[c.fam]};">${i + 1}.</div>
-      <div style="flex:1;">
-        <a href="${c.href}" style="font-weight:700; color:${COL[c.fam]}; text-decoration:none;">
-          ${c.name}</a>
-        <div style="font-size:0.9rem; color:#444; margin-top:0.15rem;">${c.why}</div>
+    <div class="dash-card" style="--accent:${COL[c.fam]}">
+      <div class="dash-rank">${i + 1}.</div>
+      <div class="dash-card-body">
+        <a class="dash-card-name" href="${c.href}">${c.name}</a>
+        <div class="dash-card-why">${c.why}</div>
       </div>
     </div>`)}
 </div>`
@@ -205,12 +235,10 @@ html`
 ```{ojs}
 //| echo: false
 html`
-<div style="border:1px solid #ddd; border-radius:6px; padding:0.6rem 0.9rem;
-            background:rgba(61,64,91,0.05);">
-  <div style="font-weight:700; color:${COL.cross}; margin-bottom:0.35rem;">
-    Cross-cutting notes for this problem</div>
-  <ul style="margin:0; padding-left:1.2rem;">
-    ${notes.map(n => html`<li style="margin:0.25rem 0; font-size:0.9rem;">${boldify(n)}</li>`)}
+<div class="dash-notes">
+  <div class="dash-notes-title">Cross-cutting notes for this problem</div>
+  <ul class="dash-notes-list">
+    ${notes.map(n => html`<li>${boldify(n)}</li>`)}
   </ul>
 </div>`
 ```
@@ -224,6 +252,10 @@ boldify = (s) => {
   return html`<span>${parts.map((seg, i) => i % 2 === 1 ? html`<b>${seg}</b>` : seg)}</span>`;
 }
 ```
+
+::::
+
+:::::
 
 ## How the four Spring-2025 assignments map to dashboard paths
 
