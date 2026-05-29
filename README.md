@@ -4,7 +4,7 @@
 
 **[→ Open the live site](https://valiant-github.github.io/GRA4160-PM-ML-compendium/)**
 
-![Landing page — method-selection dashboard](<img width="1919" height="989" alt="image" src="[https://github.com/user-attachments/assets/3f0e9566-9705-484c-8d2b-af63a4a1577f](https://github.com/Valiant-GitHub/GRA4160-PM-ML-compendium/blob/master/Decision%20Dashboard.png)" />)
+![Landing page — method-selection dashboard](Decision%20Dashboard.png)
 
 ---
 
